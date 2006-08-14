@@ -1,0 +1,131 @@
+.TH build_e2fs 8 "05 Aug 2006" "Version 0.84.5"
+.SH "NAME"
+build_e2fs \- build e2fs filesystem proceeding from information
+from external inode table file.
+.SH "SINOPSYS"
+.nf
+.BI "build_e2fs [ \-c|\-l " filename " ] [\-b " blocksize "]"
+.BI "	[\-f " fragment-size "] [\-g " blocks-per-group "]"
+.BI "	[\-i " bytes-per-inode "] [\-j] [\-J " journal-options "]"
+.BI "	[\-N " number-of-inodes "] [-n] [\-m " reserved-blocks-percentage "]"
+.BI "	[\-o " creator-os "] [\-O " feature "[,...]] [\-q]"
+.BI "	[\-r " fs-revision-level "] [\-R " raid-options "] [\-v] [\-F]"
+.BI "	[\-L " volume-label "] [\-M " last-mounted-directory "] [\-S]"
+.BI "	[\-T " filesystem-type "] [\-V] " "inode_table device " [ blocks-count ]
+.fi
+
+.SH "DESCRIPTION"
+.B build_e2fs
+proceeds from external inode table information for building
+.B ext2fs
+filesystems on device.
+
+Filesystem building consist of several steps:
+
+1) at first in separate bits map marks all blocks in which
+will be kept filesystem system information.
+
+2) then it frees this blocks from user information.
+.br
+WARNING. If device has small free space, at this stage possible not
+shortage space for new filesystem, so not only old filesystem will be
+destroyed, but new filesystem would not be built. Nevertheless changed
+inode table will be saved if it's possible. But it will better to avoid
+so situation by running utility with
+.B -n
+option at first.
+
+3) At last it builds filesystem, writes filesystem system information.
+.br
+At this stage also may be errors, nevertheless after second stage
+new inode table already saved and it should not to lead to irrevocable
+data loss.
+	
+.SH "OPTIONS"
+.B build_e2fs
+utility based on
+.B mke2fs
+from
+.B E2fsprogs
+package version 1.35. The most options keeps its original meaning
+and here will not be explained. Here describes only some important
+options, new options and options with changing meaning.
+.TP
+.BI \-b " blocksize"
+Filesystem blocksize given in inode table. Trying to point using this option
+blocksize different with pointed in inode table leads to error message
+and advice to use
+.BR reblock (8)
+for changing filesystem blocksize.
+.TP
+.B \-c
+If this option was specified twice,
+.B mke2fs
+used destructive, read-write test for searching of bad blocks,
+this was changed to NONdestructive read-write test.
+.TP
+.B \-n
+causes build_e2fs to not actually build a filesystem, nevertheless
+so you may to know if there are not enough space for locating new
+filesystem on device.
+.TP
+.B \-q
+Don't print any messages.
+.TP
+.B \-v
+you may to point this option to 3 times, with each time more increase
+quantity of output messages.
+.TP
+.B \-V
+Print the version number and exit.
+.TP
+.I inode_table
+external inode table, from which it will read information about locating
+user data files of current filesystem, its access permissions and
+directory structure.
+.TP
+.I device
+device for building new filesystem.
+
+.SH "USAGE EXAMPLES"
+Check for enough free space on device:
+.br
+$ build_e2fs -n inode.table /dev/hda1
+
+Build ext2fs:
+.br
+$ build_e2fs inode.table /dev/hda1
+
+Check for enough free space on device for ext3fs:
+.br
+$ build_e2fs -nj inode.table /dev/hda1
+
+Build ext3fs filesystem:
+.br
+$ build_e2fs -j inode.table /dev/hda1
+
+.SH "AUTHOR"
+Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+
+.SH "BUG REPORTS"
+Messages about any problem with using
+.B anyfs-tools
+package send to
+undefer@gmail.com
+
+You may append to problem description also the inode table
+(compressed with gzip or bzip2 it must has not so more size)
+and device/image size.
+
+Block device size in 512 byte blocks you can get with command
+`/sbin/blockdev --getsize <device>`
+
+.SH "AVAILABILITY"
+You can obtain the last version of package at
+http://anyfs-tools.sourceforge.net
+
+.SH "SEE ALSO"
+.BR anyfs-tools(8),
+.BR build_xfs(8),
+.BR anyfs_inode_table(5),
+.BR mke2fs(8)

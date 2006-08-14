@@ -1,0 +1,80 @@
+.TH anyfs 8 "05 Aug 2006" "Version 0.84.5"
+.SH "NAME"
+anyfs \- filesystem with external inode table.
+.SH "SYNOPSIS"
+.RB "mount -t " any " -o
+.BI inodetable= file.it "[," other_mount_options ] " device dir"
+
+.SH "DESCRIPTION"
+.B anyfs
+filesystem driver for
+.B Linux
+allows to mount device using inode table information.
+At mounted filesystem will be allow so file operations as
+deleting, moving files; making symbolic and hard links,
+special files; changing file access permissions.
+All this changes saves on unmounting to the same external inode table file
+and doesn't affect the device.
+
+BE ATTENTIVE. Don't forget unmount 
+.B anyfs
+filesystem before using other utilities of
+.BR anyfs-tools 
+package.
+Otherwise with unmounting driver the driver rewrites inode table
+and all changing made by other utilities will lost.
+.br
+Incidentally if you still forgot unmount
+.B anyfs
+filesystem, and already have used e.g.
+.BR reblock ,
+you need, to copy/move new version of inode table to another place,
+then unmount 
+.BR anyfs ,
+and finally you may again restore new version of inode table at former
+place.
+
+anyfs driver doesn't print any details if you specified
+external inode table file with bad format.
+For more details you can test external inode table file with the next
+command:
+.br
+$ reblock -n <inode_table> /dev/null 512
+
+The inode table has correct format if you get message
+"BLKGETSIZE: Inappropriate ioctl for device".
+	
+.SH "MOUNT OPTIONS"
+Besides usual mount options for
+.B anyfs
+mounting it is necessary to specify yet one option
+.TP
+.BI  inodetable= file.it
+For pointing file of external inode table.
+
+.SH "USAGE EXAMPLES"
+Mounts /dev/hda1 to /mnt/hda1 using inode.table:
+.br
+# mount -t any -o inodetable=inode.table /dev/hda1 /mnt/hda1
+
+Mounts /dev/hda1 as anyfs in read-only mode:
+.br
+# mount -t any -o ro,inodetable=inode.table /dev/hda1 /mnt/hda1
+
+.SH "AUTHOR"
+Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+
+.SH "BUG REPORTS"
+Messages about any problem with using
+.B anyfs-tools
+package send to
+undefer@gmail.com
+
+.SH "AVAILABILITY"
+You can obtain the last version of package at
+http://anyfs-tools.sourceforge.net
+
+.SH "SEE ALSO"
+.BR anyfs-tools(8),
+.BR anyfs_inode_table(5),
+.BR mount(8)

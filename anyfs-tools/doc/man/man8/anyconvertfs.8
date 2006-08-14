@@ -1,0 +1,235 @@
+.TH anyconvertfs 8 "08 Aug 2006" "Version 0.84.5"
+.SH "NAME"
+anyconvertfs \- converts filesystem.
+.SH "SYNOPSIS"
+.nf
+.BI "anyconvertfs [\-\-tmpdir " directory "] [\-\-" blocksize "] [\-f] [\-\-dry]" 
+.BI "   [\-\-inodetable " inodetable "] [\-\-color|\-\-no\-color] [\-\-label" " label" "] "
+.BI "   [--dontstop] [--pause " seconds "] [\-\-] " device " [" source_fs ]
+.IB "    destination_fs"
+.fi
+
+.SH "DESCRIPTION"
+
+The script will try to do all that possible, so you not need to read
+this (and other) manuals to the end.
+
+So I talks to you how to run it:
+
+$ anyconvertfs /dev/hda1 xfs
+
+Where /dev/hda1 -- your device, xfs -- destination filesystem for
+the device.
+It's all. The remaining script will talks self. You may not read more,
+if it's not interesting for you.
+
+.B anyconvertfs
+converts device filesystem by 5 steps, moreover 2 of its in the most
+cases would skipped. Describe its steps sequentially.
+
+Step 1. Building inode table (with build_it).
+.br
+The step may be skipped, if you convert from anyfs using existing
+inode table only.
+
+Step 2. Noops (check if enough space) reblock anyfs (with reblock).
+.br
+The step would executed if new FS blocksize not equals old FS blocksize.
+.B reblock
+may return message "Not Enough Space". In this case script
+would suggest to clear some space for new filesystem.
+
+Step 3. Reblock anyfs (with reblock).
+.br
+The step also would executed only its necessary. If new blocksize
+more than old one, the step is first one, when the old filesystem
+may be destroyed, and the script would warning about it and
+suggest to press Ctrl+C, if you change your mind.
+
+Step 4. Noops (check if enough space) build new filesystem
+(with build_e2fs/build_xfs).
+.br
+The step may be skipped if you convert to anyfs (it needs only in external
+inode table). At this stage the build_FS utility may return message
+"Not enough space", and the script would suggest to clear some space 
+in this case.
+
+Step 5. Build new filesystem (with build_e2fs/build_xfs).
+.br
+The step is stage at which old filesystem would destroyed for certain,
+because (if its didn't destroyed at the fifth step), the script
+may suggest to press Ctrl+C, if you change your mind.
+
+anyconvertfs don't demand unmount the filesystem --
+it mounts the filesystem anyway. If FS already was mounted, it uses it,
+and gets mounting option with `mount`.
+
+Also, if filesystem already was mounted, anyconvertfs
+would mount the new filesystem at the same mount point.
+	
+.SH "OPTIONS"
+.TP
+.BI \-\-tmpdir " directory"
+Directory for temporary files (by default "/tmp")
+.TP
+.BI \-\-blocksize " blocksize"
+Blocksize for new filesystem. By default -- 4096.
+.TP
+.BI \-f
+It needs for converting on image, not block device.
+.TP
+.BI \-\-dry
+Dry run. Prints converting parameters, do nothing else.
+.TP
+.BI \-\-inodetable " inodetable"
+Inode table. It is necessary if you have existing inode table
+for converting from anyfs.
+.TP
+.BI \-\-color 
+Enable color highlight (by default if output to terminal).
+.TP
+.BI \-\-no-color 
+Disable color highlight (by default if output to pipe or file).
+.TP
+.BI \-\-label " label"
+New filesystem label. By default the script would try to save
+the old filesystem label.
+.TP
+.BI \-\-dontstop
+Don't stop. By default the script suggests attentively check
+converting parameters before starting and waits for "Enter" pressing.
+The option talks to the script: "I sure".
+.TP
+.BI \-\-pause " seconds"
+Seconds of pause before destroying the old filesystem.
+By default the script give you chance till 7 second to press Ctrl+C for
+saving old filesystem.
+.TP
+.B \-\-
+The end of not necessarily options.
+.TP
+.I device
+Device (or image) for FS converting.
+.TP
+.I source_fs
+Source filesystem. By default the script would try mount the device
+without option -t to know source filesystem,
+or will know filesystem from `mount`, if the device was mounted already.
+.TP
+.I destination_fs
+Destination filesystem. At the moment supported ext2/ext3/xfs/any.
+If specified anyfs destination filesystem, the script creates inode table
+and may be reblock it. The really filesystem would not create on the device
+in this case.
+
+.SH "COMPARES WITH OTHER UTILITIES"
+In comparison with other closed-source utilities anyconvertfs has
+the next advantages:
+
++1. Open source. You know what it makes for sure.
+
++2. You know what to do, if anything goes not the way. In any case when you
+apply anyfs-tools there is external inode table file. So with anyfs driver
+you can read files even if fiesystem was damaged. And also there is anysurrect.
+
++3. Converting from ISO9660 :-). Indeed it is rather side effect, but
+anyconvertfs would not think for along time if you give 
+to it ISO-image as source filesystem.
+
+Disadvantages in comparison with other closed-source utilities:
+
+-1. While short list of destination filesystems.
+
+-2. Maybe speed. So as there is one method for all conversions,
+we cannot to use some similars in filesystems structures.
+
+.br
+
+Advantages in comparison with open-source convertfs
+(http://tzukanov.narod.ru/convertfs/):
+
++1. More long source filesystems. convertfs in spite of the cool idea
+has one essential disadvantage: source filesystem driver cannot 
+be read-only, it must be read-write(!), what is more it must support
+sparse-files. So convertfs cannot convert for example from vfat.
+
++2. Speed. In comparison with convertfs anyconvertfs must be more
+quickly (in times), so as it's not need in copying all filesystem tree.
+
++3. Documentation. convertfs documentation leaves much to be desired.
+
+Besides I conduct one simple test (converting 607 Mb image),
+and discover that convertfs damaged two files. I e-mail bug-report to
+convertfs author, but he doesn't reply.
+
+Disadvantages in comparison open-source convertfs:
+
+-1. While short list of destination filesystems.
+
+-2. convertfs is very compact!
+
+?3. anyfs-tools idea more simple and obvious.
+
+.br
+
+Advantages in comparison with always available cp && mkfs && cp:
+
++1. Size of extra using space. User rarely have space to simply
+copy all files from partition..
+
++2. Speed. cp && mkfs && cp -- is more slow than even convertfs -- \
+double full copying!
+
+Disadvantages in comparison with always available cp && mkfs && cp:
+
+-1. While short list of destination filesystems.
+
+-2. cp && mkfs && cp doesn't demand filesystem ioctl FIBMAP support. 
+Enough to have read possibility!
+
+-3. cp && mkfs && cp safety is infinite.. If only not damaged
+intermediate disk.
+
+.SH "PLANS"
+Base development plans of the utility is destination filesystems list expansion.
+
+Most likely the next will JFS building.
+
+.SH "USAGE EXAMPLES"
+For converting /dev/hda1 to xfs print
+.br
+# anyconvertfs /dev/hda1 xfs
+
+For converting /path/image image to ext3fs:
+.br
+# anyconvertfs -f /path/image ext3
+
+Converting /dev/sda1 to ext2fs with 2048 blocksize:
+.br
+# anyconvertfs --blocksize 2048 /dev/sda1 ext2
+
+Converting /dev/hdb2 to xfs with "White label" label:
+.br
+# anyconvertfs --label "White label" /dev/hdb2 xfs
+
+.SH "AUTHOR"
+Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+
+.SH "BUG REPORTS"
+Messages about any problem with using
+.B anyfs-tools
+package send to
+undefer@gmail.com
+
+.SH "AVAILABILITY"
+You can obtain the last version of package at
+http://anyfs-tools.sourceforge.net
+
+.SH "SEE ALSO"
+
+.BR anyfs-tools(8),
+.BR build_it(8),
+.BR reblock(8),
+.BR build_e2fs(8),
+.BR build_xfs(8),
+.BR anyfs(8)

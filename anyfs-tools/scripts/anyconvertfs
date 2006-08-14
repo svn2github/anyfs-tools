@@ -1,0 +1,811 @@
+#!/bin/bash
+
+# This script is part of anyfs-tools (anyfs-tools.sf.net)
+# Written by Krivchenkov Nikolaj aka unDEFER <undefer@gmail.com>
+# License GPL
+
+SCRIPT="anyconvertfs"
+VERSION="v0.84.5"
+if [ "${0:0:1}" != '/' ]; then F0=$PWD/$0; else F0=$0; fi
+export TEXTDOMAIN="anyfs-tools"
+export TEXTDOMAINDIR="${F0%%$SCRIPT}../share/locale"
+
+( which "gettext" >/dev/null 2>&1 ) && GT="gettext " || GT="echo "
+
+export PATH="$PATH:/usr/local/sbin:/usr/sbin:/sbin:."
+
+PRINT()
+{
+	STRING="$1"
+	STRING="${STRING//\{DEVICE\}/${BOLD}\"$DEVICE\"${CLEAR}}"
+	STRING="${STRING//\{MOUNTPOINT\}/${BOLD}\"$MOUNTPOINT\"${CLEAR}}"
+	STRING="${STRING//\{MOUNTEDIT\}/${BOLD}\"$MOUNTEDIT\"${CLEAR}}"
+	STRING="${STRING//\{INODETABLE\}/${BOLD}\"$INODETABLE\"${CLEAR}}"
+	STRING="${STRING//\{MOUNTEDITFILE\}/${BOLD}\"$MOUNTEDITFILE\"${CLEAR}}"
+	STRING="${STRING//\{INODETABLEFILE\}/${BOLD}\"$INODETABLEFILE\"${CLEAR}}"
+	STRING="${STRING//\{FROMFS\}/${BOLD}$FROMFS${CLEAR}}"
+	STRING="${STRING//\{TOFS\}/${BOLD}$TOFS${CLEAR}}"
+	STRING="${STRING//\{MOUNTEDFS\}/${BOLD}\"$MOUNTEDFS\"${CLEAR}}"
+	STRING="${STRING//\{INODETABLE\}/${BOLD}\"$INODETABLE\"${CLEAR}}"
+	STRING="${STRING//\{UTIL\}/${BOLD}\"$UTIL\"${CLEAR}}"
+	STRING="${STRING//\{TMPDIR\}/${BOLD}\"$TMPDIR\"${CLEAR}}"
+	STRING="${STRING//\{BUILD_FS\}/${BOLD}\"$BUILD_FS\"${CLEAR}}"
+	STRING="${STRING//\{LABEL\}/${BOLD}\"$LABEL\"${CLEAR}}"
+
+	STRING="${STRING//\{MESG\}/$MESG}"
+
+	STRING="${STRING//\{MOUNTOPTIONS\}/${UNDER}\"$MOUNTOPTIONS\"${CLEAR}}"
+	STRING="${STRING//\{ANYMOUNTPOINT\}/${UNDER}\"$ANYMOUNTPOINT\"${CLEAR}}"
+
+	STRING="${STRING//\{FIRSTDESTROYSTEP\}/${UNDER}$FIRSTDESTROYSTEP${CLEAR}}"
+	STRING="${STRING//\{SECS\}/${UNDER}$SECS${CLEAR}}"
+	STRING="${STRING//\{OLDBLOCKSIZE\}/${UNDER}$OLDBLOCKSIZE${CLEAR}}"
+	STRING="${STRING//\{BLOCKSIZE\}/${UNDER}$BLOCKSIZE${CLEAR}}"
+	STRING="${STRING//\{MINBLOCKSIZE\}/${UNDER}$MINBLOCKSIZE${CLEAR}}"
+	STRING="${STRING//\{MAXBLOCKSIZE\}/${UNDER}$MAXBLOCKSIZE${CLEAR}}"
+
+	STRING="${STRING//\{MAXLABELLEN\}/${UNDER}$MAXLABELLEN${CLEAR}}"
+
+       	STRING="${STRING//\{RED\}/${RED}}"
+       	STRING="${STRING//\{GREEN\}/${GREEN}}"
+       	STRING="${STRING//\{CYAN\}/${CYAN}}"
+       	STRING="${STRING//\{BOLD\}/${BOLD}}"
+       	STRING="${STRING//\{UNDER\}/${UNDER}}"
+	STRING="${STRING//\{CLEAR\}/${CLEAR}}"
+
+	echo -e "$STRING"
+}
+
+checkutilities ()
+{
+    MESG="$1"
+    shift
+    while [ $# != 0  ]; do
+	UTIL="$1"
+        shift
+        if ( ! which "${UTIL}" >/dev/null 2>&1 ); then
+            PRINT "`$GT"Cannot find {UTIL}. {MESG}"`"
+            return 1
+        fi
+    done
+}
+
+checkutilities "`$GT"It is necessary to work."`" mount modprobe awk df build_it stat head reblock || exit 1
+
+usage ()
+{
+    echo -e "${BOLD}$SCRIPT ${WHITE}$VERSION${CLEAR}"
+    echo -e "${BOLD}${BROWN}`$GT"usage:"`${CLEAR}""\n$ ${BOLD}$SCRIPT [--tmpdir${CLEAR} ${UNDER}directory${CLEAR}${BOLD}] [--blocksize${CLEAR} ${UNDER}blocksize${CLEAR}${BOLD}] [-f] [--dry]"
+    echo -e "\t[--inodetable${CLEAR} ${UNDER}inodetable${CLEAR}${BOLD}] [--color|--no-color] [--label${CLEAR} ${UNDER}label${CLEAR}${BOLD}]"
+    echo -e "\t[--dontstop] [--pause${CLEAR} ${UNDER}seconds${CLEAR}${BOLD}] [--] ${CLEAR}${UNDER}device${CLEAR} ${BOLD}[${CLEAR}${UNDER}source_fs${CLEAR}${BOLD}] "
+    echo -e "\t ${CLEAR}${UNDER}destination_fs${CLEAR}"
+
+    exit 1
+}
+
+COLOR="N"
+[[ "`stat -c "%T" -f /proc/$$/fd/1`" == "devpts" ]] && COLOR="Y"
+
+FAST="DEFAULT"
+HEADLEN="DEFAULT"
+BLOCKSIZE="AUTO"
+FORCE="N"
+TMPDIR="/tmp"
+DRYRUN="N"
+LABEL="AUTO"
+DONTSTOP="N"
+PAUSE=7
+
+END="0"
+while [[ "$END" == '0' ]]; do
+	case "$1" in
+		'--color')
+			COLOR="Y"
+			shift 1
+			;;
+		'--no-color')
+			COLOR="N"
+			shift 1
+			;;
+		'--tmpdir')
+			TMPDIR="$2"
+			shift 2
+			;;
+		'--blocksize')
+			BLOCKSIZE="$2"
+			shift 2
+			;;
+		'-f')
+			FORCE="Y"
+			shift 1
+			;;
+		'--dry')
+			DRYRUN="Y"
+			shift 1
+			;;
+		'--inodetable')
+			INODETABLE="$2"
+			shift 2
+			;;
+		'--label')
+			LABEL="$2"
+			shift 2
+			;;
+		'--dontstop')
+			DONTSTOP="Y"
+			shift 1
+			;;
+		'--pause')
+			PAUSE="$2"
+			shift 2
+			;;
+		'--')
+			END=1
+			shift 1
+			;;
+		*)
+			END=1
+	esac
+done
+
+[[ "$COLOR" == "Y" ]] &&
+{
+	CLEAR="\x1B[0m"
+	BOLD="\x1B[1m"
+	UNDER="\x1B[4m"
+
+	RED="\x1B[31m"
+	GREEN="\x1B[32m"
+	BROWN="\x1B[33m"
+	BLUE="\x1B[34m"
+	MAGENTA="\x1B[35m"
+	CYAN="\x1B[36m"
+	WHITE="\x1B[37m"
+}
+
+ENOSPC=28
+
+[ -f "/usr/include/errno.h" ] &&
+{
+	( which "cpp" >/dev/null 2>&1 ) &&
+		eval `cpp -dM /usr/include/errno.h | awk -- '($2 == "ENOSPC") {print $2 "=" $3; }'`
+}
+
+PAGESIZE=4096
+[ -f "/usr/include/asm/page.h" ] &&
+{
+	( which "cpp" >/dev/null 2>&1 ) &&
+	{
+		eval `cpp -dM /usr/include/asm/page.h | awk -- '($2 == "PAGE_SHIFT") {print $2 "=" $3; }'`
+		[ $PAGE_SHIFT ] &&
+		{
+			PAGESIZE=$[ 1 << $PAGE_SHIFT ]
+		}
+	}
+}
+
+[ -z "$4" ] || usage
+[ -z "$2" ] && usage
+
+DEVICE=$1
+[ -z "$3" ] &&
+{
+	FROMFS="AUTO"
+	TOFS="$2"
+} ||
+{
+	FROMFS="$2"
+	TOFS="$3"
+}
+
+[ -b "$DEVICE" ] || [[ "$FORCE" == "Y" ]]  ||
+{
+	PRINT "`$GT"{DEVICE} is not block device. Use {UNDER}'-f'{CLEAR} option."`"
+	exit 1
+}
+
+BUILD_FS="build_$TOFS"
+BUILD_FS_OPS="-v"
+BUILD_FS_NOOPERATION="-n"
+
+AUTOBLOCKSIZE="4096"
+MINBLOCKSIZE="512"
+MAXBLOCKSIZE="$PAGESIZE"
+
+MAXLABELLEN="16"
+LABELOPT="-L"
+
+[[ "$BLOCKSIZE" != "AUTO" ]] &&
+{
+	BLOCKLOG=9
+	while (( $[1<<$BLOCKLOG] < $BLOCKSIZE )); do
+		BLOCKLOG=$[$BLOCKLOG+1]
+	done
+
+	(( $[1<<$BLOCKLOG] == $BLOCKSIZE )) ||
+	{
+		PRINT "`$GT"{BLOCKSIZE} is bad blocksize. It must be power of 2 and not less than 512."`"
+		exit 1
+	}
+
+	(( $BLOCKSIZE < $MINBLOCKSIZE )) &&
+	{
+		PRINT "`$GT"{BLOCKSIZE} is too small. Minimal blocksize in Linux is {MINBLOCKSIZE}"`"
+		exit 1
+	}
+
+	(( $BLOCKSIZE > $MAXBLOCKSIZE )) &&
+	{
+		PRINT "`$GT"{BLOCKSIZE} is too big. Maximal blocksize in Linux is {MAXBLOCKSIZE}"`"
+		exit 1
+	}
+}
+
+case "$TOFS" in
+	'ext2')
+		BUILD_FS="build_e2fs"
+
+		MINBLOCKSIZE="1024"
+		[ -b "$DEVICE" ] || BUILD_FS_OPS="$BUILD_FS_OPS -F"
+		;;
+	'ext3')
+		BUILD_FS="build_e2fs"
+		BUILD_FS_OPS="-v -j"
+
+		MINBLOCKSIZE="1024"
+		[ -b "$DEVICE" ] || BUILD_FS_OPS="$BUILD_FS_OPS -F"
+		;;
+	'xfs')
+		BUILD_FS_NOOPERATION="-N"
+		BUILD_FS_OPS="$BUILD_FS_OPS -f"
+		MAXLABELLEN="12"
+		;;
+	'any')
+		BUILD_FS="build_it"
+		LABELOPT=""
+		MAXLABELLEN="0"
+		;;
+	*)
+		PRINT "`$GT""\
+"Not supported destination filesystem: {TOFS}
+I can convert to ext2/ext3/xfs/any only"`"
+		exit 1
+		;;
+esac
+
+[ -z $LABELOPT ] && [[ "$LABEL" != "AUTO" ]] &&
+{
+	PRINT "`$GT"Sorry {TOFS} doesn't support labels."`"
+	exit 1
+}
+
+[[ "$BLOCKSIZE" == "AUTO" ]] && BLOCKSIZE=$AUTOBLOCKSIZE
+
+(( $BLOCKSIZE < $MINBLOCKSIZE )) &&
+{
+	PRINT "`$GT"{BLOCKSIZE} is too small for the filesystem. Minimal blocksize for {TOFS} is {MINBLOCKSIZE}."`"
+	exit 1
+}
+
+(( $BLOCKSIZE > $MAXBLOCKSIZE )) &&
+{
+	PRINT "`$GT"{BLOCKSIZE} is too big for the filesystem. Maximal blocksize for {TOFS} is {MAXBLOCKSIZE}."`"
+	exit 1
+}
+
+checkutilities "`$GT"It is neccessary for converting to"` $TOFS" $BUILD_FS || exit 1
+
+[[ "$UID" != "0" ]] &&
+{
+    echo -e `$GT""\
+"Sorry, you are not root.
+But I would use mount."`
+    exit 1
+}
+
+[ -d "$TMPDIR" ] ||
+{
+	PRINT "`$GT"{TMPDIR} is not directory"`"
+	exit 1
+}
+
+TMPDIR="$TMPDIR/$SCRIPT$$"
+mkdir $TMPDIR
+
+[ -d "$TMPDIR" ] && [ -w "$TMPDIR" ] ||
+{
+	PRINT "`$GT"Access denied to {TMPDIR}."`"
+	exit 1
+}
+
+TMPDIRDEVICE="`df "$TMPDIR" | awk -- '(NR==2) {print $1}'`"
+
+[[ "$TMPDIRDEVICE" == "$DEVICE" ]] &&
+{
+	echo -e "`$GT"Temporary directory cannot be at convert device"`"
+	exit 1
+}
+
+ANYMOUNTPOINT="$TMPDIR/anymountpoint"
+
+MOUNTPOINT="$TMPDIR/mountpoint"
+WASMOUNTED="N"
+
+mount | grep -q "$DEVICE" && WASMOUNTED="Y"
+
+if [[ "$WASMOUNTED" == "Y" ]]; then
+	MOUNTPOINT="`mount | awk -- '($1 == "'"$DEVICE"'") {print $3; exit}'`"
+	MOUNTOPTIONS="`mount | awk -- '($1 == "'"$DEVICE"'") {sub (/^\(/, "", $6); sub (/\)$/, "", $6); print $6}'`"
+	MOUNTEDFS="`mount | awk -- '($1 == "'"$DEVICE"'") {print $5; exit}'`"
+
+	[[ "$MOUNTEDFS" != "any" ]] && [ "$INODETABLE" ] &&
+        {
+		PRINT "`$GT""\
+"{INODETABLE} inodetable was specified. But filesystem mounted 
+as {MOUNTEDFS}, not {UNDER}anyfs{CLEAR}"`"
+		exit 1
+	}	
+
+	[[ "$MOUNTEDFS" == "any" ]] &&
+	{
+		MOUNTEDIT="`echo $MOUNTOPTIONS | awk -- '{sub(/.+,inodetable=/, ""); sub(/,.*$/, ""); print}'`"
+		MOUNTOPTIONS="`echo $MOUNTOPTIONS | awk -- '{sub(/inodetable='"${MOUNTEDIT//\//\\\/}"'/, ""); sub(/,,/, ","); sub(/,$/, ""); sub(/^,/, ""); print}'`"
+		[[ "${MOUNTEDIT:0:1}" == "/" ]] ||
+		{
+			[ -z "$INODETABLE" ] &&
+			{
+				PRINT "`$GT""\
+"anyfs mounted with specified relative path to inodetable: {MOUNTEDIT}
+Please use {UNDER}--inodetable{CLEAR} option to specify inodetable"`"
+				exit 1
+			} ||
+			{
+				MOUNTEDITFILE=${MOUNTEDIT##*/}
+				INODETABLEFILE=${INODETABLE##*/}
+				[[ "$MOUNTEDITFILE" == "$INODETABLEFILE" ]] ||
+				{
+					PRINT "`$GT""\
+"In options of mounted anyfs specified {MOUNTEDITFILE} inodetable file
+And you specify {INODETABLEFILE}. I don't think that it is the same file."`"
+					exit 1
+				}
+			}
+		}
+
+		[[ "${MOUNTEDIT:0:1}" == "/" ]] && [ "$INODETABLE" ] &&
+		{
+			IDENTMOUNTEDIT="`stat -c "%D %i" $MOUNTEDIT`"
+			IDENTINODETABLE="`stat -c "%D %i" $INODETABLE`"
+
+			[[ "$IDENTMOUNTEDIT" == "$IDENTINODETABLE" ]] ||
+			{
+				PRINT "`$GT""\
+"anyfs was mounted with {MOUNTEDIT} inode table
+But you specify {INODETABLE}"`"
+				exit 1
+			}
+		}
+
+		INODETABLE="$MOUNTEDIT"
+	}
+
+	[ "$INODETABLE" ] && MOUNTOPTIONS="$MOUNTOPTIONS,inodetable=$INODETABLE"
+
+	[[ "$FROMFS" == "AUTO" ]] &&
+	{
+		FROMFS="$MOUNTEDFS"
+	} ||
+	{
+		[[ "$FROMFS" == "$MOUNTEDFS" ]] &&
+		{
+			PRINT "`$GT""\
+"{FROMFS} source filesystem was specified but {DEVICE}
+mounted as {MOUNTEDFS} filesystem"`"
+			exit 1
+		}
+	}
+
+	[[ "$FROMFS" == "any" ]] &&
+	{
+		umount "$MOUNTPOINT" ||
+		{
+			echo -e `$GT"Error while unmount anyfs"`
+			exit 1
+		}
+	} ||
+	{
+		mount -o remount,"$MOUNTOPTIONS",ro "$MOUNTPOINT" ||
+		{
+			echo -e `$GT"Error while remount device in read-only mode"`
+			exit 1
+		}
+	}
+else
+	mkdir "$MOUNTPOINT"
+
+	[[ "$FROMFS" == "any" ]] && [ -z "$INODETABLE" ] &&
+	{
+		PRINT "`$GT"Can't mount anyfs without inodetable. Use {BOLD}--inodetable{CLEAR} option"`"
+		exit 1
+	}
+
+	[ "$INODETABLE" ] && 
+	{
+		[ -f "$INODETABLE" ] ||
+		{
+			PRINT "`$GT"{INODETABLE} is not regular file"`"
+			exit 1
+		}
+
+		[[ "$FROMFS" == "AUTO" ]] &&
+		FROMFS="any"
+
+		[[ "$FROMFS" == "any" ]] ||
+		{
+			PRINT "`$GT""\
+"{INODETABLE} inodetable and {FROMFS} source filesystem was specified.
+But {UNDER}--inodetable{CLEAR} is option for converting from {UNDER}anyfs{CLEAR}"`"
+			exit 1
+		}
+	}
+
+	TYPEFSOPS=""
+	[[ "$FROMFS" == "AUTO" ]] || TYPEFSOPS="-t $FROMFS"
+
+	MOUNTOPTIONS="rw"
+	[ -b "$DEVICE" ] || MOUNTOPTIONS="rw,loop"
+	[ "$INODETABLE" ] && MOUNTOPTIONS="$MOUNTOPTIONS,inodetable=$INODETABLE"
+
+	[[ "$FROMFS" == "any" ]] ||
+	mount $TYPEFSOPS -o "$MOUNTOPTIONS",ro "$DEVICE" "$MOUNTPOINT" ||
+	{
+		echo -e `$GT"Error while mount device in read-only mode"`
+		exit 1
+	}
+
+	[[ "$FROMFS" ==  "AUTO" ]] &&
+		FROMFS="`mount | awk -- '($1 == "'"$DEVICE"'") {print $5}'`"
+fi
+
+[ -z "$INODETABLE" ] && INODETABLE="$TMPDIR/inodetable"
+
+[[ "$LABEL" == "AUTO" ]] &&
+{
+	LABEL="`mount | awk -- '($1 == "'"$DEVICE"'") {print $7; exit}'`"
+	LABEL="${LABEL#[}"
+	LABEL="${LABEL%]}"
+
+	[ -z "$LABEL" ] &&
+	{
+		case "$FROMFS" in
+			'ext2'|'ext3')
+			( which "e2label" >/dev/null 2>&1 ) &&
+			    LABEL="`e2label "$DEVICE"`"
+			;;
+			'xfs')
+			( which "xfs_db" >/dev/null 2>&1 ) &&
+			    LABEL="`xfs_db -fc "label" "$DEVICE" | awk -- '{sub(/^label = \"/, ""); sub(/\"$/, ""); print; }'`"
+			;;
+			'iso9660')
+			( which "isoinfo" >/dev/null 2>&1 ) &&
+			    LABEL="`isoinfo -d -i "$DEVICE" | awk -- '/^Volume id: / {sub(/^Volume id: /, ""); print; exit;}'`"
+			;;
+			'jfs')
+			( which "jfs_tune" >/dev/null 2>&1 ) &&
+			    LABEL="`jfs_tune -l "$DEVICE" | awk -- '/^Volume label:/ {sub(/^Volume label:[ \t]*'\''/, ""); sub(/'\''$/, ""); print; exit;}'`"
+			;;
+			'reiserfs')
+			( which "debugreiserfs" >/dev/null 2>&1 ) &&
+			    LABEL="`debugreiserfs "$DEVICE" 2>/dev/null | awk -- '/^LABEL:/ {sub(/^LABEL: /, ""); print; exit;}'`"
+			;;
+		esac
+	}
+}
+
+(( ${#LABEL} > $MAXLABELLEN )) &&
+{
+	[ $LABELOPT ] && PRINT "`$GT"{LABEL} label would be truncated to {MAXLABELLEN} length."`"
+	LABEL="${LABEL:0:$MAXLABELLEN}"
+}
+
+LABEL="${LABEL// /_}"
+[ -z "$LABEL" ] && LABELOPT=""
+
+HANDLER()
+{
+	[ -z "$1" ] || echo -e "$1"
+	echo -e "${BOLD}${RED}`$GT"Exit"`${CLEAR}"
+
+	if [[ "$WASMOUNTED" == "Y" ]]; then
+		if [[ "$FROMFS" == "any" ]]; then
+			mount -t any -o "$MOUNTOPTIONS" "$DEVICE" "$MOUNTPOINT"
+		else
+			mount -o remount,"$MOUNTOPTIONS" "$MOUNTPOINT"
+		fi
+	else
+		umount "$MOUNTPOINT"
+		rmdir "$MOUNTPOINT"
+	fi
+
+	[[ "$RMINODETABLE" == "Y" ]] && rm -f "$INODETABLE" ||
+		PRINT "`$GT"Inode table was saved. See {INODETABLE}."`"
+
+	rmdir "$TMPDIR"
+
+	exit 1
+}
+
+[[ "$FROMFS" != "any" ]] && fuser -m "$MOUNTPOINT" >/dev/null &&
+{
+	echo -e "`$GT"Device is busy."`"
+	HANDLER
+}
+
+OLDBLOCKSIZE=`stat -c "%s" -f "$MOUNTPOINT"`
+[[ "$FROMFS" == "any" ]] && 
+{
+	OLDBLOCKSIZE=$[16#`head -n 1 "$INODETABLE" | awk -- '{print $2}'`
+									]
+}
+
+FIRSTDESTROYSTEP=5
+[[ "$TOFS" == "any" ]]  && FIRSTDESTROYSTEP=`$GT"Never"`
+(( $BLOCKSIZE > $OLDBLOCKSIZE )) && FIRSTDESTROYSTEP=3
+[[ "$FROMFS" == "any" ]] && FIRSTDESTROYSTEP=`$GT"Never"`
+
+echo
+PRINT "`$GT"Converting of {DEVICE} from {FROMFS} to {TOFS}
+New filesystem label: {LABEL}
+Old filesystem blocksize: {OLDBLOCKSIZE}
+Blocksize for new filesystem: {BLOCKSIZE}
+Mount point: {MOUNTPOINT}
+Mount options: {MOUNTOPTIONS}
+Temporary directory: {TMPDIR}
+Inode table: {INODETABLE}
+First step which destroy old filesystem: {FIRSTDESTROYSTEP}"`"
+
+echo
+
+RMINODETABLE="Y"
+[[ "$FROMFS" == "any" ]] && RMINODETABLE="N"
+
+[[ "$DRYRUN" == "Y" ]] && HANDLER "`$GT"Dry run {BOLD}{GREEN}successful{CLEAR}"`"
+
+trap HANDLER 2
+
+SLEEP()
+{
+	SECS="$1"
+	(( "$SECS" <= 0 )) && return
+	PRINT "`$GT"Sleep {SECS} seconds..."` $2"
+	for i in `seq $SECS -1 1`; do
+		echo -n "$i..."; sleep 1
+	done
+	echo "0...";
+}
+
+[[ "$DONTSTOP" == "N" ]] &&
+{
+	PRINT "`$GT"Please, {BOLD}attentively{CLEAR} check information above,
+and then press {UNDER}Enter{CLEAR}"`"
+	read
+}
+
+echo
+PRINT "`$GT"{BOLD}Step{CLEAR} {UNDER}1{CLEAR}. {BOLD}{CYAN}Building inode table{CLEAR} (with {BOLD}build_it{CLEAR})."`"
+
+if [[ "$FROMFS" == "any" ]]; then
+	echo -e "`$GT"O.K. anyfs already has inode table"`"
+	echo -e "${BOLD}${BROWN}`$GT"Skip"`${CLEAR}"
+else
+	build_it "$MOUNTPOINT" "$INODETABLE" ||
+	{
+		echo -e "`$GT"Error while building inode table"`"
+		HANDLER
+	}
+	echo -e "${BOLD}${GREEN}`$GT"Done"`${CLEAR}"
+fi
+
+[[ "$TOFS" == "any" ]] && [[ "$RMINODETABLE" == "Y" ]] && RMINODETABLE="n"
+
+[[ "$FROMFS" == "any" ]] || umount "$MOUNTPOINT" ||
+{
+	echo -e "`$GT"Error while unmount device"`"
+	HANDLER
+}
+
+HANDLER()
+{
+	[ -z "$1" ] || echo "$1"
+	echo -e "${BOLD}${RED}`$GT"Exit"`${CLEAR}"
+
+	mount | grep -q "$MOUNTPOINT" && umount "$MOUNTPOINT"
+
+	if [[ "$RMINODETABLE" == "Y" ]] && [[ "$WASMOUNTED" == "Y" ]]; then
+		mount -t "$FROMFS" -o "$MOUNTOPTIONS" "$DEVICE" "$MOUNTPOINT"
+	fi
+
+	if [[ "$FROMFS" == "any" ]] && [[ "$WASMOUNTED" == "Y" ]]; then
+		mount -t any -o "$MOUNTOPTIONS" "$DEVICE" "$MOUNTPOINT"
+	fi
+
+	if [[ "$WASMOUNTED" == "N" ]]; then
+		rmdir "$MOUNTPOINT"
+	fi
+
+	[[ "$RMINODETABLE" == "Y" ]] && rm -f "$INODETABLE" ||
+		PRINT "`$GT"Inode table was saved. See {INODETABLE}."`"
+
+	rmdir "$TMPDIR"
+
+	exit 1
+}
+
+echo
+PRINT "`$GT"{BOLD}Step{CLEAR} {UNDER}2{CLEAR}. {BOLD}{CYAN}Noops (check if enough space) reblock anyfs{CLEAR} (with {BOLD}reblock{CLEAR})."`"
+
+FREESPACE()
+{
+	UTIL="$1"
+	PRINT "`$GT""\
+"{UTIL} returned {BOLD}{RED}Not Enough Space{CLEAR}
+O.K. I try to be helpful and now.."`"
+
+	echo -e "`$GT"Mounting anyfs..."`"
+
+	MOUNTOPTIONS="rw"
+	[ -b "$DEVICE" ] || MOUNTOPTIONS="rw,loop"
+	mount -t any -o "$MOUNTOPTIONS",inodetable="$INODETABLE" "$DEVICE" "$MOUNTPOINT" ||
+	{
+		echo -e "`$GT"Error while mount anyfs filesystem"`"
+		HANDLER
+	}
+
+	echo
+	PRINT "`$GT""\
+"So, device was mounted as anyfs to {MOUNTPOINT}
+At anyfs you can remove and move files and directories,
+create hard links, symbolic links, special files and directories.
+You CANNOT create or copy regular files from other filesystems."`"
+	echo
+	PRINT "`$GT""\
+"{BOLD}Now I would run 'bash' at this filesystem.
+Please, remove not needed files, or move its to other filesystems.
+So clear some space for system information of new FS.
+When it would done, print 'exit'. And I try run {UTIL}{BOLD} again.{CLEAR}"`"
+	PRINT "`$GT""\
+"{UNDER}Do NOT close the console.
+Do NOT unmount the anyfs filesystem.{CLEAR}"`"
+	echo
+
+	pushd "$MOUNTPOINT" >/dev/null
+	bash
+	popd >/dev/null
+
+	echo -e "`$GT"Unmounting anyfs..."`"
+	umount "$MOUNTPOINT" ||
+	{
+		echo -e "`$GT"Error while unmount anyfs filesystem"`"
+		HANDLER
+	}
+	echo -e "${BOLD}${BROWN}`$GT"Retry"`${CLEAR}"
+}
+
+NOWBLOCKSIZE=$[16#`head -n 1 "$INODETABLE" | awk -- '{print $2}'`
+								 ]
+
+if (( $BLOCKSIZE == $NOWBLOCKSIZE )); then
+	PRINT "`$GT"Good. Filesystem already has {BLOCKSIZE} blocksize"`"
+	echo -e "${BOLD}${BROWN}`$GT"Skip"`${CLEAR}"
+else
+	while true; do
+		reblock -n "$INODETABLE" "$DEVICE" "$BLOCKSIZE" ||
+		{
+			RETVAL=$?
+			(( $RETVAL == $ENOSPC )) &&
+			{
+				FREESPACE "reblock"
+				continue
+			}
+
+			echo
+			echo -e "`$GT"Error while reblock (no operation)"`"
+			HANDLER
+		}
+		break;
+	done
+	echo -e "${BOLD}${GREEN}`$GT"Done"`${CLEAR}"
+fi
+
+echo
+PRINT "`$GT"{BOLD}Step{CLEAR} {UNDER}3{CLEAR}. {BOLD}{CYAN}Reblock anyfs{CLEAR} (with {BOLD}reblock{CLEAR})."`"
+
+if (( $BLOCKSIZE == $NOWBLOCKSIZE )); then
+	echo -e "${BOLD}${BROWN}`$GT"Skip"`${CLEAR}"
+else
+	(( $BLOCKSIZE > $NOWBLOCKSIZE )) &&
+	{
+		[[ "$RMINODETABLE" == "N" ]] ||
+			SLEEP "$PAUSE" "`$GT""\
+"It's your {BOLD}last chance{CLEAR} to save the old filesystem.
+Press {UNDER}Ctrl+C{CLEAR} to {BOLD}cancel{CLEAR} converting."`"
+
+		RMINODETABLE="N"
+	}
+
+	reblock "$INODETABLE" "$DEVICE" "$BLOCKSIZE" ||
+	{
+		echo
+		echo -e "`$GT"Error while reblock"`"
+		HANDLER
+	}
+	echo -e "${BOLD}${GREEN}`$GT"Done"`${CLEAR}"
+fi
+
+echo
+PRINT "`$GT"{BOLD}Step{CLEAR} {UNDER}4{CLEAR}. {BOLD}{CYAN}Noops (check if enough space) build new filesystem{CLEAR} (with {BUILD_FS})."`"
+
+if [[ "$TOFS" == "any" ]]; then
+	echo -e "`$GT"O.K. Inode table already built"`"
+	echo -e "${BOLD}${BROWN}`$GT"Skip"`${CLEAR}"
+else
+	while true; do
+		$BUILD_FS $LABELOPT $LABEL $BUILD_FS_OPS $BUILD_FS_NOOPERATION "$INODETABLE" "$DEVICE" ||
+		{
+			RETVAL=$?
+			(( $RETVAL == $ENOSPC )) &&
+			{
+				FREESPACE "$BUILD_FS"
+				continue
+			}
+
+			echo
+			echo -e "`$GT"Error while build new fs (no operation)"`"
+			HANDLER
+		}
+		break;
+	done
+	echo -e "${BOLD}${GREEN}`$GT"Done"`${CLEAR}"
+fi
+
+echo
+PRINT "`$GT"{BOLD}Step{CLEAR} {UNDER}5{CLEAR}. {BOLD}{CYAN}Build new filesystem{CLEAR} (with {BUILD_FS})."`"
+
+[[ "$RMINODETABLE" == "Y" ]] &&
+	SLEEP "$PAUSE" "`$GT""\
+"It's your {BOLD}last chance{CLEAR} to save the old filesystem.
+Press {UNDER}Ctrl+C{CLEAR} to {BOLD}cancel{CLEAR} converting."`"
+
+RMINODETABLE="N"
+
+if [[ "$TOFS" == "any" ]]; then
+	echo -e "${BOLD}${BROWN}`$GT"Skip"`${CLEAR}"
+else
+	$BUILD_FS $LABELOPT $LABEL $BUILD_FS_OPS "$INODETABLE" "$DEVICE" ||
+	{
+		echo
+		echo -e "`$GT"Error while build new fs"`"
+		HANDLER
+	}
+	echo -e "${BOLD}${GREEN}`$GT"Done"`${CLEAR}"
+fi
+
+if [[ "$WASMOUNTED" == "Y" ]]; then
+	MOUNTOPTIONS="rw"
+	[ -b "$DEVICE" ] || MOUNTOPTIONS="rw,loop"
+	[[ "$TOFS" == "any" ]] && MOUNTOPTIONS="$MOUNTOPTIONS,inodetable=$INODETABLE"
+	mount -t "$TOFS" -o "$MOUNTOPTIONS" "$DEVICE" "$MOUNTPOINT"
+fi
+
+[[ "$RMINODETABLE" == "Y" ]] && rm -f "$INODETABLE" ||
+PRINT "`$GT"Inode table was saved. See {INODETABLE}."`"
+
+FSATTAB="`cat /etc/fstab | awk -- '( $1 == "'"$DEVICE"'" ) {print $3; exit;}'`"
+[ "$FSATTAB" ] && [[ "$FSATTAB" != "$TOFS" ]] &&
+	PRINT "`$GT"Don't forget change filesystem of the device in {BOLD}/etc/fstab{CLEAR}"`"
+
+[ -d "$TMPDIR" ] && rmdir "$TMPDIR"
+
+echo -e "${BOLD}${GREEN}`$GT"Successful"`${CLEAR}"
+
+exit 0

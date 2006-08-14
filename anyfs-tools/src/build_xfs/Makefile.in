@@ -1,0 +1,38 @@
+CC=gcc
+INSTALL=install -c
+prefix=@prefix@
+DESTDIR=@DESTDIR@
+INSTALLPATH=$(DESTDIR)$(prefix)
+SRCROOT=../..
+INCLUDE=$(SRCROOT)/include
+LIBANYPATH=$(SRCROOT)/libany
+CCFLAGS=-g3 -O3 -Wall -std=gnu99 -I$(INCLUDE) -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 \
+	-DDEBUG -funsigned-char -fno-strict-aliasing @EXT2FS_CFLAGS@ @CFLAGS@
+LDFLAGS=-L$(LIBANYPATH) -L//lib -ldisk -lxfs -luuid -lm -lrt @EXT2FS_LIBS@
+
+OBJ = maxtrres.o build_xfs.o \
+      $(LIBANYPATH)/libany.a
+
+BUILD_XFS=@BUILD_XFS@
+
+all: $(BUILD_XFS)
+
+build_xfs: $(OBJ)
+	$(CC) $(CCFLAGS) -o $@ $(OBJ) $(LDFLAGS)
+
+%.o: %.c
+	$(CC) $(CCFLAGS) -c $<
+
+install: $(BUILD_XFS)
+	if [ -f build_xfs ]; then $(INSTALL) -c build_xfs $(INSTALLPATH)/sbin; fi
+
+uninstall:
+	rm -f $(INSTALLPATH)/sbin/build_xfs
+
+clean:
+	rm -f *.o *~ build_xfs
+
+distclean:      clean
+
+depend:
+	makedepend -- $(CCFLAGS) -- *.[ch] $(INCLUDE)/*.h

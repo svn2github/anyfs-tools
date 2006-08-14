@@ -1,0 +1,141 @@
+.TH anyfs_inode_table 5 "30 Jan 2006" "Version 0.83"
+.SH "NAME"
+anyfs_inode_table \- external inode table for anyfs filesystem
+ used by utilities of anyfs-tools package
+.SH "SYNOPSIS"
+.B anyfs_inode_table
+
+.SH "DESCRIPTION"
+External inode table contains information about file blocks location,
+directory structure and access permissions.
+
+File structure is text-binary.
+I.e. despite the fact that file containing maybe easy viewed with
+plain text editor, its editing produce some trouble so as
+there are strict field size fixation and links -- numbers meaning
+offset in bytes.
+All numbers in this file is hexadecimal.
+
+Look at file structure more detailed.
+File consists of 4 sections with fixed headers:
+
+1) 
+.BR BLOCK_SIZE ,
+then after space there is 32-bit number (eight hex-digits) -- 
+filesystem blocksize and end of line.
+
+2)
+.BR INODES ,
+then after space there is also 32-bit number -- number of inodes
+in filesystem, and end of line
+
+3)
+.BR INODE_TABLE ,
+after that there is end of line and yet 
+.B INODES
+lines describing each inode.
+
+4)
+.BR DATA ,
+end of line and variable number of lines describing directory structure and
+symbolic links.
+
+Inode description line in
+.B INODE_TABLE
+section consists of nine numbers divided with spaces.
+Total the line length -- 72 + end of line (73-th symbol). \
+Meaning of the nine fields is next:
+
+1) 16-bit number (4 digits) -- protection with
+.BR mode_t
+type. The field bits meaning described in
+.BR stat (2).
+
+2) 16-bit number (4 digits) -- user ID of file owner
+.BR UID .
+
+3) 16-bit number (4 digits) -- group ID of file owner
+.BR GID .
+
+4) 64-bit number (16 digits) -- file size.
+
+5) 32-bit number (8 digits) -- time of last access
+.BR atime .
+
+6) 32-bit number (8 digits) -- time of last modification
+.BR mtime .
+
+7) 32-bit number (8 digits) -- time of last status change
+.BR ctime .
+
+8) 16-bit number (4 digits) -- number of hard links.
+
+9) 32-bit number (8 digits) has two possibly meaning:
+.br
+	a) in case of
+regular files, symbolic links and directories, is link to additional
+information for this inode in
+.BR DATA 
+section. The link is offset in bytes from beginning of
+.BR DATA 
+section, i.e. beginning from first line after 
+.BR DATA 
+header.
+.br
+	b) in case of special files of devices, this field keeps device type
+(value of
+.BR dev_t 
+type)
+
+In 
+.B DATA
+section keeps additional information for directories, symbolic links
+and regular files:
+
+a) for directories description begins with fixed header:
+.BR DIR ,
+after that there is 32-bit number (8 digits) -- number of entries
+in the directory
+.RI ( entries ),
+end of line,
+after that also yet
+.I entries
+lines -- description of each entries.
+.br
+Directory entry description consists of 1) file name -- string
+with null-terminating; 2) 32-bit number -- inode number.
+
+b) symbolic link description begins from fixed header
+.BR LNK ,
+after that there are space, value of link -- string with null-terminating.
+
+c) for regular files description begins from fixed header
+.BR REG ,
+after that there are space, 32-bit number (8 digits) -- number of file fragments
+.RI ( frags ),
+end of line, \
+after that yet
+.I frags
+lines with description of each fragments.
+A fragment description consist of 2 32-bit numbers divided with spaces:
+1) device block number, in which locates the first block of file fragment
+(besides zero must be interpreted as fragment of sparse-blocks);
+2) count of blocks in fragment -- all this blocks locates at device
+continuously, following one after one.
+
+.SH "AUTHOR"
+Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+
+.SH "BUG REPORTS"
+Messages about any problem with using
+.B anyfs-tools
+package send to
+undefer@gmail.com
+
+.SH "AVAILABILITY"
+You can obtain the last version of package at
+http://anyfs-tools.sourceforge.net
+
+.SH "SEE ALSO"
+.BR anyfs-tools(8),
+.BR stat(2)

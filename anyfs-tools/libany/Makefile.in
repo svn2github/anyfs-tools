@@ -1,0 +1,29 @@
+CC=gcc
+AR=ar
+ARFLAGS=cr
+INSTALL=install -c
+prefix=@prefix@
+DESTDIR=@DESTDIR@
+INSTALLPATH=$(DESTDIR)$(prefix)
+INCLUDE=../include
+CCFLAGS=-g3 -O3 -Wall -std=gnu99 -I$(INCLUDE) @EXT2FS_CFLAGS@ @CFLAGS@
+
+OBJLIBANY = block_map.o find_next_zero_bit.o new_inode.o \
+	    progress.o release_fssys.o super.o
+
+all: libany.a
+
+libany.a: $(OBJLIBANY)
+	$(AR) $(ARFLAGS) $@ $(OBJLIBANY)
+
+%.o: %.c
+	$(CC) $(CCFLAGS) -c $<
+
+clean:
+	rm -f *.o *~ libany.a
+
+distclean:      clean
+
+depend:
+	makedepend -- $(CCFLAGS) -- *.[ch] ${INCLUDE}/.h
+

@@ -1,0 +1,38 @@
+CC=gcc
+INSTALL=install -c
+prefix=@prefix@
+DESTDIR=@DESTDIR@
+INSTALLPATH=$(DESTDIR)$(prefix)
+SRCROOT=../..
+INCLUDE=$(SRCROOT)/include
+LIBANYPATH=$(SRCROOT)/libany
+CCFLAGS=-g3 -O3 -Wall -std=gnu99 -I$(INCLUDE) @EXT2FS_CFLAGS@ @CFLAGS@
+LDFLAGS=-L$(LIBANYPATH) @EXT2FS_LIBS@
+XFS_UTILS=@XFS_UTILS@
+
+LDFLAGSBDE2FS=-le2p -luuid -lblkid
+OBJBDE2FS = build_e2fs.o util.o \
+	    $(LIBANYPATH)/libany.a
+
+all: build_e2fs
+
+build_e2fs: $(OBJBDE2FS)
+	$(CC) $(CCFLAGS) -o $@ $(OBJBDE2FS) $(LDFLAGS) $(LDFLAGSBDE2FS)
+
+%.o: %.c
+	$(CC) $(CCFLAGS) -c $<
+
+install: build_e2fs
+	$(INSTALL) -d $(INSTALLPATH)/sbin
+	$(INSTALL) build_e2fs $(INSTALLPATH)/sbin
+
+uninstall:
+	rm -f $(INSTALLPATH)/sbin/build_e2fs 
+
+clean:
+	rm -f *.o *~ build_e2fs
+
+distclean:      clean
+
+depend:
+	makedepend -- $(CCFLAGS) -- *.[ch] $(INCLUDE)/*.h

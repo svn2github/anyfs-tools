@@ -1,0 +1,121 @@
+.TH build_it 8 "08 Aug 2006" "Version 0.84.5"
+.SH "NAME"
+build_it \- reads directory entries to obtain information about the
+physical location of files on a block device along with file access permissions
+and saves the data to external inode table file.
+.SH "SYNOPSIS"
+.BI "build_it [\-qvVn] " "directory inode_table"
+
+.SH "DESCRIPTION"
+
+.B build_it 
+uses 
+.B Linux
+OS filesystem drivers to recursively read directory entries in order to obtain 
+information about all of the filesystem inodes.
+The information is then saved to an external inode table. The original block
+device can then be mounted along with the external inode table to recover data
+from the device.
+
+For this utility to work best, the user must have the appropriate filesystem 
+driver (maybe read-only) for 
+.B Linux 
+OS available along with 
+.BR ioctl (2)
+.BR FIBMAP 
+syscall support.
+.B FIBMAP
+call requires 
+.BR root
+permissions.
+
+The 
+.B build_it
+utility has been tested on the following filesystems:
+.BR EXT2FS/EXT3FS , " XFS" , " ReiserFS" , " VFAT" , " JFS" , " ISO9660" , " NTFS" .
+
+The best results were obtained from those systems with full FIBMAP support.
+Currently, the 
+.BR NTFS
+driver does not have any 
+.BR FIBMAP 
+support.
+I requested this support:
+
+http://forum.linux-ntfs.org/viewtopic.php?t=58
+
+If  you  interested in recovering files or data from
+.B NTFS
+filesystems, or converting it to other filesystems using the
+.B anyfs_tools
+toolset, then you may wish to support this request in the above forum.
+
+For
+.BR ReiserFS "(and " Reiser4 )
+.B build_it 
+calls ioctl UNPACK to avoid "tail-packing" and get right files map.
+
+You can use
+.B -n
+option if you don't want any changes at filesystems (it maybe important
+for recovering) but in this case you may get not quite right inode table.
+
+.SH "OPTIONS"
+.TP
+.B \-q
+Don't print any messages.
+.TP
+.B \-v
+Print some additional information.
+.TP
+.B \-V
+Print the version number and exit.
+.TP
+.B \-n
+Don't unpack ReiserFS and Reiser4 files.
+.TP
+.I directory
+Directory, usually root_directory/mount_point of filesystem, 
+.B build_it
+will then make an inode table of this mounted filesystem.
+.TP
+.I inode_table
+File for saving of external inode table.
+
+.SH "USAGE EXAMPLES"
+Building an external inode table of filesystem on device mounted at home
+directory of user:
+.br
+# build_it /home/user /tmp/inode.table
+
+Note: will better if future inode.table file will on other device (or in
+directory which doesn't located in recursively processed tree)
+
+Note: if mount point in this example /home (not /home/user) then built
+external inode table will not include files from other directory than
+/home/user -- it will particular inode table of device.
+
+Note: if there are will other mount points in recursively processed trees
+(e.g. /home/user/mount/point) -- it will not processed (an inode table
+can't keep information from various devices)
+
+.SH "AUTHOR"
+Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+
+Translation correction by Adrian Shaw
+
+.SH "BUG REPORTS"
+Messages about any problem with using
+.B anyfs-tools
+package send to
+undefer@gmail.com
+
+.SH "AVAILABILITY"
+You can obtain the last version of package at
+http://anyfs-tools.sourceforge.net
+
+.SH "SEE ALSO"
+.BR anyfs-tools(8),
+.BR ioctl(2),
+.BR ioctl_list(2) ,
+.BR anyfs_inode_table(5)

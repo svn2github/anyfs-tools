@@ -1,0 +1,109 @@
+* 14.08.06	Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Fix building build_xfs on x86_64 platform
+	- 0.84.5b Release
+
+* 13.08.06	Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Now it depends on xfsprogs 2.8.10
+	- configure now warns about disabled features
+	- 0.84.5a Release
+
+* 07.08.06	Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Added build_xfs. Now you can convert FS to XFS with anyfs-tools.
+	- Added anyconvertfs. It is userfriendly script for automate of
+		converting.
+	- Improved documentation. "USAGE EXAMPLES" section was added to
+		manual pages
+	- anyfs-tools.pot file and russian messages (ru.po) were added.
+	- Many bugfixes in ALL utilities and kernel module.
+	- 0.84.5 Release
+
+* 01.07.06	Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Some bugfix in text_files_descr.c
+	- 0.84.4 Release
+
+* 29.06.06	Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- No any warnings with compiling.
+	- In anyfs-driver all [kv]malloc/[kv]free changed to
+		any_malloc/any_free.
+
+* 25.06.06      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- added GZIP file format support
+	- 0.84.3 Release
+
+* 21.06.06      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Bugfix in archieve_BZIP2_surrect() with trailing byte.
+	- 0.84.2 Release
+
+* 07.05.06      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Adding and using realloc_it() in build_it.
+
+* 20.04.06      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Bugfix in archieve_BZIP2_surrect(). It didn't close pipes.
+
+* 19.04.06      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Bugfix in write_it(). It always returned 0.
+	
+* 07.04.06      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Bugfix in archieve_ZIP_surrect().
+
+* 28.03.06      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- added ISO9660 CD Images file format support
+	- 0.84 Release
+
+* 26.03.06	Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Bugfix in anyfs/inode.c -- anyfs stat returned st_blocks as count of file blocks but not 512-byte blocks.
+
+* 24.03.06	Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Bugfixes in configure -- now it use pkgconfig for looking header files of libmpeg2.
+
+* 23.03.06      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Bugfixes in MakeFiles -- it did skip src/anysurrect/scan_pes directory in `make clean` and `make depend`.
+	- 0.83.3b Release
+
+* 18.03.06      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Bugfixes in MakeFiles -- there wasn't -lext2fs in LDFLAGS for all utilities.
+	- Bugfix in anyfs/inode.c -- there wasn't #include <asm/uaccess.h>.
+
+* 09.03.06      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- There are no more kernel headers in userspace, there are ext2fs headers only ;-)
+	- 0.83.3a Release
+
+* 08.03.06      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Bug in build_it on filesystems which doesn't return right f_files value in statfs structure fixed.
+	- Adding anysurrect-plugins(3) manual with anysurrect API descriptions.
+	- Bugfix in build_it -- using f_fsid field of statfs structure in Linux is bad idea.
+	- 0.83.3 Release
+	
+* 05.03.06	Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- added MPEG2 stream support (depend on libmpeg2)
+	- added program multiplex MPEG2 stream support
+	- bugfix in fd_seek()
+	- added MAX_PDF_STREAM_SIZE option in config.h
+	- Ext2fs/Ext3fs info (block links) support
+	- Not economical memory allocating in kernel module fixed
+	- now you may change list of recovering files without recompile with -t option
+	- adding plug-ins support
+	- 0.83.2 Release
+
+* 28.02.06	Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com> 
+	- Opening device bug fix
+	- division by zero fix in ELF32_Surrect
+	- added MAX_SIZE_IN_ZIP (max size of compressed file in zip) option in config.h
+	- improvements to progress in anysurrect
+	- 64-bit size bugfix in anysurrect
+	- 0.83.1 Release
+
+* 27.02.06	Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Yet building errors fixes.
+	- version 0.83 Gamma 4
+
+* 26.02.06	Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Some building errors fixes.
+	- version 0.83 Gamma 3
+
+* 23.02.06	Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Errors in architect detecting with uname fixed.
+	- version 0.83 Gamma 2
+
+* 21.02.06	Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Initial Public Release 0.83 Gamma 1

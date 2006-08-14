@@ -1,0 +1,12 @@
+CC=gcc
+INSTALL=install -c
+prefix=@prefix@
+DESTDIR=@DESTDIR@
+INSTALLPATH=$(DESTDIR)$(prefix)
+
+install: anyconvertfs
+	$(INSTALL) -d $(INSTALLPATH)/sbin
+	$(INSTALL) anyconvertfs $(INSTALLPATH)/sbin
+
+uninstall:
+	rm -f $(INSTALLPATH)/sbin/anyconvertfs

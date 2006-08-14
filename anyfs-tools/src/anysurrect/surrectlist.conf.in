@@ -1,0 +1,39 @@
+/*
+ *      surrectlist.conf
+ *      CopyRight (C) 2006, Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+ */
+
+/* THIS FILE CONTENT DEFAULT LIST OF FILE TYPES FOR RECOVERING BY ANYSURRECT */
+/* IT IS SIMPLE C STRING */
+	
+"audio_MIDI "
+"audio_WAV "
+"audio_MP3 "
+
+"audio_video_OGG "
+"audio_video_AVI "
+@MPEG2C@"audio_video_MPEG12 "
+"audio_video_MPEG12PM "
+	
+"image_JPEG "
+"image_PNG "
+"image_BMP "
+"image_PNM "
+"image_TIFF "
+	
+"archieve_TAR "
+"archieve_ZIP "
+"archieve_RAR "
+@BZ2C@"archieve_BZIP2 "
+"archieve_GZIP "
+
+"executable_ELF32 "
+"document_PDF "
+	
+"text_ASCII "
+//"text_EIGHT_BIT "
+//"text_UTF8 "
+//"text_UTF16BE "
+//"text_UTF16LE "
+
+"cd_image_ISO "

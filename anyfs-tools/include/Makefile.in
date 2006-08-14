@@ -1,0 +1,18 @@
+CC=gcc
+INSTALL=install -c
+prefix=@prefix@
+DESTDIR=@DESTDIR@
+INSTALLPATH=$(DESTDIR)$(prefix)
+
+install: any.h config.h somepaths.h
+	$(INSTALL) -d $(INSTALLPATH)/include/anyfs-tools
+	$(INSTALL) -m 0644 any.h $(INSTALLPATH)/include/anyfs-tools
+	$(INSTALL) -m 0644 config.h $(INSTALLPATH)/include/anyfs-tools
+	$(INSTALL) -m 0644 somepaths.h $(INSTALLPATH)/include/anyfs-tools
+
+uninstall:
+	rm -f $(INSTALLPATH)/include/anyfs-tools/any.h \
+		$(INSTALLPATH)/include/anyfs-tools/config.h \
+		$(INSTALLPATH)/include/anyfs-tools/somepaths.h
+	rmdir --ignore-fail-on-non-empty -p $(INSTALLPATH)/include/anyfs-tools
+

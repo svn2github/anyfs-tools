@@ -1,0 +1,43 @@
+WARNING: This text, as well as English manual, is a translation from Russian.
+Please notify me about bad English and send corrections to undefer@gmail.com.
+
+anyfs-tools -- unix-way toolset for recovering and converting filesystems
+for Linux OS.
+
+To install this program, type the following commands:
+$ ./configure
+$ make
+# make install
+
+The hash symbol (#) means that this command must be run as root.
+
+If you want to edit the source code, run the following command as well:
+$ make depend
+
+The package has the following library dependencies:
+ * e2fsprogs v1.38 (includes libext2fs, libe2p, libuuid, libblkid)
+ * xfsprogs v2.8.10 (includes libxfs, libdisk)
+		(optionally, for converting to XFS)
+ * libbz2 (optionally, for recovering BZIP2 files)
+ * libmpeg2 (optionally, for recovering MPEG2 stream)
+
+If you have older e2fsprogs or xfsprogs version, it is preferable to update it.
+If you have newer version, but the package does not compile, send me a note
+(see below).
+
+Before building you may want to change some settings in files:
+anyfs-tools/src/anysurrect/surrectlist.conf
+anyfs-tools/src/anysurrect/config.h
+
+anyfs kernel module building was tested on kernels 2.6.9-2.6.17.
+The module installs to file
+/lib/modules/<kernel-version>/kernel/fs/any/any.ko
+
+You need to have linux kernel source for building.
+So if you use distributive linux kernel, before building you need to install
+kernel-source package.
+
+After installing the package, read the manual:
+$ man anyfs-tools
+
+If you have problems compiling this program, write to me at undefer@gmail.com

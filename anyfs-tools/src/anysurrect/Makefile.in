@@ -1,0 +1,63 @@
+CC=gcc
+INSTALL=install -c
+prefix=@prefix@
+DESTDIR=@DESTDIR@
+INSTALLPATH=$(DESTDIR)$(prefix)
+SRCROOT=../..
+INCLUDE=$(SRCROOT)/include
+LIBANYPATH=$(SRCROOT)/libany
+CCFLAGS= -O3 -Wall -std=gnu99 -I$(INCLUDE) @MPEG2_CFLAGS@ @EXT2FS_CFLAGS@ @CFLAGS@
+LDFLAGS= -rdynamic -L$(LIBANYPATH) @BZ2LIB@ -ldl @MPEG2_LIBS@ @EXT2FS_LIBS@
+
+OBJS = anysurrect.o \
+       audio_files_descr.o \
+       audio_video_files_descr.o @MPEG2_MODULES@ audio_video3_files_descr.o\
+       image_files_descr.o image2_files_descr.o image3_files_descr.o \
+       archieve_files_descr.o @BZ2MODULES@ \
+       text_files_descr.o \
+       executable_files_descr.o document_files_descr.o \
+       scan_pes/aux_pes.o scan_pes/scan_pes.o \
+       filesystem_info_descr.o direct_io.o \
+       cd-image_files_descr.o \
+       archieve3_files_descr.o \
+       gzip/gzip.o gzip/unzip.o gzip/inflate.o gzip/util.o\
+       gzip/unlzw.o gzip/unpack.o gzip/unlzh.o \
+       $(LIBANYPATH)/libany.a
+
+all: anysurrect
+
+anysurrect: gzip_o scan_pes_o $(OBJS)
+	$(CC) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS)
+	
+gzip_o:
+	$(MAKE) $(AM_MAKEFLAGS) -C gzip
+	
+scan_pes_o:
+	$(MAKE) $(AM_MAKEFLAGS) -C scan_pes
+
+%.o: %.c
+	$(CC) $(CCFLAGS) -c $<
+
+install: anysurrect
+	$(INSTALL) -d $(INSTALLPATH)/sbin
+	$(INSTALL) anysurrect $(INSTALLPATH)/sbin
+	$(INSTALL) -d $(INSTALLPATH)/include/anyfs-tools
+	$(INSTALL) -m 0644 anysurrect.h $(INSTALLPATH)/include/anyfs-tools
+	$(INSTALL) -m 0644 direct_io.h $(INSTALLPATH)/include/anyfs-tools
+uninstall:
+	rm -f $(INSTALLPATH)/sbin/anysurrect
+	rm -f $(INSTALLPATH)/include/anyfs-tools/anysurrect.h
+	rm -f $(INSTALLPATH)/include/anyfs-tools/direct_io.h
+	rmdir --ignore-fail-on-non-empty -p $(INSTALLPATH)/include/anyfs-tools
+
+clean:
+	rm -f *.o *~ anysurrect
+	$(MAKE) $(AM_MAKEFLAGS) -C scan_pes clean
+	$(MAKE) $(AM_MAKEFLAGS) -C gzip clean
+
+distclean:      clean
+
+depend:
+	makedepend -- $(CCFLAGS) -- *.[ch] $(INCLUDE)/*.h
+	$(MAKE) $(AM_MAKEFLAGS) -C scan_pes depend
+	$(MAKE) $(AM_MAKEFLAGS) -C gzip depend

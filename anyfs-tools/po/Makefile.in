@@ -1,0 +1,13 @@
+CC=gcc
+INSTALL=install -c
+prefix=@prefix@
+DESTDIR=@DESTDIR@
+LANGS=@LANGS@
+INSTALLPATH=$(DESTDIR)$(prefix)
+
+install: instlang.sh
+	./instlang.sh $(INSTALLPATH) $(LANGS)
+
+uninstall: uninstlang.sh
+	./uninstlang.sh $(INSTALLPATH) $(LANGS)
+

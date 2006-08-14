@@ -1,0 +1,2 @@
+#define ANYFSTOOLS_VERSION "0.84.5b"
+#define ANYFSTOOLS_DATE "14 Aug 2006"

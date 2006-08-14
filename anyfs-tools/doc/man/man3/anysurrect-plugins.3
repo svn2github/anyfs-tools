@@ -1,0 +1,466 @@
+.TH anysurrect-plugins 3 "06 Aug 2006" "Version 0.84.5"
+.SH "NAME"
+anysurrect-plugins \- anysurrect plug-ins allows you to recognize and
+recover additional file formats besides formats which includes anysurrect.
+The manual page describes macroses and functions which will useful for
+format recognizers new functions programming.
+
+.SH "SYNOPSIS"
+.B #include <anysurrect.h>
+.sp
+.BI "SKIP_STRING(const char *" "name" ", any_off_t" " len" ");"
+.sp
+.BI "SKIP_BYTE(const char *" "name" ");"
+.sp
+.BI "SKIP_SHORT(const char *" "name" ");"
+.br
+.BI "SKIP_BESHORT(const char *" "name" ");"
+.br
+.BI "SKIP_LESHORT(const char *" "name" ");"
+.sp
+.BI "SKIP_LONG(const char *" "name" ");"
+.br
+.BI "SKIP_BELONG(const char *" "name" ");"
+.br
+.BI "SKIP_LELONG(const char *" "name" ");"
+.sp
+.BI "COND_STRING(const char *" "name" ", size_t " "len" ", " "CONDITION" ");"
+.sp
+.BI "EX_STRING(const char *" "name" ", const char *" "string" ");"
+.sp
+.BI "LIST_STRING(const char *" "name" ", size_t " "len" 
+.BI ", {const char " "string_1" "[" "len" "+1], const char " 
+.IB "string_2" "[" "len" "+1], ..., NULL} );"
+.sp
+.BI "uint32_t READ_BELONG(const char *" "name" ");"
+.br
+.BI "uint32_t COND_BELONG(const char *" "name" ", " "CONDITION" ");"
+.br
+.BI "EX_BELONG(const char *" "name" ", uint32_t " "value" ");"
+.sp
+.BI "uint16_t READ_BESHORT(const char *" "name" ");"
+.br
+.BI "uint16_t COND_BESHORT(const char *" "name" ", " "CONDITION" ");"
+.br
+.BI "EX_BESHORT(const char *" "name" ", uint16_t " "value" ");"
+.sp
+.BI "uint32_t READ_LELONG(const char *" "name" ");"
+.br
+.BI "uint32_t COND_LELONG(const char *" "name" ", " "CONDITION" ");"
+.br
+.BI "EX_LELONG(const char *" "name" ", uint32_t " "value" ");"
+.sp
+.BI "uint16_t READ_LESHORT(const char *" "name" ");"
+.br
+.BI "uint16_t COND_LESHORT(const char *" "name" ", " "CONDITION" ");"
+.br
+.BI "EX_LESHORT(const char *" "name" ", uint16_t " "value" ");"
+.sp
+.BI "uint8_t READ_BYTE(const char *" "name" ");"
+.br
+.BI "uint8_t COND_BYTE(const char *" "name" ", " "CONDITION" ");"
+.br
+.BI "EX_BYTE(const char *" "name" ", uint8_t " "value" ");"
+.sp
+.BI "FUNCOVER(" "name" ", " "operation" ");"
+.br
+.BI "MAYBE(" "operation" ");"
+.sp
+.BI "int read_byte(uint8_t *" "value" ");"
+.sp
+.BI "int read_beshort(uint16_t *" "value" ");"
+.br
+.BI "int read_belong(uint32_t *" "value" ");"
+.sp
+.BI "int read_leshort(uint16_t *" "value" ");"
+.br
+.BI "int read_lelong(uint32_t *" "value" ");"
+.sp
+.BI "any_off_t fd_seek(any_off_t " "offset" ", int " "whence" ");"
+.br
+.BI "any_size_t fd_size();"
+.br
+.BI "any_ssize_t fd_read(void *" "buf" ", any_size_t " "count" ");"
+.sp
+.BI "char* " "<file_format>" "_surrect();"
+.br
+.BI "const char* " "<file_format>" "_indicator=""" "<short_format_name>" """;"
+.br
+.BI "const int " "<file_format>" "_text=1;"
+.br 
+.BI "const mode_t " "<file_format>" "_mode=" "<mode>" ";
+
+.SH "DESCRIPTION"
+
+You always can to write 
+.B anysurrect
+module for recognizing new formats, and load it with 
+.I \-g
+option.
+Below will describes functions useful for writing such modules.
+
+.SH "NECESSARY MODULE DECLARATIONS"
+.TP
+.BI "char* " "<file_format>" "_surrect();"
+Format recognize function must has such name format and type.
+If format recognizing is successful, the function must return
+string -- path to directory for founded file.
+For example:
+.I """audio/MIDI"""
+for MIDI-files. Reading pointer set by 
+.B fd_seek()
+function (see below) must point to end of founded file.
+In case of unsuccessful -- function must return NULL.
+.TP
+.BI "const char* " "<file_format>" "_indicator=""" "<short_format_name>" """;"
+Short name for indicator in progress string. If this declaration is leaved, 
+by default it will set to "UNKNOWN".
+.TP
+.BI "const int " "<file_format>" "_text=1;"
+Optionally declaration useful for text formats such as
+.IR text_ASCII ", " text_EIGTH_BIT ", " text_UTF8 ", " text_UTF16BE " and "
+.IR text_UTF16LE .
+It is need when there are very long text symbols sequence (but not text). 
+So as at end of such sequence, text format processor understands that
+it is not text format, but after it 
+.B anysurrect
+once more call it for the next block, i.e. for the same text and processor
+once more runs on almost all this text to understand that it is not text
+(after all texts doesn't have any magic sequences in the beginning of file,
+so at the begin, and at the middle from the point of processor view 
+it is such text).
+But on each such call spends much time (so as text symbols sequence
+may be very long), and for many such calls forever. 
+For time saving, service this declaration.
+It talks to
+.BR anysurrect ,
+that if format processor returns 
+.BR NULL ,
+it is need to see at 
+.B fd_seek
+pointer and don't call this processor to end of block which very similar to
+text.
+.TP
+.BI "const mode_t " "<file_format>" "_mode=" "<mode>" ";"
+By default recovered files has access mode mask 0666.
+This optionally declaration may to change access mode for you file types.
+So, for example, ELF32 file format use the next declaration:
+.BI "const mode_t " "executable_ELF32" "_mode=" "0777" ";"
+
+.SH "READ FILE FUNCTIONS"
+Writing file processor module, you should not direct use 
+functions to read from device.
+.B anysurrect
+opens device, move read pointer to some supposed location of file beginning
+and then call format processor. What is more
+.B anysurrect
+may put blocks for reading to format processor in not device reading order
+-- it may skip blocks, which already busy by other files
+(description of which loads with 
+.IR \-i 
+options in external inode table). Use the next read functions from file
+and don't think about information on device before your file, but think
+about "garbage" on device after the file -- you need to stop processing 
+in time.
+.TP
+.BI "any_off_t fd_seek(any_off_t " "offset" ", int " "whence" ");"
+The function similar to
+.BR lseek64 
+but it doesn't have file descriptor argument --
+.B anysurrect
+already knows it.
+.TP
+.BI "any_size_t fd_size();"
+Returns max filesize, which format processor may return.
+.TP
+.BI "any_ssize_t fd_read(void *" "buf" ", any_size_t " "count" ");"
+Similar to
+.BR read (2)
+but it doesn't have file descriptor argument --
+.B anysurrect
+already knows it.
+.TP
+.BI "int read_byte(uint8_t *" "value" ");"
+Reads 1 byte to buffer, on which points
+.I value.
+Returns 0 if successful and 1 -- if unsuccessful.
+.TP
+.BI "int read_beshort(uint16_t *" "value" ");"
+Reads value of
+.B uint16_t
+type (2 bytes) to buffer, on which points
+.IR value ,
+consider that high byte on disk keeps forward (i.e. value saved 
+in Big Endian format).
+Returns 0 if successful and 1 -- if unsuccessful.
+.TP
+.BI "int read_belong(uint32_t *" "value" ");"
+Reads value of
+.B uint32_t
+type (4 bytes) to buffer, on which points
+.IR value ,
+consider that high byte on disk keeps forward (i.e. value saved
+in Big Endian format).
+Returns 0 if successful and 1 -- if unsuccessful.
+.TP
+.BI "int read_leshort(uint16_t *" "value" ");"
+Reads value of
+.B uint16_t
+type (2 bytes) to buffer, on which points
+.IR value ,
+consider that low byte on disk keeps forward (i.e. value saved
+in Little Endian format).
+Returns 0 if successful and 1 -- if unsuccessful.
+.TP
+.BI "int read_lelong(uint32_t *" "value" ");"
+Reads value of
+.B uint32_t
+type (4 bytes) to buffer, on which points
+.IR value ,
+consider that low byte on disk keeps forward (i.e. value saved
+in Little Endian format).
+Returns 0 if successful and 1 -- if unsuccessful.
+
+.SH "READ FUNCTIONS MACROSES"
+Macroses for file reading was created for simplifying file
+processors programming and increasing of its code readability.
+Any from this macros may NOT return control to the next function instruction
+if it was unsuccessful, or was failed a condition. Then the function
+returns 
+.BR ERROR_VALUE 
+value.
+So in the beginning file processor function you need to add
+then next preprocessor instruction:
+.br
+.BI "#define ERROR_VALUE " "0"
+.br
+And at the end:
+.br
+.BI "#undef ERROR_VALUE"
+.br
+.TP
+.BI "const char *" "name"
+.I name
+Argument in all this macroses is some string, description of reading,
+checking or skipping file field by instruction. If you want, then
+it is necessary code comments.
+.TP
+.BI "SKIP_STRING(const char *" "name" ", any_off_t" " len" ");"
+is wrapper for the next type instructions:
+.BI "fd_seek(" "len" ", SEEK_CUR);"
+with checking of out from bounds
+.BR fd_size() .
+.TP
+.BI "SKIP_" "*"
+Other macroses for skipping of different type fields. It is similar to
+.B SKIP_STRING
+but skipping field length defined by type of skipping field, and
+there is not the second argument for it.
+.TP
+.BI "COND_STRING(const char *" "name" ", size_t " "len" ", " "CONDITION" ");"
+Reads string with 
+.I len
+length and check its
+.IR CONDITION .
+Condition is some expression with using of 
+.IR val 
+variable, in which it keeps value of string.
+.TP
+.BI "EX_STRING(const char *" "name" ", const char *" "string" ");"
+Reads string and check if it match with 
+.IR string .
+Similar to the next call:
+.BI "COND_STRING(name, strlen(" "string" "), strcmp(val, " "string" ")==0);"
+.TP
+.BI "LIST_STRING(const char *" "name" ", size_t " "len" \
+ ", {const char " "string_1" "[" "len" "+1], const char " \
+ "string_2" "[" "len" "+1], ..., NULL} );"
+Reads string with
+.I len
+length and check if it match with one of strings in the list
+(the list must be in braces, consists from strings with 
+.I len
+length and finish with
+.BR NULL )
+.TP
+.BI "READ_" "*"
+Macroses -- wrappers for correspondents 
+.BI "read_" "*"
+functions with exit if unsuccessful.
+Unlike the functions, it doesn't have argument -- buffer pointer,
+but it returns read value direct to the program.
+.TP
+.BI "COND_" "*"
+Macroses for reading from file values with different types with check
+if 
+.IR CONDITION 
+is true.
+The condition is some expression with using 
+.IR val 
+variable in which it keeps read value before returning it to the program.
+.TP
+.BI "EX_" "*"
+Macroses for reading from file different values and check if it equal
+to the value. It is the same as the next call:
+.BI "COND_" "*" "(name, val==" "value" ");"
+By the way it returns the read value, but if the macroses return control
+to the program then returning value always equal 
+.I value.
+.TP
+.BI "FUNCOVER(" "name" ", " "operation" ");"
+All macroses above doesn't return control to the program at all in case of
+unsuccessful reading or false specified condition, but often if condition
+is false you don't need to return from format processor function -- 
+but you may need to do anything else. In this case may be useful this macros.
+It put operation (operation group) in function wrapper: 
+.BI "int " "name" "() { " "operation" "; return !ERROR_VALUE; }"
+which in case of successful operation return
+.B "!ERROR_VALUE"
+And in case of unsuccessful operation return
+.B "ERROR_VALUE"
+.TP
+.BI "MAYBE(" "operation" ");"
+Using 
+.B FUNCOVER
+macros, you may now to get control back in the function independent
+from any condition, but the 
+.B fd_seek
+pointer will be whipped -- it will points after all unsuccessful
+read values. Because
+.B MAYBE
+macros remember
+.BR fd_seek 
+pointer, execute 
+.I operation
+and in case of
+.B ERROR_VALUE
+returning, it move 
+.B fd_seek
+pointer back on position before operation execution.
+The operation returning value returns back to the program without modification.
+
+.SH "FORMAT PROCESSOR MODULE EXAMPLES"
+The simple examples of format processors is 
+.BR MIDI " and " RAR
+format processors.
+The formats description you may find on
+.IR http://www.wotsit.org .
+The functions (such as you may find it in
+.B anysurrect
+sources) see below:
+
+.nf
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <anysurrect.h>
+
+/*MIDI*/
+
+const char* audio_MP3_indicator="MP3";
+
+char *audio_MIDI_surrect()
+{
+#define ERROR_VALUE	NULL
+	int res;
+	unsigned short number_tracks;
+	EX_STRING("header", "MThd");
+	EX_BELONG("magic_number", 0x00000006);
+	COND_BESHORT("FileFormat", val<=2);
+	number_tracks = 
+		READ_BESHORT("NumberTracks");
+	SKIP_BESHORT("ticks_per_note");
+	
+	for (int i=0; i<number_tracks; i++)
+	{
+		unsigned long	size;
+		EX_STRING("track_header", "MTrk");
+		size = READ_BELONG("track_size");
+		SKIP_STRING("track_body", size);
+	}
+
+	return "audio/MIDI";
+#undef	ERROR_VALUE
+}
+.fi
+.br
+.nf
+
+/*RAR*/
+const char* archieve_RAR_indicator="RAR";
+
+#define RAR_BLOCK ({                                                 \\
+	SKIP_LESHORT("crc");                                            \\
+	COND_BYTE("type", val>=0x72 && val<=0x7F);                      \\
+	uint16_t flags = READ_LESHORT("flags");                         \\
+	uint16_t size = READ_LESHORT("size");                           \\
+	uint32_t add_size=0;                                            \\
+	if (flags&0x8000)                                               \\
+	{ add_size=READ_LELONG("add_size")-4; }	                        \\
+	SKIP_STRING("data", add_size + size - 7);                       \\
+})
+
+char *archieve_RAR_surrect()
+{
+#define ERROR_VALUE	0
+	int res;
+	FUNCOVER(rar_block, RAR_BLOCK);
+
+	EX_LESHORT("crc", 0x6152);
+	EX_BYTE("type", 0x72);
+	EX_LESHORT("flags", 0x1a21);
+	EX_LESHORT("size", 0x0007);
+	
+	while( MAYBE( rar_block() )!=ERROR_VALUE );
+	
+	return "archieve/RAR";
+#undef	ERROR_VALUE
+}
+.fi
+
+You can build this functions by similar the next command:
+.br
+.nf
+$ gcc -std=gnu99 -nostdlib -shared -I /usr/local/include/anyfs-tools -o anysurrect_plug-in.so anysurrect_plug-in.c
+.fi
+.sp
+After it you may plug-in and list exported by the module formats by the next way
+.br
+.nf
+$ /usr/local/sbin/anysurrect -g ./anysurrect_plug-in.so -l
+anysurrect 0.84.5 (06 Aug 2006)
+
+FILE SURRECTERS EXPORTED BY "anysurrect" MODULE:
+archieve_BZIP2 archieve_RAR archieve_TAR archieve_ZIP audio_MIDI audio_MP3 audio_video_AVI audio_video_MPEG12PM audio_video_MPEG12 audio_video_OGG audio_WAV document_PDF executable_ELF32 filesystem_info_ext2fs_direct_blocks_links filesystem_info_ext2fs_double_indirect_blocks_links filesystem_info_ext2fs_indirect_blocks_links image_BMP image_JPEG image_PNG image_PNM image_TIFF text_ASCII text_EIGHT_BIT text_UTF16BE text_UTF16LE text_UTF8 
+
+FILE SURRECTERS EXPORTED BY "anysurrect_plug-in.so" MODULE:
+archieve_RAR audio_MIDI 
+.fi
+
+So as archieve_RAR and audio_MIDI
+format processors names in
+.B anysurrect
+matches with names in the module, then if you will try to run restoring
+at the first found and used will processors in
+.BR anysurrect .
+Because don't write format processors with names same as in 
+.BR anysurrect .
+
+.SH "AUTHOR"
+Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+
+.SH "BUG REPORTS"
+Messages about any problem with using
+.B anyfs-tools
+package send to
+undefer@gmail.com
+
+.SH "AVAILABILITY"
+You can obtain the last version of package at
+http://anyfs-tools.sourceforge.net
+
+.SH "SEE ALSO"
+.BR anyfs-tools(8),
+.BR anysurrect(8),
+.BR lseek(2),
+.BR read(2)

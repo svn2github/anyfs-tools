@@ -1,0 +1,14 @@
+INSTALL=install -c
+prefix=@prefix@
+DESTDIR=@DESTDIR@
+INSTALLPATH=$(DESTDIR)$(prefix)
+INSTALLMANPATH=$(INSTALLPATH)/share/man/man5
+
+install: anyfs_inode_table
+
+%: %.5
+	$(INSTALL) -d $(INSTALLMANPATH)
+	$(INSTALL) -m 644 $< $(INSTALLMANPATH)
+
+uninstall:
+	rm -f $(INSTALLMANPATH)/anyfs_inode_table.5

@@ -1,0 +1,233 @@
+.TH anysurrect 8 "05 Aug 2006" "Version 0.84.5"
+.SH "NAME"
+anysurrect \- search files on device and saves obtained information
+to external inode table file.
+.SH "SYNOPSIS"
+.nf
+.BI "anysurrect [\-b " blocksize "] [\-i " input_inode_table "]"
+.BI "	[\-p " path_prefix "] [\-u " file_umask "] [\-U " dir_umask "] [\-fqvV] "
+.BI "	[\-g " plug-ins "] [\-e] [\-t" " list_of_types" "] [\-l] " "device inode_table"
+.fi
+
+.SH "DESCRIPTION"
+
+.B anysurrect 
+search on device files proceeds from knowing different file types structure.
+Information about founded files also saves to external inode table.
+
+.B anysurrect
+open device in read-only mode. Because the data will not
+changed.
+
+At that moment
+.B anysurrect
+support the next file formats:
+
+.br
+images:
+.BR  PNG ", " JPEG ", " BMP ", " PNM ", " TIFF
+.br
+audio:
+.BR  WAV ", "  MIDI ", " MPEG3
+.br
+audio and video:
+.BR  OGG ", " AVI ", " "MPEG2 stream" " (depends on -lmpeg2), " "program multiplex MPEG2 stream"
+.br
+archieves:
+.BR  TAR ", " ZIP ", " RAR ", " BZIP2 " (depends on -lbzip2), " GZIP
+.br
+documents:
+.BR  PDF
+.br
+executable:
+.BR  ELF32
+.br
+plain text:
+.BR  ASCII ", " "8-bit encoding" ", " UTF-8 ", " UTF16-BE ", " UTF16-LE.
+.br
+CD images:
+.BR  ISO9660
+
+For better recovering
+.B anysurrect
+may to recognize system block of the next filesystems:
+
+.br
+.BR "EXT2FS/EXT3FS:" " DIRECT, INDIRECT and DOUBLE INDIRECT blocks links (see -e option description)."
+
+But text searching is expensive (in sense of processor time) operation.
+Because by default recognized only
+.B ASCII
+texts. The recognized file formats list
+maybe changed by 
+.IR -t
+option.
+End of line recognizing (Unix, DOS and MAC) tunes
+at compile stage by anyfs-tools/src/anysurrect/config.h file editing.
+
+So file searching by
+.B anysurrect
+utility based on knowledge of internal structure of this files. Such searching
+doesn't depend from medium filesystem. However the original
+file names and directories structure will be lost.
+
+Some methods of recovering of names demonstrates anyrename package, which
+can be downloaded in Download section at the anysurrect site.
+
+.B anysurrect
+doesn't find files if it doesn't align on block boundary (for example, on
+.B ReiserFS
+files with size less than 4 Kb keeps in this packed format),
+files with tail-packing on Reiser4 or
+if it compressed/crypted at_filesystem_level \
+(for example, the
+.BR NTFS
+filesystem has such feature --
+of course, Microsoft doesn't support Unix-way).
+
+.SH "ABOUT FRAGMENTED FILES"
+Experimental realization of fragmented files recovering 
+shows that probability to connect a part of file with part of OTHER file
+very high. Because you may only hope on using of 2-stage recovering,
+when at the first stage it recovers non-fragmented files, and at the second
+stage -- fragmented, fragments of which parted by recovered non-fragmented
+files.
+(with \-i option it does such searching).
+But in general the rate of fragmented file on partition is NOT so high
+for serious disturbs.
+Recovering of fragmented files probably may be with more success realized
+by searching by filesystem system information, but it is subject of
+other program
+(and if I will do it, then sure include it to this package).
+	
+.SH "OPTIONS"
+.TP
+.BI \-b " blocksize"
+Blocksize of device filesystem. This number must be
+power of 2, and not less than 512. By default it assigns 512
+(and maybe more for device with much space)
+.TP
+.BI \-i " input_inode_table"
+Input file of external inode table, possibly was got with using
+.BR build_it
+utility.
+With this option searching will make through only free blocks
+of device. Of course, if it is possibly (if filesystem is not damaged
+and you need to recovery deleted files) desirable to use this option.
+.TP
+.BI \-p " path_prefix"
+Prefix to creating file paths. Usefully together with \-i option when at
+root directory of filesystem enough directories, to move all recovering files
+to another, more suitable for you directory.
+.TP
+.BI \-u " file_umask"
+Octal mask of reseted file access permissions. By default it is 002,
+i.e. by default for creating files doesn't give write permission to file
+for other users (not users of file and users not in file group).
+.TP
+.BI \-U " dir_umask"
+Similar to
+.B \-u
+but for directories.
+.TP
+.B \-f
+By default the zero block marks as used (so as usually it is
+filesystem superblock) and doesn't process. This option allows
+to mark the zero block as free. `anysurrect -qvf <file> /dev/null` call
+is useful for anysurrect testing whether it find the file.
+.TP
+.B \-q
+Don't print any messages.
+.TP
+.B \-v
+Print founded files types, its beginning block and size.
+.TP
+.B \-V
+Print the version number and exit.
+.TP
+.BI \-g " plug-ins"
+From 0.83.2 version
+.B anysurrect
+supports additional dynamic libraries loading for recovering
+of new file types. Enumerate loading libraries with space delimiters.
+For knowing types list use
+.IR \-l
+option.
+To include new file types in list for recovering use
+.IR \-t
+option.
+.TP
+.B \-e
+The same as
+.br
+.BI \-t " ""filesystem_info_ext2fs_direct_blocks_links filesystem_info_ext2fs_double_indirect_blocks_links filesystem_info_ext2fs_indirect_blocks_links"""
+.br
+For the best result of recovering from EXT2FS/EXT3FS
+use recovering with 2 stages:
+.br
+1) in the beginning with \-e option, and pointing REAL blocksize by \-b option
+(and \-i option if you used
+.BI build_it
+before)
+.br
+2) then give to the program inode_table - result of prevision stage by \-i option.
+.TP
+.BI \-t " list_of_types"
+From 0.83.2 version you may change list of recovering files without recompiling --
+simple enumerate it with space delimiter to the option.
+For supported types list use
+.IR \-l
+option.
+.TP
+.B \-l
+Print the full list of knowing file types for recovering.
+.TP
+.I device
+Device (or simple file, device image) for file recovering.
+.TP
+.I inode_table
+File for saving formed external inode table.
+
+.SH "USAGE EXAMPLES"
+Recover from /dev/hda1 to inode.table:
+.br
+$ anysurrect /dev/hda1 inode.table
+
+Search ext2fs/ext3fs system information (4096 is usual blocksize of
+ext2fs/ext3fs):
+.br
+$ anysurrect -b 4096 -e /dev/hda2 inode.table
+
+Recover from /dev/hda2 jpeg, png using inode.table from prevision stage:
+.br
+$ anusurrect -i inode.table -t "image_JPEG image_PNG" /dev/hda2 inode.table
+
+Note: Since anysurrect read all information from input inode table before
+searching, you may use the same input file as output (also as differ files
+for input and output as in the next example).
+
+Recover using inode table from build_it and moving new files to
+ANYSURRECT directory:
+.br
+$ anusurrect -i inode.table -p "/ANYSURRECT/" /dev/hda3 inode.table2
+
+Note: the last slash in path prefix is necessary. Otherwise there will
+directories as "ANYSURRECTarchieve", "ANYSURRECTimage" in root directory.
+
+.SH "AUTHOR"
+Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+
+.SH "BUG REPORTS"
+Messages about any problem with using
+.B anyfs-tools
+package send to
+undefer@gmail.com
+
+.SH "AVAILABILITY"
+You can obtain the last version of package at
+http://anyfs-tools.sourceforge.net
+
+.SH "SEE ALSO"
+.BR anyfs-tools(8),
+.BR anyfs_inode_table(5),
+.BR anysurrect-plugins(3)

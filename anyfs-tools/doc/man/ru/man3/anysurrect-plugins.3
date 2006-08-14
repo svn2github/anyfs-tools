@@ -1,0 +1,476 @@
+.TH anysurrect-plugins 3 "06 Aug 2006" "Version 0.84.5"
+.SH "НАЗВАНИЕ"
+anysurrect-plugins \- плагины для anysurrect позволяют распознавать \
+и восстанавливать дополнительные форматы помимо "вшитых" в него самого. \
+В руководстве описаны макросы и функции полезные при программировании \
+новых функций распознавания форматов.
+
+.SH "СИНТАКСИС"
+.B #include <anysurrect.h>
+.sp
+.BI "SKIP_STRING(const char *" "name" ", any_off_t" " len" ");"
+.sp
+.BI "SKIP_BYTE(const char *" "name" ");"
+.sp
+.BI "SKIP_SHORT(const char *" "name" ");"
+.br
+.BI "SKIP_BESHORT(const char *" "name" ");"
+.br
+.BI "SKIP_LESHORT(const char *" "name" ");"
+.sp
+.BI "SKIP_LONG(const char *" "name" ");"
+.br
+.BI "SKIP_BELONG(const char *" "name" ");"
+.br
+.BI "SKIP_LELONG(const char *" "name" ");"
+.sp
+.BI "COND_STRING(const char *" "name" ", size_t " "len" ", " "CONDITION" ");"
+.sp
+.BI "EX_STRING(const char *" "name" ", const char *" "string" ");"
+.sp
+.BI "LIST_STRING(const char *" "name" ", size_t " "len" 
+.BI ", {const char " "string_1" "[" "len" "+1], const char " 
+.IB "string_2" "[" "len" "+1], ..., NULL} );"
+.sp
+.BI "uint32_t READ_BELONG(const char *" "name" ");"
+.br
+.BI "uint32_t COND_BELONG(const char *" "name" ", " "CONDITION" ");"
+.br
+.BI "EX_BELONG(const char *" "name" ", uint32_t " "value" ");"
+.sp
+.BI "uint16_t READ_BESHORT(const char *" "name" ");"
+.br
+.BI "uint16_t COND_BESHORT(const char *" "name" ", " "CONDITION" ");"
+.br
+.BI "EX_BESHORT(const char *" "name" ", uint16_t " "value" ");"
+.sp
+.BI "uint32_t READ_LELONG(const char *" "name" ");"
+.br
+.BI "uint32_t COND_LELONG(const char *" "name" ", " "CONDITION" ");"
+.br
+.BI "EX_LELONG(const char *" "name" ", uint32_t " "value" ");"
+.sp
+.BI "uint16_t READ_LESHORT(const char *" "name" ");"
+.br
+.BI "uint16_t COND_LESHORT(const char *" "name" ", " "CONDITION" ");"
+.br
+.BI "EX_LESHORT(const char *" "name" ", uint16_t " "value" ");"
+.sp
+.BI "uint8_t READ_BYTE(const char *" "name" ");"
+.br
+.BI "uint8_t COND_BYTE(const char *" "name" ", " "CONDITION" ");"
+.br
+.BI "EX_BYTE(const char *" "name" ", uint8_t " "value" ");"
+.sp
+.BI "FUNCOVER(" "name" ", " "operation" ");"
+.br
+.BI "MAYBE(" "operation" ");"
+.sp
+.BI "int read_byte(uint8_t *" "value" ");"
+.sp
+.BI "int read_beshort(uint16_t *" "value" ");"
+.br
+.BI "int read_belong(uint32_t *" "value" ");"
+.sp
+.BI "int read_leshort(uint16_t *" "value" ");"
+.br
+.BI "int read_lelong(uint32_t *" "value" ");"
+.sp
+.BI "any_off_t fd_seek(any_off_t " "offset" ", int " "whence" ");"
+.br
+.BI "any_size_t fd_size();"
+.br
+.BI "any_ssize_t fd_read(void *" "buf" ", any_size_t " "count" ");"
+.sp
+.BI "char* " "<file_format>" "_surrect();"
+.br
+.BI "const char* " "<file_format>" "_indicator=""" "<short_format_name>" """;"
+.br
+.BI "const int " "<file_format>" "_text=1;"
+.br 
+.BI "const mode_t " "<file_format>" "_mode=" "<mode>" ";
+
+.SH "ОПИСАНИЕ"
+
+Вы всегда можете написать модуль для
+.B anysurrect
+для распознавания новых форматов, и загружать его опцией
+.I \-g.
+Ниже будут описаны функции полезные при написании таких модулей.
+
+.SH "НЕОБХОДИМЫЕ ОБЪЯВЛЕНИЯ ДЛЯ МОДУЛЯ"
+.TP
+.BI "char* " "<file_format>" "_surrect();"
+Именно такой тип и имя должна иметь функция распознавания формата. \
+В случае успешного распознавания формата функция должна возвращать \
+строку -- путь к каталогу в который будет помещён данный файл. \
+Например:
+.I """audio/MIDI"""
+для MIDI-файлов. Указатель чтения устанавливаемый функцией
+.B fd_seek()
+(см. ниже) должен при этом указывать на конец найденного файла. \
+В случае неудачи -- функция должна возвратить NULL.
+.TP
+.BI "const char* " "<file_format>" "_indicator=""" "<short_format_name>" """;"
+Короткое имя для индикатора в строке прогресса. Если данного объявления \
+для формата обнаружено не будет, то будет использоваться указатель по умолчанию \
+"UNKNOWN".
+.TP
+.BI "const int " "<file_format>" "_text=1;"
+Опциональное объявление полезное для текстовых форматов, таких как
+.IR text_ASCII ", " text_EIGTH_BIT ", " text_UTF8 ", " text_UTF16BE " и "
+.IR text_UTF16LE .
+Дело в том, что в случае, если попадается очень длинная последовательность \
+текстовых символов (но не текста), то дойдя до конца них, обработчик \
+текстовых форматов понимает, что это не текстовый формат, но после этого
+.B anysurrect
+снова вызывает его для следующего блока, т.е. для того же текста и обработчик \
+опять пробегает почти по всему этому тексту, чтобы понять, что это не текст \
+(ведь, у текстов нет никаких \
+магических последовательностей в начале файла -- что ты смотришь с начала файла, \
+что с середины -- с точки зрения обработчика тесктовых форматов -- всё это такой \
+же текст). \
+Но на каждый такой вызов уходит много времени (так как, \
+последовательность текстовых символов может быть очень длинной), а для \
+многих таких вызовов и вовсе вечность. Для экономии времени, служит это \
+объявление, которое говорит
+.BR anysurrect ,
+что даже, если обработчик формата возвратил
+.B NULL
+стоит посмотреть на указатель
+.B fd_seek
+и не вызывать более этот обработчик до окончания этого блока очень похожего на \
+текст.
+.TP
+.BI "const mode_t " "<file_format>" "_mode=" "<mode>" ";"
+По умолчанию восстановленные файлы имеют маску режима доступа 0666. \
+Данное опциональное объявление может изменить режим доступа для файлов \
+вашего типа. Так, например, для файлов формата ELF32 используется \
+следующее объявление:
+.BI "const mode_t " "executable_ELF32" "_mode=" "0777" ";"
+
+.SH "ФУНКЦИИ ЧТЕНИЯ ФАЙЛА"
+При написании модуля обработчика файла, вам не нужно использовать \
+функции чтения из файла устройства, напрямую.
+.B anysurrect
+сам открывает устройство, сам перемещает указатель чтения на \
+некоторое предполагаемое начало файла и лишь потом вызывает обработчик \
+формата. Более того,
+.B anysurrect
+может "подставлять" блоки для чтения обработчику формата не в том порядке, \
+котором они лежат на устройстве -- он может пропускать блоки, которые уже \
+заняты другими файлами (описание, которых взято из загруженной с помощью \
+опции
+.IR \-i 
+внешней таблицы инф.узлов). Используйте следующие функции чтения \
+из файла и не задумывайтесь о том, что на самом деле на устройстве может быть \
+что-то до вашего файла, но обязательно думайте о том, что на нём есть что-то \
+после -- вам нужно вовремя остановиться при достижении конца файла.
+.TP
+.BI "any_off_t fd_seek(any_off_t " "offset" ", int " "whence" ");"
+Функция аналогичная
+.BR lseek64
+за тем исключением что не имеет аргумента \
+файлового дескриптора --
+.B anysurrect
+уже знает откуда читать.
+.TP
+.BI "any_size_t fd_size();"
+Возвращает максимальный размер файла, который сможет в конечном итоге \
+возвратить обработчик формата.
+.TP
+.BI "any_ssize_t fd_read(void *" "buf" ", any_size_t " "count" ");"
+Аналогично
+.BR read (2)
+за тем исключением что не имеет аргумента \
+файлового дескриптора --
+.B anysurrect
+уже знает откуда читать.
+.TP
+.BI "int read_byte(uint8_t *" "value" ");"
+Считывает 1 байт в буфер, на который указывает
+.I value.
+Возвращает 0 при удаче и 1 -- при неудаче.
+.TP
+.BI "int read_beshort(uint16_t *" "value" ");"
+Считывает значение типа
+.B uint16_t
+(2 байта) в буфер, на который указывает
+.IR value ,
+считая что старший байт на диске хранится впереди (т.е. значение сохранено \
+в Big Endian формате). \
+Возвращает 0 при удаче и 1 -- при неудаче.
+.TP
+.BI "int read_belong(uint32_t *" "value" ");"
+Считывает значение типа
+.B uint32_t
+(4 байта) в буфер, на который указывает
+.IR value ,
+считая что старший байт на диске хранится впереди (т.е. значение сохранено \
+в Big Endian формате). \
+Возвращает 0 при удаче и 1 -- при неудаче.
+.TP
+.BI "int read_leshort(uint16_t *" "value" ");"
+Считывает значение типа
+.B uint16_t
+(2 байта) в буфер, на который указывает
+.IR value ,
+считая что младший байт на диске хранится впереди (т.е. значение сохранено \
+в Little Endian формате). \
+Возвращает 0 при удаче и 1 -- при неудаче.
+.TP
+.BI "int read_lelong(uint32_t *" "value" ");"
+Считывает значение типа
+.B uint32_t
+(4 байта) в буфер, на который указывает
+.IR value ,
+считая что младший байт на диске хранится впереди (т.е. значение сохранено \
+в Little Endian формате). \
+Возвращает 0 при удаче и 1 -- при неудаче.
+
+.SH "МАКРОСЫ ЧТЕНИЯ ФАЙЛА"
+Макросы для чтения файла были созданы для упрощения программирования \
+обработчиков форматов и увеличения читабельности их кода. \
+Любой из этих макросов может НЕ возвратить управления следующей инструкции \
+функции в связи с неудачей, невыполнением указанного условия. При этом \
+этом функция возвратит значение
+.BR ERROR_VALUE .
+В связи с этим в начале функции обработчика файла следует добавлять \
+инструкцию препроцессора:
+.br
+.BI "#define ERROR_VALUE " "0"
+.br
+А в конце:
+.br
+.BI "#undef ERROR_VALUE"
+.br
+.TP
+.BI "const char *" "name"
+Аргумент
+.I name
+во всех этих макросах -- это некоторая строка, описывающая считываемое, \
+проверяемое или пропускаемое инструкцией поле файла. Если хотите, то \
+это такие обязательные комментарии кода.
+.TP
+.BI "SKIP_STRING(const char *" "name" ", any_off_t" " len" ");"
+это обёртка для инструкции типа
+.BI "fd_seek(" "len" ", SEEK_CUR);"
+с проверкой выхода за границу
+.BR fd_size() .
+.TP
+.BI "SKIP_" "*"
+Другие макросы для пропуска полей различных типов. Они аналогичны
+.B SKIP_STRING
+за тем исключением, что длина пропускаемого поля определяется самим \
+типом пропускаемого поля, а не передаётся макросу вторым аргументом.
+.TP
+.BI "COND_STRING(const char *" "name" ", size_t " "len" ", " "CONDITION" ");"
+Считывает строку длиной
+.I len
+и проверяет её на условие
+.IR CONDITION .
+Условие здесь -- это некоторое выражение с использованием переменной
+.IR val ,
+в которую будет помещено значение строки.
+.TP
+.BI "EX_STRING(const char *" "name" ", const char *" "string" ");"
+Считывает строку и проверяет его на совпадение со строкой
+.IR string .
+Аналогично вызову:
+.BI "COND_STRING(name, strlen(" "string" "), strcmp(val, " "string" ")==0);"
+.TP
+.BI "LIST_STRING(const char *" "name" ", size_t " "len" \
+ ", {const char " "string_1" "[" "len" "+1], const char " \
+ "string_2" "[" "len" "+1], ..., NULL} );"
+Считывает строку длиной
+.I len
+и проверяет её на совпадение с одной из строк в списке \
+(список должен быть помещён в фигурные скобки, состоять из \
+строк длиной
+.I len
+и заканчиваться
+.BR NULL )
+.TP
+.BI "READ_" "*"
+Макросы -- обёртки для соответствующих функций
+.BI "read_" "*"
+с выходом при неудаче. В отличии от функций, они не принимают указателя \
+на буфер, а возвращают это считанное значение непосредственно в программу.
+.TP
+.BI "COND_" "*"
+Макросы для чтения из файла различных значений с проверкой на выполнение \
+условия.
+.IR CONDITION 
+в них -- это некоторое выражение с использованием переменной
+.IR val ,
+в которую будет помещено значение переменной перед возвращением его \
+в программу.
+.TP
+.BI "EX_" "*"
+Макросы для чтения из файла различных значений с проверкой на строгое \
+равенство нужному значению. Аналогичны вызову:
+.BI "COND_" "*" "(name, val==" "value" ");"
+Вообще говоря они имеют возвращаемым значением, считанное значение, но \
+в связи с проводимой проверкой -- если эти макросы возвращают управление \
+программе, то возвращаемое значение всегда равно
+.I value.
+.TP
+.BI "FUNCOVER(" "name" ", " "operation" ");"
+Все вышеприведённые макросы вовсе не возвращают управления программе \
+в случае неудачи чтения или невыполнении указанного условия, но часто \
+при невыполнении условия не нужно сразу выходить из функции обработки \
+формата -- нужно сделать что-то ещё. В этом случае пригодиться этот макрос. \
+Он помещает операцию (группу операций) в функциональную обёртку: 
+.BI "int " "name" "() { " "operation" "; return !ERROR_VALUE; }"
+которая в случае успеха возвращает
+.B "!ERROR_VALUE"
+А в случае не успеха:
+.B "ERROR_VALUE"
+.TP
+.BI "MAYBE(" "operation" ");"
+Используя макрос
+.B FUNCOVER
+мы можем теперь получить управление назад в функцию не зависимо от \
+успеха любых проверок, но при этом указатель
+.B fd_seek
+окажется сбитым -- помещённым после всех неудачно считанных значений. \
+Поэтому макрос
+.B MAYBE
+запоминает указатель
+.BR fd_seek ,
+выполняет операцию
+.I operation
+и в случае возвращения ею
+.B ERROR_VALUE
+она перемещает указатель
+.B fd_seek
+обратно на позицию до начала выполнения операции. \
+Само возвращаемое значение передаётся назад в программу без изменений.
+
+.SH "ПРИМЕРЫ МОДУЛЯ ОБРАБОТКИ ФОРМАТА"
+Простейшими примерами модуля обработки формата пожалуй будут являться \
+функции обработки форматов
+.BR MIDI " и " RAR
+Их описание можно найти на 
+.IR http://www.wotsit.org .
+А функции такие какими их можно найти в исходниках
+.B anysurrect
+приведены ниже:
+
+.nf
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <anysurrect.h>
+
+/*MIDI*/
+
+const char* audio_MP3_indicator="MP3";
+
+char *audio_MIDI_surrect()
+{
+#define ERROR_VALUE	NULL
+	int res;
+	unsigned short number_tracks;
+	EX_STRING("header", "MThd");
+	EX_BELONG("magic_number", 0x00000006);
+	COND_BESHORT("FileFormat", val<=2);
+	number_tracks = 
+		READ_BESHORT("NumberTracks");
+	SKIP_BESHORT("ticks_per_note");
+	
+	for (int i=0; i<number_tracks; i++)
+	{
+		unsigned long	size;
+		EX_STRING("track_header", "MTrk");
+		size = READ_BELONG("track_size");
+		SKIP_STRING("track_body", size);
+	}
+
+	return "audio/MIDI";
+#undef	ERROR_VALUE
+}
+.fi
+.br
+.nf
+
+/*RAR*/
+const char* archieve_RAR_indicator="RAR";
+
+#define RAR_BLOCK ({                                                 \\
+	SKIP_LESHORT("crc");                                            \\
+	COND_BYTE("type", val>=0x72 && val<=0x7F);                      \\
+	uint16_t flags = READ_LESHORT("flags");                         \\
+	uint16_t size = READ_LESHORT("size");                           \\
+	uint32_t add_size=0;                                            \\
+	if (flags&0x8000)                                               \\
+	{ add_size=READ_LELONG("add_size")-4; }	                        \\
+	SKIP_STRING("data", add_size + size - 7);                       \\
+})
+
+char *archieve_RAR_surrect()
+{
+#define ERROR_VALUE	0
+	int res;
+	FUNCOVER(rar_block, RAR_BLOCK);
+
+	EX_LESHORT("crc", 0x6152);
+	EX_BYTE("type", 0x72);
+	EX_LESHORT("flags", 0x1a21);
+	EX_LESHORT("size", 0x0007);
+	
+	while( MAYBE( rar_block() )!=ERROR_VALUE );
+	
+	return "archieve/RAR";
+#undef	ERROR_VALUE
+}
+.fi
+
+Собрать данную программу можно примерно следующей командой:
+.br
+.nf
+$ gcc -std=gnu99 -nostdlib -shared -I /usr/local/include/anyfs-tools -o anysurrect_plug-in.so anysurrect_plug-in.c
+.fi
+.sp
+После чего можно подключить и просмотреть экспортируемые этим модулем форматы \
+можно следующим образом:
+.br
+.nf
+$ /usr/local/sbin/anysurrect -g ./anysurrect_plug-in.so -l
+anysurrect 0.84.5 (06 Aug 2006)
+
+FILE SURRECTERS EXPORTED BY "anysurrect" MODULE:
+archieve_BZIP2 archieve_RAR archieve_TAR archieve_ZIP audio_MIDI audio_MP3 audio_video_AVI audio_video_MPEG12PM audio_video_MPEG12 audio_video_OGG audio_WAV document_PDF executable_ELF32 filesystem_info_ext2fs_direct_blocks_links filesystem_info_ext2fs_double_indirect_blocks_links filesystem_info_ext2fs_indirect_blocks_links image_BMP image_JPEG image_PNG image_PNM image_TIFF text_ASCII text_EIGHT_BIT text_UTF16BE text_UTF16LE text_UTF8 
+
+FILE SURRECTERS EXPORTED BY "anysurrect_plug-in.so" MODULE:
+archieve_RAR audio_MIDI 
+.fi
+
+Так как названия обработчиков форматов archieve_RAR и audio_MIDI в
+.B anysurrect
+и полученном модуле совпадают, то при попытке запуска восстановления \
+первыми найденными и используемыми окажутся, обработчики встроенные в
+.BR anysurrect .
+А потому не надо писать обработчиков форматов совпадающих по названию со \
+встроенными в
+.B anysurrect
+обработчиками.
+
+.SH "АВТОР"
+Николай Кривченков aka unDEFER <undefer@gmail.com>
+
+.SH "СООБЩЕНИЯ ОБ ОШИБКАХ"
+Сообщения о любых проблемах с применением пакета
+.B anyfs-tools
+направляйте по адресу:
+undefer@gmail.com
+
+.SH "ДОСТУПНОСТЬ"
+последнюю версию пакета вы можете получить на сайте проекта: \
+http://anyfs-tools.sourceforge.net
+
+.SH "СМ. ТАКЖЕ"
+.BR anyfs-tools(8),
+.BR anysurrect(8),
+.BR lseek(2),
+.BR read(2)

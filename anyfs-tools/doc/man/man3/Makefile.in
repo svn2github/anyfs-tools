@@ -1,0 +1,14 @@
+INSTALL=install -c
+prefix=@prefix@
+DESTDIR=@DESTDIR@
+INSTALLPATH=$(DESTDIR)$(prefix)
+INSTALLMANPATH=$(INSTALLPATH)/share/man/man3
+
+install: anysurrect-plugins
+
+%: %.3
+	$(INSTALL) -d $(INSTALLMANPATH)
+	$(INSTALL) -m 644 $< $(INSTALLMANPATH)
+
+uninstall:
+	rm -f $(INSTALLMANPATH)/anysurrect-plugins.3

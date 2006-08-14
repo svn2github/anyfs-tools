@@ -1,0 +1,1942 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2006-08-14 18:44+0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../scripts/anyconvertfs:67
+msgid "Cannot find {UTIL}. {MESG}"
+msgstr ""
+
+#: ../scripts/anyconvertfs:73
+msgid "It is necessary to work."
+msgstr ""
+
+#: ../scripts/anyconvertfs:78
+msgid "usage:"
+msgstr ""
+
+#: ../scripts/anyconvertfs:203
+msgid "{DEVICE} is not block device. Use {UNDER}'-f'{CLEAR} option."
+msgstr ""
+
+#: ../scripts/anyconvertfs:227
+msgid ""
+"{BLOCKSIZE} is bad blocksize. It must be power of 2 and not less than 512."
+msgstr ""
+
+#: ../scripts/anyconvertfs:233
+msgid "{BLOCKSIZE} is too small. Minimal blocksize in Linux is {MINBLOCKSIZE}"
+msgstr ""
+
+#: ../scripts/anyconvertfs:239
+msgid "{BLOCKSIZE} is too big. Maximal blocksize in Linux is {MAXBLOCKSIZE}"
+msgstr ""
+
+#: ../scripts/anyconvertfs:269
+msgid ""
+"Not supported destination filesystem: {TOFS}\n"
+"I can convert to ext2/ext3/xfs/any only"
+msgstr ""
+
+#: ../scripts/anyconvertfs:278
+msgid "Sorry {TOFS} doesn't support labels."
+msgstr ""
+
+#: ../scripts/anyconvertfs:286
+msgid ""
+"{BLOCKSIZE} is too small for the filesystem. Minimal blocksize for {TOFS} is "
+"{MINBLOCKSIZE}."
+msgstr ""
+
+#: ../scripts/anyconvertfs:292
+msgid ""
+"{BLOCKSIZE} is too big for the filesystem. Maximal blocksize for {TOFS} is "
+"{MAXBLOCKSIZE}."
+msgstr ""
+
+#: ../scripts/anyconvertfs:296
+msgid "It is neccessary for converting to"
+msgstr ""
+
+#: ../scripts/anyconvertfs:300
+msgid ""
+"Sorry, you are not root.\n"
+"But I would use mount."
+msgstr ""
+
+#: ../scripts/anyconvertfs:308
+msgid "{TMPDIR} is not directory"
+msgstr ""
+
+#: ../scripts/anyconvertfs:317
+msgid "Access denied to {TMPDIR}."
+msgstr ""
+
+#: ../scripts/anyconvertfs:325
+msgid "Temporary directory cannot be at convert device"
+msgstr ""
+
+#: ../scripts/anyconvertfs:343
+msgid ""
+"{INODETABLE} inodetable was specified. But filesystem mounted \n"
+"as {MOUNTEDFS}, not {UNDER}anyfs{CLEAR}"
+msgstr ""
+
+#: ../scripts/anyconvertfs:357
+msgid ""
+"anyfs mounted with specified relative path to inodetable: {MOUNTEDIT}\n"
+"Please use {UNDER}--inodetable{CLEAR} option to specify inodetable"
+msgstr ""
+
+#: ../scripts/anyconvertfs:367
+msgid ""
+"In options of mounted anyfs specified {MOUNTEDITFILE} inodetable file\n"
+"And you specify {INODETABLEFILE}. I don't think that it is the same file."
+msgstr ""
+
+#: ../scripts/anyconvertfs:382
+msgid ""
+"anyfs was mounted with {MOUNTEDIT} inode table\n"
+"But you specify {INODETABLE}"
+msgstr ""
+
+#: ../scripts/anyconvertfs:401
+msgid ""
+"{FROMFS} source filesystem was specified but {DEVICE}\n"
+"mounted as {MOUNTEDFS} filesystem"
+msgstr ""
+
+#: ../scripts/anyconvertfs:412
+msgid "Error while unmount anyfs"
+msgstr ""
+
+#: ../scripts/anyconvertfs:419
+msgid "Error while remount device in read-only mode"
+msgstr ""
+
+#: ../scripts/anyconvertfs:428
+msgid ""
+"Can't mount anyfs without inodetable. Use {BOLD}--inodetable{CLEAR} option"
+msgstr ""
+
+#: ../scripts/anyconvertfs:436
+msgid "{INODETABLE} is not regular file"
+msgstr ""
+
+#: ../scripts/anyconvertfs:445
+msgid ""
+"{INODETABLE} inodetable and {FROMFS} source filesystem was specified.\n"
+"But {UNDER}--inodetable{CLEAR} is option for converting from {UNDER}anyfs"
+"{CLEAR}"
+msgstr ""
+
+#: ../scripts/anyconvertfs:462
+msgid "Error while mount device in read-only mode"
+msgstr ""
+
+#: ../scripts/anyconvertfs:507
+msgid "{LABEL} label would be truncated to {MAXLABELLEN} length."
+msgstr ""
+
+#: ../scripts/anyconvertfs:517 ../scripts/anyconvertfs:620
+msgid "Exit"
+msgstr ""
+
+#: ../scripts/anyconvertfs:531 ../scripts/anyconvertfs:637
+#: ../scripts/anyconvertfs:801
+msgid "Inode table was saved. See {INODETABLE}."
+msgstr ""
+
+#: ../scripts/anyconvertfs:540
+msgid "Device is busy."
+msgstr ""
+
+#: ../scripts/anyconvertfs:552 ../scripts/anyconvertfs:554
+msgid "Never"
+msgstr ""
+
+#: ../scripts/anyconvertfs:557
+msgid ""
+"Converting of {DEVICE} from {FROMFS} to {TOFS}\n"
+"New filesystem label: {LABEL}\n"
+"Old filesystem blocksize: {OLDBLOCKSIZE}\n"
+"Blocksize for new filesystem: {BLOCKSIZE}\n"
+"Mount point: {MOUNTPOINT}\n"
+"Mount options: {MOUNTOPTIONS}\n"
+"Temporary directory: {TMPDIR}\n"
+"Inode table: {INODETABLE}\n"
+"First step which destroy old filesystem: {FIRSTDESTROYSTEP}"
+msgstr ""
+
+#: ../scripts/anyconvertfs:572
+msgid "Dry run {BOLD}{GREEN}successful{CLEAR}"
+msgstr ""
+
+#: ../scripts/anyconvertfs:580
+msgid "Sleep {SECS} seconds..."
+msgstr ""
+
+#: ../scripts/anyconvertfs:589
+msgid ""
+"Please, {BOLD}attentively{CLEAR} check information above,\n"
+"and then press {UNDER}Enter{CLEAR}"
+msgstr ""
+
+#: ../scripts/anyconvertfs:595
+msgid ""
+"{BOLD}Step{CLEAR} {UNDER}1{CLEAR}. {BOLD}{CYAN}Building inode table{CLEAR} "
+"(with {BOLD}build_it{CLEAR})."
+msgstr ""
+
+#: ../scripts/anyconvertfs:598
+msgid "O.K. anyfs already has inode table"
+msgstr ""
+
+#: ../scripts/anyconvertfs:599 ../scripts/anyconvertfs:699
+#: ../scripts/anyconvertfs:724 ../scripts/anyconvertfs:750
+#: ../scripts/anyconvertfs:782
+msgid "Skip"
+msgstr ""
+
+#: ../scripts/anyconvertfs:603
+msgid "Error while building inode table"
+msgstr ""
+
+#: ../scripts/anyconvertfs:606 ../scripts/anyconvertfs:717
+#: ../scripts/anyconvertfs:742 ../scripts/anyconvertfs:768
+#: ../scripts/anyconvertfs:790
+msgid "Done"
+msgstr ""
+
+#: ../scripts/anyconvertfs:613
+msgid "Error while unmount device"
+msgstr ""
+
+#: ../scripts/anyconvertfs:645
+msgid ""
+"{BOLD}Step{CLEAR} {UNDER}2{CLEAR}. {BOLD}{CYAN}Noops (check if enough space) "
+"reblock anyfs{CLEAR} (with {BOLD}reblock{CLEAR})."
+msgstr ""
+
+#: ../scripts/anyconvertfs:650
+msgid ""
+"{UTIL} returned {BOLD}{RED}Not Enough Space{CLEAR}\n"
+"O.K. I try to be helpful and now.."
+msgstr ""
+
+#: ../scripts/anyconvertfs:654
+msgid "Mounting anyfs..."
+msgstr ""
+
+#: ../scripts/anyconvertfs:660
+msgid "Error while mount anyfs filesystem"
+msgstr ""
+
+#: ../scripts/anyconvertfs:665
+msgid ""
+"So, device was mounted as anyfs to {MOUNTPOINT}\n"
+"At anyfs you can remove and move files and directories,\n"
+"create hard links, symbolic links, special files and directories.\n"
+"You CANNOT create or copy regular files from other filesystems."
+msgstr ""
+
+#: ../scripts/anyconvertfs:671
+msgid ""
+"{BOLD}Now I would run 'bash' at this filesystem.\n"
+"Please, remove not needed files, or move its to other filesystems.\n"
+"So clear some space for system information of new FS.\n"
+"When it would done, print 'exit'. And I try run {UTIL}{BOLD} again.{CLEAR}"
+msgstr ""
+
+#: ../scripts/anyconvertfs:676
+msgid ""
+"{UNDER}Do NOT close the console.\n"
+"Do NOT unmount the anyfs filesystem.{CLEAR}"
+msgstr ""
+
+#: ../scripts/anyconvertfs:685
+msgid "Unmounting anyfs..."
+msgstr ""
+
+#: ../scripts/anyconvertfs:688
+msgid "Error while unmount anyfs filesystem"
+msgstr ""
+
+#: ../scripts/anyconvertfs:691
+msgid "Retry"
+msgstr ""
+
+#: ../scripts/anyconvertfs:698
+msgid "Good. Filesystem already has {BLOCKSIZE} blocksize"
+msgstr ""
+
+#: ../scripts/anyconvertfs:712
+msgid "Error while reblock (no operation)"
+msgstr ""
+
+#: ../scripts/anyconvertfs:721
+msgid ""
+"{BOLD}Step{CLEAR} {UNDER}3{CLEAR}. {BOLD}{CYAN}Reblock anyfs{CLEAR} (with "
+"{BOLD}reblock{CLEAR})."
+msgstr ""
+
+#: ../scripts/anyconvertfs:729 ../scripts/anyconvertfs:775
+msgid ""
+"It's your {BOLD}last chance{CLEAR} to save the old filesystem.\n"
+"Press {UNDER}Ctrl+C{CLEAR} to {BOLD}cancel{CLEAR} converting."
+msgstr ""
+
+#: ../scripts/anyconvertfs:739
+msgid "Error while reblock"
+msgstr ""
+
+#: ../scripts/anyconvertfs:746
+msgid ""
+"{BOLD}Step{CLEAR} {UNDER}4{CLEAR}. {BOLD}{CYAN}Noops (check if enough space) "
+"build new filesystem{CLEAR} (with {BUILD_FS})."
+msgstr ""
+
+#: ../scripts/anyconvertfs:749
+msgid "O.K. Inode table already built"
+msgstr ""
+
+#: ../scripts/anyconvertfs:763
+msgid "Error while build new fs (no operation)"
+msgstr ""
+
+#: ../scripts/anyconvertfs:772
+msgid ""
+"{BOLD}Step{CLEAR} {UNDER}5{CLEAR}. {BOLD}{CYAN}Build new filesystem{CLEAR} "
+"(with {BUILD_FS})."
+msgstr ""
+
+#: ../scripts/anyconvertfs:787
+msgid "Error while build new fs"
+msgstr ""
+
+#: ../scripts/anyconvertfs:805
+msgid "Don't forget change filesystem of the device in {BOLD}/etc/fstab{CLEAR}"
+msgstr ""
+
+#: ../scripts/anyconvertfs:809
+msgid "Successful"
+msgstr ""
+
+#: ../src/build_it.c:61
+#, c-format
+msgid "Usage: %s [-qvVn] directory inode_table\n"
+msgstr ""
+
+#: ../src/build_it.c:138
+#, c-format
+msgid "No permission to use FIBMAP ioctl; must have root privileges\n"
+msgstr ""
+
+#: ../src/build_it.c:186
+#, c-format
+msgid "Cannot unpack ReiserFS file\n"
+msgstr ""
+
+#: ../src/build_it.c:195
+#, c-format
+msgid "Cannot unpack Reiser4 file\n"
+msgstr ""
+
+#: ../src/build_it.c:209
+#, c-format
+msgid "Cannot perform fdatasync\n"
+msgstr ""
+
+#: ../src/build_it.c:666
+#, c-format
+msgid "\"%s\" -- Is not directory\n"
+msgstr ""
+
+#: ../src/build_it.c:673
+#, c-format
+msgid "start count inodes\n"
+msgstr ""
+
+#: ../src/build_it.c:678
+msgid "count inodes: "
+msgstr ""
+
+#: ../src/build_it.c:691
+#, c-format
+msgid "founded %d inodes\n"
+msgstr ""
+
+#: ../src/build_it.c:692 ../src/build_it.c:698
+#, c-format
+msgid "creating inode table\n"
+msgstr ""
+
+#: ../src/build_it.c:718
+msgid "creating inode table: "
+msgstr ""
+
+#: ../src/build_it.c:732
+#, c-format
+msgid "writing inode table\n"
+msgstr ""
+
+#: ../src/build_it.c:738 ../src/anysurrect/anysurrect.c:1222
+#: ../src/reblock.c:600 ../src/build_xfs/build_xfs.c:3077
+#: ../src/build_e2fs/build_e2fs.c:1686
+#, c-format
+msgid "Error while writing inode table: %s\n"
+msgstr ""
+
+#: ../src/build_it.c:739 ../src/anysurrect/anysurrect.c:1223
+#: ../src/reblock.c:601 ../src/build_xfs/build_xfs.c:3078
+#: ../src/build_e2fs/build_e2fs.c:1687
+msgid "format error"
+msgstr ""
+
+#: ../src/anysurrect/anysurrect.c:92
+#, c-format
+msgid ""
+"Usage: %s [-b blocksize] [-i input_inode_table] [-p path_prefix]\n"
+"\t[-u file_umask] [-U dir_umask] [-fqvV] [-g plug-ins]\n"
+"\t[-e] [-t list_of_types] [-l] device inode_table\n"
+msgstr ""
+
+#: ../src/anysurrect/anysurrect.c:151 ../src/anysurrect/anysurrect.c:189
+#: ../src/anysurrect/anysurrect.c:214 ../src/anysurrect/anysurrect.c:435
+#: ../src/anysurrect/anysurrect.c:703 ../src/anysurrect/anysurrect.c:752
+#: ../src/anysurrect/anysurrect.c:1183 ../src/anysurrect/anysurrect.c:1197
+#: ../src/reblock.c:579 ../src/build_xfs/build_xfs.c:3098
+#: ../src/build_xfs/build_xfs.c:3192 ../src/build_xfs/build_xfs.c:3363
+#: ../src/build_xfs/build_xfs.c:3690 ../src/build_xfs/build_xfs.c:3902
+#: ../src/build_xfs/build_xfs.c:4098 ../src/build_e2fs/build_e2fs.c:2217
+#: ../libany/new_inode.c:51 ../libany/new_inode.c:67 ../libany/new_inode.c:165
+#, c-format
+msgid "Not enough memory\n"
+msgstr ""
+
+#: ../src/anysurrect/anysurrect.c:688
+#, c-format
+msgid "error while creating inode\n"
+msgstr ""
+
+#: ../src/anysurrect/anysurrect.c:696
+#, c-format
+msgid "error while format filename\n"
+msgstr ""
+
+#: ../src/anysurrect/anysurrect.c:819 ../src/reblock.c:485
+#, c-format
+msgid "bad new blocksize. It is must be power of 2 and not less than 512\n"
+msgstr ""
+
+#: ../src/anysurrect/anysurrect.c:838
+#, c-format
+msgid "Illegal mode for file umask. It must be 3 octal digits.\n"
+msgstr ""
+
+#: ../src/anysurrect/anysurrect.c:849
+#, c-format
+msgid "Illegal mode for directory umask. It must be 3 octal digits.\n"
+msgstr ""
+
+#: ../src/anysurrect/anysurrect.c:1057
+#, c-format
+msgid "can't find %s surrecter function\n"
+msgstr ""
+
+#: ../src/anysurrect/anysurrect.c:1092
+#, c-format
+msgid "Error opening file\n"
+msgstr ""
+
+#: ../src/anysurrect/anysurrect.c:1124
+#, c-format
+msgid ""
+"Blocksize very small for this device. Recommend to use greater blocksize\n"
+msgstr ""
+
+#: ../src/anysurrect/anysurrect.c:1138
+#, c-format
+msgid "Error creating root inode\n"
+msgstr ""
+
+#: ../src/anysurrect/anysurrect.c:1148 ../src/reblock.c:515
+#: ../src/build_xfs/build_xfs.c:2126 ../src/build_e2fs/build_e2fs.c:1040
+#, c-format
+msgid "Error while reading inode table: %s\n"
+msgstr ""
+
+#: ../src/anysurrect/anysurrect.c:1149 ../src/reblock.c:516
+#: ../src/build_xfs/build_xfs.c:2127 ../src/build_e2fs/build_e2fs.c:1041
+msgid "bad format"
+msgstr ""
+
+#: ../src/anysurrect/anysurrect.c:1156
+#, c-format
+msgid ""
+"Specified input inode table has %lu blocksize,\n"
+"  but specified blocksize by -b option is %lu\n"
+"Use 'reblock' for changing blocksize of inode_table\n"
+msgstr ""
+
+#: ../src/anysurrect/anysurrect.c:1171
+#, c-format
+msgid "It is not funny at all! I can do nothing with empty file.\n"
+msgstr ""
+
+#: ../src/anysurrect/anysurrect.c:1206
+msgid "search through all blocks: "
+msgstr ""
+
+#: ../src/reblock.c:52
+#, c-format
+msgid ""
+"Usage: %s [-nqvV] inode_table device blocksize\n"
+"Please READ 'man %s' BEFORE using\n"
+"Use option -n before real action\n"
+msgstr ""
+
+#: ../src/reblock.c:194
+msgid "reblock each inode: "
+msgstr ""
+
+#: ../src/reblock.c:387
+#, c-format
+msgid "inode #%lu: +%lu fragments\n"
+msgstr ""
+
+#: ../src/reblock.c:583 ../src/build_e2fs/build_e2fs.c:2221
+#, c-format
+msgid "Not enough space\n"
+msgstr ""
+
+#: ../src/reblock.c:587
+#, c-format
+msgid "Reblock return %d\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:220
+msgid "cannot reserve space"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:238
+#, c-format
+msgid "data su/sw must not be used in conjunction with data sunit/swidth\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:245
+#, c-format
+msgid "both data sunit and data swidth options must be specified\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:254
+#, c-format
+msgid "data sunit/swidth must not be used in conjunction with data su/sw\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:261
+#, c-format
+msgid "both data su and data sw options must be specified\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:268
+#, c-format
+msgid "data su must be a multiple of the sector size (%d)\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:279
+#, c-format
+msgid ""
+"data stripe width (%d) must be a multiple of the data stripe unit (%d)\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:289
+#, c-format
+msgid "log su should not be used in conjunction with log sunit\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:298
+#, c-format
+msgid "log sunit should not be used in conjunction with log su\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:315
+#, c-format
+msgid "%s: %s appears to contain an existing filesystem (%s).\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:321
+#, c-format
+msgid "%s: %s appears to contain a partition table (%s).\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:355
+#, c-format
+msgid "log size %lld is not a multiple of the log stripe unit %d\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:383
+#, c-format
+msgid "Due to stripe alignment, the internal log size (%lld) is too large.\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:385
+#, c-format
+msgid "Must fit within an allocation group.\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:396
+#, c-format
+msgid "log size %lld blocks too small, minimum size is %d blocks\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:402
+#, c-format
+msgid "log size %lld blocks too large, maximum size is %d blocks\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:408
+#, c-format
+msgid "log size %lld bytes too large, maximum size is %d bytes\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:479
+#, c-format
+msgid "agsize (%lldb) too small, need at least %lld blocks\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:487
+#, c-format
+msgid "agsize (%lldb) too big, maximum is %lld blocks\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:495
+#, c-format
+msgid "agsize (%lldb) too big, data area is %lld blocks\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:502
+#, c-format
+msgid "too many allocation groups for size = %lld\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:504
+#, c-format
+msgid "need at most %lld allocation groups\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:512
+#, c-format
+msgid "too few allocation groups for size = %lld\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:514
+#, c-format
+msgid "need at least %lld allocation groups\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:527
+#, c-format
+msgid "last AG size %lld blocks too small, minimum size is %lld blocks\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:538
+#, c-format
+msgid "%lld allocation groups is too many, maximum is %lld\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:1568
+#, c-format
+msgid "%s: Specify data sunit in 512-byte blocks, no unit suffix\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:1584
+#, c-format
+msgid "%s: Specify data swidth in 512-byte blocks, no unit suffix\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:1611
+#, c-format
+msgid "%s: Specify data sw as multiple of su, no unit suffix\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:1801
+#, c-format
+msgid "Must specify log device\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:1860
+#, c-format
+msgid "Specify log sunit in 512-byte blocks, no size suffix\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2093
+#, c-format
+msgid "%s %s (%s)\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2102
+#, c-format
+msgid "extra arguments\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2105
+#, c-format
+msgid "not enough arguments\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2111
+#, c-format
+msgid "cannot specify both %s and -d name=%s\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2134 ../src/build_e2fs/build_e2fs.c:1054
+#, c-format
+msgid ""
+"You try to use blocksize %d, although inode table given for %lu blocksize\n"
+"But changing of filesystem blocksize is not my task. Use 'reblock' for it.\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2154
+#, c-format
+msgid "illegal block size %d\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2173
+#, c-format
+msgid "illegal sector size %d\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2178
+#, c-format
+msgid "illegal log sector size %d\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2190 ../src/build_xfs/build_xfs.c:2202
+#, c-format
+msgid "illegal directory block size %d\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2194
+#, c-format
+msgid "Sorry, build_xfs doesn't support first version of naming\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2218
+#, c-format
+msgid "both -d agcount= and agsize= specified, use one or the other\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2224
+#, c-format
+msgid "if -d file then -d name and -d size are required\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2233
+#, c-format
+msgid "illegal data length %lld, not a multiple of %d\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2239
+#, c-format
+msgid "warning: data length %lld not a multiple of %d, truncated to %lld\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2253
+#, c-format
+msgid "if -l file then -l name and -l size are required\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2262
+#, c-format
+msgid "illegal log length %lld, not a multiple of %d\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2269
+#, c-format
+msgid "warning: log length %lld not a multiple of %d, truncated to %lld\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2275
+#, c-format
+msgid "if -r file then -r name and -r size are required\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2284
+#, c-format
+msgid "illegal rt length %lld, not a multiple of %d\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2291
+#, c-format
+msgid "warning: rt length %lld not a multiple of %d, truncated to %lld\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2304
+#, c-format
+msgid "illegal rt extent size %lld, not a multiple of %d\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2310
+#, c-format
+msgid "rt extent size %s too large, maximum %d\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2316
+#, c-format
+msgid "rt extent size %s too small, minimum %d\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2358
+#, c-format
+msgid "illegal inode size %d\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2363
+#, c-format
+msgid "allowable inode size with %d byte blocks is %d\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2367
+#, c-format
+msgid "allowable inode size with %d byte blocks is between %d and %d\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2375
+#, c-format
+msgid "log stripe unit specified, using v2 logs\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2388
+#, c-format
+msgid "no device name given in argument list\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2408
+#, c-format
+msgid "%s: Use the -f option to force overwrite.\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2419
+msgid "internal log"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2421
+msgid "volume log"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2423
+#, c-format
+msgid "no log subvolume or internal log\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2430
+msgid "volume rt"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2432
+msgid "none"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2435
+#, c-format
+msgid ""
+"size %s specified for data subvolume is too large, maximum is %lld blocks\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2442
+#, c-format
+msgid "can't get size of data subvolume\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2447
+#, c-format
+msgid "size %lld of data subvolume is too small, minimum %d blocks\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2454
+#, c-format
+msgid "can't have both external and internal logs\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2458
+#, c-format
+msgid "data and log sector sizes must be equal for internal logs\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2464
+#, c-format
+msgid ""
+"Warning: the data subvolume sector size %u is less than the sector size \n"
+"reported by the device (%u).\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2470
+#, c-format
+msgid ""
+"Warning: the log subvolume sector size %u is less than the sector size\n"
+"reported by the device (%u).\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2476
+#, c-format
+msgid ""
+"Warning: the realtime subvolume sector size %u is less than the sector size\n"
+"reported by the device (%u).\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2490
+#, c-format
+msgid ""
+"size %s specified for log subvolume is too large, maximum is %lld blocks\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2497
+#, c-format
+msgid "size specified for non-existent log subvolume\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2500
+#, c-format
+msgid "size %lld too large for internal log\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2527
+#, c-format
+msgid ""
+"size %s specified for rt subvolume is too large, maximum is %lld blocks\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2535
+#, c-format
+msgid "size specified for non-existent rt subvolume\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2552
+#, c-format
+msgid "agsize (%lld) not a multiple of fs blk size (%d)\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2580
+#, c-format
+msgid ""
+"%s: Specified data stripe unit %d is not the same as the volume stripe unit %"
+"d\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2586
+#, c-format
+msgid ""
+"%s: Specified data stripe width %d is not the same as the volume stripe "
+"width %d\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2631
+#, c-format
+msgid "agsize rounded to %lld, swidth = %d\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2638
+#, c-format
+msgid ""
+"Allocation group size (%lld) is not a multiple of the stripe unit (%d)\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2660
+#, c-format
+msgid ""
+"Warning: AG size is a multiple of stripe width.  This can cause performance\n"
+"problems by aligning all AGs on the same disk.  To avoid this, run mkfs "
+"with\n"
+"an AG size that is one stripe unit smaller, for example %llu.\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2685
+#, c-format
+msgid ""
+"%s: Stripe unit(%d) or stripe width(%d) is not a multiple of the block size(%"
+"d)\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2700
+#, c-format
+msgid "log stripe unit (%d) must be a multiple of the block size (%d)\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2713
+#, c-format
+msgid "log stripe unit (%d bytes) is too large (maximum is 256KiB)\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2716
+#, c-format
+msgid "log stripe unit adjusted to 32KiB\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2740
+#, c-format
+msgid "internal log size %lld too large, must fit in allocation group\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2747
+#, c-format
+msgid "log ag number %d too large, must be less than %lld\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2777
+#, c-format
+msgid ""
+"meta-data=%-22s isize=%-6d agcount=%lld, agsize=%lld blks\n"
+"         =%-22s sectsz=%-5u attr=%u\n"
+"data     =%-22s bsize=%-6u blocks=%llu, imaxpct=%u\n"
+"         =%-22s sunit=%-6u swidth=%u blks, unwritten=%u\n"
+"naming   =version %-14u bsize=%-6u\n"
+"log      =%-22s bsize=%-6d blocks=%lld, version=%d\n"
+"         =%-22s sectsz=%-5u sunit=%d blks\n"
+"realtime =%-22s extsz=%-6d blocks=%lld, rtextents=%lld\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2899
+#, c-format
+msgid "Remapping of inodes to XFS Inode Numbers\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2904
+msgid "Remap inodes: "
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2932
+#, c-format
+msgid "Cannot allocate inode: not enough space\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:2956
+#, c-format
+msgid "%s: root inode created in AG %u, not AG 0\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:3021 ../src/build_e2fs/build_e2fs.c:1628
+#, c-format
+msgid "Starting search of info blocks at system blocks\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:3036 ../src/build_e2fs/build_e2fs.c:1644
+msgid "Search user info at system blocks: "
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:3044 ../src/build_xfs/build_xfs.c:3063
+#: ../src/build_e2fs/build_e2fs.c:1652 ../src/build_e2fs/build_e2fs.c:1671
+#, c-format
+msgid ""
+"\n"
+"Release blocks from %lu to %lu\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:3085
+#, c-format
+msgid "Starting building XFS inodes\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:3105 ../src/build_e2fs/build_e2fs.c:1821
+msgid "building inodes: "
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:3114
+#, c-format
+msgid "inode #%d (#%llu)\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:3165
+#, c-format
+msgid "symlink #%d (#%llu) has too long size\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:3167
+#, c-format
+msgid "its size %llu will truncate to %u\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:3169
+#, c-format
+msgid "link \"%s\" "
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:3171
+#, c-format
+msgid "truncated to \"%s\"\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:3179
+#, c-format
+msgid "Long Link\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:3205
+#, c-format
+msgid "Cannot find free block for long link: Not enough space\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:3236
+#, c-format
+msgid "Short Link\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:3244
+#, c-format
+msgid "Regular File\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:3320
+#, c-format
+msgid "multiple blocks directory with XD2D blocks -- %d\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:3322
+#, c-format
+msgid "\tlast XD2D blocks -- %d\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:3330
+#, c-format
+msgid "\twith multiple block leaf (count = %d, lastlen = %d)\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:3349 ../src/build_xfs/build_xfs.c:3422
+#: ../src/build_xfs/build_xfs.c:3488 ../src/build_xfs/build_xfs.c:3596
+#: ../src/build_xfs/build_xfs.c:3631
+#, c-format
+msgid ""
+"Cannot find free block for multiple block directory\n"
+"       with multiple leaf block: Not enough space\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:3672
+#, c-format
+msgid "\twith single block leaf (leaflen = %d)\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:3678 ../src/build_xfs/build_xfs.c:3749
+#: ../src/build_xfs/build_xfs.c:3810
+#, c-format
+msgid ""
+"Cannot find free block for multiple block directory\n"
+"       with single leaf block: Not enough space\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:3886
+#, c-format
+msgid "single block directory (ulen=%d, leaflen=%d)\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:3892
+#, c-format
+msgid "Cannot find free block for single block directory: Not enough space\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:4007
+#, c-format
+msgid "Short (local) Directory\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:4068
+#, c-format
+msgid "Device\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:4092
+#, c-format
+msgid "Filling free XFS inodes\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:4266
+#, c-format
+msgid "%s: Growing the data section failed\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:4301
+#, c-format
+msgid "%s: filesystem failed to initialize\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:4311
+#, c-format
+msgid "Starting building XFS BTrees\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:4319
+msgid "building btrees at each AG: "
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:4413 ../src/build_xfs/build_xfs.c:4469
+#: ../src/build_xfs/build_xfs.c:4555 ../src/build_xfs/build_xfs.c:4638
+#, c-format
+msgid "Cannot find free block for INO btree: not enough space\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:5637
+#, c-format
+msgid "Cannot specify both -%c %s and -%c %s\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:5648
+#, c-format
+msgid "Illegal value %s for -%s option\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:5665
+#, c-format
+msgid "-%c %s option requires a value\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:5678
+#, c-format
+msgid "option respecified\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:5687
+#, c-format
+msgid "unknown option -%c %s\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:5726
+#, c-format
+msgid "blocksize not available yet.\n"
+msgstr ""
+
+#: ../src/build_xfs/build_xfs.c:5752
+#, c-format
+msgid ""
+"Usage: %s\n"
+"/* blocksize */\t\t[-b log=n|size=num]\n"
+"/* data subvol */\t[-d agcount=n,agsize=n,file,name=xxx,size=num,\n"
+"\t\t\t    (sunit=value,swidth=value|su=num,sw=num),\n"
+"\t\t\t    sectlog=n|sectsize=num,unwritten=0|1]\n"
+"/* inode size */\t[-i log=n|perblock=n|size=num,maxpct=n,attr=0|1|2]\n"
+"/* log subvol */\t[-l agnum=n,internal,size=num,logdev=xxx,version=n\n"
+"\t\t\t    sunit=value|su=num,sectlog=n|sectsize=num]\n"
+"/* label */\t\t[-L label (maximum 12 characters)]\n"
+"/* naming */\t\t[-n log=n|size=num,version=n]\n"
+"/* not create */\t[-N]\n"
+"/* quiet */\t\t[-q]\n"
+"/* realtime subvol */\t[-r extsize=num,size=num,rtdev=xxx]\n"
+"/* sectorsize */\t[-s log=n|size=num]\n"
+"/* verbose */\t\t[-v]\n"
+"/* version */\t\t[-V]\n"
+"\t\t\tinode_table\n"
+"\t\t\tdevicename\n"
+"<devicename> is required unless -d name=xxx is given.\n"
+"<num> is xxx (bytes), xxxs (sectors), xxxb (fs blocks), xxxk (xxx KiB),\n"
+"      xxxm (xxx MiB), xxxg (xxx GiB), xxxt (xxx TiB) or xxxp (xxx PiB).\n"
+"<value> is xxx (512 byte blocks).\n"
+"\n"
+"Please READ 'man build_xfs' BEFORE using\n"
+"Use option -N before real action\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:96
+#, c-format
+msgid ""
+"Usage: %s [-c|-t|-l filename] [-b block-size] [-f fragment-size]\n"
+"\t[-i bytes-per-inode] [-j] [-J journal-options] [-N number-of-inodes]\n"
+"\t[-m reserved-blocks-percentage] [-o creator-os] [-g blocks-per-group]\n"
+"\t[-L volume-label] [-M last-mounted-directory] [-O feature[,...]]\n"
+"\t[-r fs-revision] [-R options] [-qvSV] inode_table device [blocks-count]\n"
+"Please READ 'man %s' BEFORE using\n"
+"Use option -n before real action\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:229
+#, c-format
+msgid "Bad block %u out of range; ignored.\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:245
+#, c-format
+msgid "while trying to open %s"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:252
+msgid "while reading in list of bad blocks from file"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:270
+#, c-format
+msgid "Running command: %s\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:274
+#, c-format
+msgid "while trying to run '%s'"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:281
+msgid "while processing list of bad blocks from program"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:308
+#, c-format
+msgid "Block %d in primary superblock/group descriptor area bad.\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:310
+#, c-format
+msgid "Blocks %d through %d must be good in order to build a filesystem.\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:313
+msgid "Aborting....\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:333
+#, c-format
+msgid ""
+"Warning: the backup superblock/group descriptors at block %d contain\n"
+"\tbad blocks.\n"
+"\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:351
+msgid "while marking bad blocks as used"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:390
+msgid "while allocating zeroizing buffer"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:431
+msgid "Writing inode tables: "
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:442
+#, c-format
+msgid ""
+"\n"
+"Could not write %d blocks in inode table starting at %d: %s\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:468
+msgid "while setting bad block inode"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:500
+#, c-format
+msgid "Out of memory erasing sectors %d-%d\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:510
+#, c-format
+msgid "Warning: could not read block 0: %s\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:526
+#, c-format
+msgid "Warning: could not erase sector %d: %s\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:540
+#, c-format
+msgid ""
+"warning: %d blocks unused.\n"
+"\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:545
+#, c-format
+msgid "Filesystem label=%s\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:546
+msgid "OS type: "
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:551
+#, c-format
+msgid "Block size=%u (log=%u)\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:553
+#, c-format
+msgid "Fragment size=%u (log=%u)\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:555
+#, c-format
+msgid "%u inodes, %u blocks\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:557
+#, c-format
+msgid "%u blocks (%2.2f%%) reserved for the super user\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:560
+#, c-format
+msgid "First data block=%u\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:562
+#, c-format
+msgid "Maximum filesystem blocks=%lu\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:567
+#, c-format
+msgid "%u block groups\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:569
+#, c-format
+msgid "%u block group\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:570
+#, c-format
+msgid "%u blocks per group, %u fragments per group\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:572
+#, c-format
+msgid "%u inodes per group\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:579
+#, c-format
+msgid "Superblock backups stored on blocks: "
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:635
+#, c-format
+msgid "Couldn't allocate memory to parse options!\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:659
+#, c-format
+msgid "Invalid stride parameter: %s\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:680
+#, c-format
+msgid "Invalid resize parameter: %s\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:687
+#, c-format
+msgid "The resize maximum must be greater than the filesystem size.\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:718
+#, c-format
+msgid ""
+"\n"
+"Bad options specified.\n"
+"\n"
+"Extended options are separated by commas, and may take an argument which\n"
+"\tis set off by an equals ('=') sign.\n"
+"\n"
+"Valid extended options are:\n"
+"\tstride=<stride length in blocks>\n"
+"\tresize=<resize maximum size in blocks>\n"
+"\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:854
+#, c-format
+msgid "invalid block size - %s"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:858
+#, c-format
+msgid "Warning: blocksize %d not usable on most systems.\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:875
+#, c-format
+msgid "invalid fragment size - %s"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:881
+#, c-format
+msgid "Warning: fragments not supported.  Ignoring -f option\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:888
+msgid "Illegal number for blocks per group"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:893
+msgid "blocks per group must be multiple of 8"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:903
+#, c-format
+msgid "invalid inode ratio %s (min %d/max %d)"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:922
+msgid "in malloc for bad_blocks_filename"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:931
+#, c-format
+msgid "invalid reserved blocks percent - %s"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:963
+#, c-format
+msgid "invalid inode size - %s"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:997
+#, c-format
+msgid "Invalid filesystem option set: %s\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1028
+#, c-format
+msgid "\tUsing %s\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1084 ../src/build_e2fs/build_e2fs.c:2135
+#, c-format
+msgid "while trying to open journal device %s\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1090
+#, c-format
+msgid "Journal dev blocksize (%d) smaller than minimum blocksize %d\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1104
+#, c-format
+msgid "%d-byte blocks too big for system (max %d)"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1108
+#, c-format
+msgid ""
+"Warning: %d-byte blocks too big for system (max %d), forced to continue\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1114
+#, c-format
+msgid ""
+"\n"
+"Warning: some 2.4 kernels do not support blocksizes greater than 4096\n"
+"\tusing ext3.  Use -b 4096 if this is an issue for you.\n"
+"\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1122
+#, c-format
+msgid "invalid blocks count - %s"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1145
+msgid "filesystem"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1168
+msgid "while trying to determine filesystem size"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1174
+msgid ""
+"Couldn't determine device size; you must specify\n"
+"the size of the filesystem\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1181
+msgid ""
+"Device size reported to be zero.  Invalid partition specified, or\n"
+"\tpartition table wasn't reread after running fdisk, due to\n"
+"\ta modified partition being busy and in use.  You may need to reboot\n"
+"\tto re-read your partition table.\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1199
+msgid "Filesystem larger than apparent device size."
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1221
+msgid "while trying to determine hardware sector size"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1240
+msgid "reserved online resize blocks not supported on non-sparse filesystem"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1249
+msgid "blocks per group count out of range"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1256
+msgid ""
+"Filesystem too large.  No more than 2**31-1 blocks\n"
+"\t (8TB using a blocksize of 4k) are currently supported."
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1266
+#, c-format
+msgid "invalid inode size %d (min %d/max %d)"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1272
+#, c-format
+msgid "Warning: %d-byte inodes not usable on most systems\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1368 ../src/build_e2fs/build_e2fs.c:1727
+#: ../src/build_e2fs/build_e2fs.c:1784
+#, c-format
+msgid "Warning: could not write block: %s\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1382 ../src/build_e2fs/build_e2fs.c:1898
+#: ../src/build_e2fs/build_e2fs.c:1987 ../src/build_e2fs/build_e2fs.c:2033
+#, c-format
+msgid "Warning: could not read block: %s\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1504
+#, c-format
+msgid ""
+"There is file with size more than 2 GB (inode #%lu),\n"
+"\tbut ext2fs don't support it!\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1537
+msgid "while setting up superblock"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1543
+#, c-format
+msgid "%lu is Bad BlockSize (Good BlockSize is %d)\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1578
+#, c-format
+msgid "unknown os - %s"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1623
+msgid "while trying to allocate filesystem tables"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1693
+#, c-format
+msgid "Releasing blocks of system info successful\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1808
+msgid "while reserving blocks for online resize"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1814
+#, c-format
+msgid "Starting building ext2fs filesystem\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1842
+#, c-format
+msgid "inode: %lu of %lu\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:1920
+#, c-format
+msgid "fragment: %lu from %u (length = %lu)\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:2128
+msgid "journal"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:2140
+#, c-format
+msgid "Adding journal to device %s: "
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:2147
+#, c-format
+msgid ""
+"\n"
+"\twhile trying to add journal to device %s"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:2152 ../src/build_e2fs/build_e2fs.c:2193
+#, c-format
+msgid "done\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:2164
+#, c-format
+msgid "Creating journal (%d blocks): "
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:2189
+msgid ""
+"\n"
+"\twhile trying to create journal"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:2198
+#, c-format
+msgid "Writing superblocks and filesystem accounting information: "
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:2203
+#, c-format
+msgid ""
+"\n"
+"Warning, had trouble writing out superblocks."
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:2206
+#, c-format
+msgid ""
+"done\n"
+"\n"
+msgstr ""
+
+#: ../src/build_e2fs/build_e2fs.c:2225
+#, c-format
+msgid "return %d\n"
+msgstr ""
+
+#: ../src/build_e2fs/util.c:46
+msgid "yY"
+msgstr ""
+
+#: ../src/build_e2fs/util.c:50
+msgid "Proceed anyway? (y,n) "
+msgstr ""
+
+#: ../src/build_e2fs/util.c:71
+#, c-format
+msgid "Could not stat %s --- %s\n"
+msgstr ""
+
+#: ../src/build_e2fs/util.c:74
+msgid ""
+"\n"
+"The device apparently does not exist; did you specify it correctly?\n"
+msgstr ""
+
+#: ../src/build_e2fs/util.c:81
+#, c-format
+msgid "%s is not a block special device.\n"
+msgstr ""
+
+#: ../src/build_e2fs/util.c:109
+#, c-format
+msgid "%s is entire device, not just one partition!\n"
+msgstr ""
+
+#: ../src/build_e2fs/util.c:123
+#, c-format
+msgid "while determining whether %s is mounted."
+msgstr ""
+
+#: ../src/build_e2fs/util.c:128
+#, c-format
+msgid "%s is mounted; "
+msgstr ""
+
+#: ../src/build_e2fs/util.c:130
+msgid "mke2fs forced anyway.  Hope /etc/mtab is incorrect.\n"
+msgstr ""
+
+#: ../src/build_e2fs/util.c:135
+#, c-format
+msgid "will not make a %s here!\n"
+msgstr ""
+
+#: ../src/build_e2fs/util.c:139
+#, c-format
+msgid "%s is apparently in use by the system; "
+msgstr ""
+
+#: ../src/build_e2fs/util.c:142
+msgid "mke2fs forced anyway.\n"
+msgstr ""
+
+#: ../src/build_e2fs/util.c:158
+msgid "Couldn't allocate memory to parse journal options!\n"
+msgstr ""
+
+#: ../src/build_e2fs/util.c:200
+msgid ""
+"\n"
+"Bad journal options specified.\n"
+"\n"
+"Journal options are separated by commas, and may take an argument which\n"
+"\tis set off by an equals ('=') sign.\n"
+"\n"
+"Valid journal options are:\n"
+"\tsize=<journal size in megabytes>\n"
+"\tdevice=<journal device>\n"
+"\n"
+"The journal size must be between 1024 and 102400 filesystem blocks.\n"
+"\n"
+msgstr ""
+
+#: ../src/build_e2fs/util.c:227
+msgid ""
+"\n"
+"Filesystem too small for a journal\n"
+msgstr ""
+
+#: ../src/build_e2fs/util.c:234
+#, c-format
+msgid ""
+"\n"
+"The requested journal size is %d blocks; it must be\n"
+"between 1024 and 102400 blocks.  Aborting.\n"
+msgstr ""
+
+#: ../src/build_e2fs/util.c:242
+msgid ""
+"\n"
+"Journal size too big for filesystem.\n"
+msgstr ""
+
+#: ../src/build_e2fs/util.c:266
+#, c-format
+msgid ""
+"This filesystem will be automatically checked every %d mounts or\n"
+"%g days, whichever comes first.  Use tune2fs -c or -i to override.\n"
+msgstr ""
+
+#: ../libany/block_map.c:28
+#, c-format
+msgid ""
+"We have inode #%lu with fragment #%lu (blocks from %lu to %lu)\n"
+"The inode intersects by blocks from %lu to %lu with the next inodes:\n"
+"\n"
+msgstr ""
+
+#: ../libany/block_map.c:62
+#, c-format
+msgid ""
+"\tinode #%lu with fragment #%lu (blocks from %lu to %lu)\n"
+"\tby blocks from %lu to %lu\n"
+"\n"
+msgstr ""
+
+#: ../libany/block_map.c:120
+#, c-format
+msgid ""
+"Shared blocks was founded. Read the next information attentively,\n"
+"mount anyfs filesystem and delete not needed inodes.\n"
+"Then restart the utility\n"
+"\n"
+msgstr ""
+
+#: ../libany/block_map.c:137
+#, c-format
+msgid ""
+"Shared blocks was founded. Read information above attentively,\n"
+"mount anyfs filesystem and delete not needed inodes.\n"
+"Then restart the utility\n"
+msgstr ""
+
+#: ../libany/progress.c:107
+msgid "done                            \n"
+msgstr ""
+
+#: ../libany/super.c:356
+#, c-format
+msgid "bad inode table head: %s\n"
+msgstr ""
+
+#: ../libany/super.c:400
+#, c-format
+msgid "fail read inode table\n"
+msgstr ""
+
+#: ../libany/super.c:482
+#, c-format
+msgid "bad data head: %s\n"
+msgstr ""
+
+#: ../libany/super.c:536
+#, c-format
+msgid "fail read reg info\n"
+msgstr ""
+
+#: ../libany/super.c:545
+#, c-format
+msgid "bad reg head: %s\n"
+msgstr ""
+
+#: ../libany/super.c:555
+#, c-format
+msgid "fail malloc\n"
+msgstr ""
+
+#: ../libany/super.c:599
+#, c-format
+msgid "unexpected end of file\n"
+msgstr ""
+
+#: ../libany/release_fssys.c:234
+#, c-format
+msgid "+%lu fragments\n"
+msgstr ""
+
+#: ../libany/release_fssys.c:238
+#, c-format
+msgid "Sorry, I can't find yet %lu free blocks\n"
+msgstr ""
+
+#: ../libany/release_fssys.c:459
+#, c-format
+msgid "data_block intersect with a file(s)\n"
+msgstr ""
+
+#: ../libany/release_fssys.c:488
+#, c-format
+msgid ""
+"inode #%lu, fragment #%lu/%lu (from %lu to %lu)\n"
+"\tby blocks from %lld to %lld\n"
+msgstr ""
+
+#: ../libany/release_fssys.c:512
+#, c-format
+msgid "Will breaks on many fragments\n"
+msgstr ""
+
+#: ../libany/release_fssys.c:519
+#, c-format
+msgid "Body will move to free block from %lu to %lu\n"
+msgstr ""
+
+#: ../libany/release_fssys.c:528
+#, c-format
+msgid "Body with %s will move to free block from %lu to %lu\n"
+msgstr ""
+
+#: ../libany/release_fssys.c:529
+msgid "head"
+msgstr ""
+
+#: ../libany/release_fssys.c:529
+msgid "tail"
+msgstr ""
+
+#: ../libany/release_fssys.c:538
+#, c-format
+msgid "Whole fragment will move to free block from %lu to %lu\n"
+msgstr ""
