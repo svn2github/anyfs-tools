@@ -247,7 +247,7 @@ int realloc_it(struct any_sb_info *info, unsigned long inodes)
 
 out2:
 out1:
-	exit(1);
+	exit(-ret);
 	return ret;
 }
 
