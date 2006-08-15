@@ -94,13 +94,6 @@ typedef int64_t any_off_t;
 #define ANY_DATA_OFFSET(inodes)		\
 	(ANY_DATA_HEAD_OFFSET(inodes)		+ strlen(ANY_DATA_HEAD))
 
-extern struct inode_operations any_file_inode_operations;
-extern struct inode_operations any_dir_inode_operations;
-extern struct file_operations any_file_operations;
-extern struct file_operations any_dir_operations;
-
-extern struct inode_operations any_symlink_inode_operations;
-
 struct any_file_fragment {
 	uint32_t	fr_start;
 	uint32_t	fr_length;
