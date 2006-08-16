@@ -1,0 +1,599 @@
+.TH libany 3 "16 Aug 2006" "Version 0.84.5"
+.SH "NAME"
+libany \- anyfs-tools library.
+
+.SH "SYNOPSIS"
+.B #include <any.h>
+.sp
+.B #include <super.h>
+.sp
+.B #include <bitops.h>
+.sp
+.B #include <block_map.h>
+.sp
+.B #include <new_inode.h>
+.sp
+.B #include <release_fssys.h>
+.sp
+.B #include <progress.h>
+.sp
+.B #include <version.h>
+
+.SH "DESCRIPTION"
+.B libany 
+library used by
+.B anyfs-tools .
+
+.SH "INODE TABLE STRUCTURES"
+Structures to keeps inode table in memory declared in
+.B any.h
+file.
+.SS "SUPERBLOCK INFORMATION"
+.nf
+struct any_sb_info {
+	char *si_itfilename;               /* inode table filename */
+	unsigned long si_blocksize;        /* blocksize */
+	unsigned long si_inodes;           /* count of inodes */
+	unsigned long *si_inode_bitmap;    /* map of inodes */
+	struct any_inode *si_inode_table;  /* array of inodes */
+};
+.fi
+The structure is superblock analog in other filesystems.
+
+The
+.B si_itfilename
+field fills with opening inode table and may be used with writing inode table
+if wasn't specified other filename.
+
+The
+.B si_inode_bitmap
+field is bitmap which says if a inode is busy.
+
+The
+.B si_inode_table
+field is actually inode table. Array of
+.B si_inodes
+.B any_inode
+structures (described below).
+
+.SS "INODE"
+.nf
+struct any_inode {
+    uint16_t  i_mode;         /* File mode */
+    uint16_t  i_uid;          /* Low 16 bits of Owner Uid */
+    uint16_t  i_gid;          /* Low 16 bits of Group Id */
+    uint64_t  i_size;         /* Size in bytes */
+    uint32_t  i_atime;        /* Access time */
+    uint32_t  i_ctime;        /* Creation time */
+    uint32_t  i_mtime;        /* Modification time */
+    uint16_t  i_links_count;  /* Links count */
+    union {
+        struct any_file_frags   *file_frags; /* File fragments */
+        struct any_dir          *dir;        /* Directory entries */
+        char   *symlink;                     /* Symbolic link */
+        dev_t  device;                       /* Device */
+    } i_info;
+    size_t    i_it_file_offset; /* Offset in inode table file */
+}
+.fi
+
+The structure is some modified of ext2fs inode structure
+.BR ext2_inode .
+
+The most entries description you may find in
+.IR stat(2) .
+
+Union
+.B i_info
+keeps link to inode table information part which depend on inode type.
+
+For regular file is description of location its fragment on the disk.
+
+For directories is its entries list.
+
+For symbolic links is link string.
+
+For device is device type (see description of
+.B st_rdev
+entry in 
+.I stat(2) 
+structure)
+
+The
+.B i_it_file_offset
+field used by writing inode table function.
+
+.SS "DIRECTORY"
+Directory has the next description:
+.nf
+struct any_dir {
+        uint32_t              d_ndirents; /* count of entries */
+        struct any_dirent*    d_dirent;   /* first directory entry */
+};
+.fi
+
+The
+.B d_dirent
+field is pointer to Singly-linked directory entries list.
+
+.SS "DIRECTORY ENTRY"
+.nf
+struct any_dirent {
+        char*               d_name;  /* entry name */
+        uint32_t            d_inode; /* inode number */
+        struct any_dirent   *d_next; /* the next directory entry */
+};
+.fi
+
+.SS "FILE FRAGMENTS"
+For regular file there is keeps information about its location on the disk
+in the next structure:
+.nf
+struct any_file_frags {
+        uint32_t                   fr_nfrags; /* fragments count */
+        struct any_file_fragment   *fr_frags; /* fragments */
+};
+.fi
+The 
+.B fr_frags
+field is array of
+.B fr_nfrags
+enties which describes each file fragment.
+
+.SS "FILE FRAGMENT"
+.nf
+struct any_file_fragment {
+        uint32_t    fr_start;     /* start fragment block number */
+        uint32_t    fr_length;    /* fragment length in blocks */
+};
+.fi
+
+Blocksize used in the structure as unit of measurement defined in
+.B any_sb_info
+structure.
+
+0 value of
+.B fr_start
+entry means sparse-fragment (i.e. which doesn't keeps on the disk, but
+considered that it filled with zeroes)
+
+.SH "CREATE/OPEN/WRITE INODE TABLE"
+The next functions declared in
+.BR super.h .
+
+.TP
+.BI "int alloc_it(struct any_sb_info **" it ", unsigned long " blocksize \
+		", unsigned long " inodes ");"
+Allocate memory for inode table with
+.B blocksize
+and maximal count of inodes
+.BR inodes , 
+puts pointer on the
+.B any_sb_info
+structure to
+.BR *it .
+
+New inode table fills with zeroes.
+
+Returns 0 if successful or -ENOMEM if not enough memory.
+
+.TP
+.BI "int realloc_it(struct any_sb_info *" it ", unsigned long " inodes ");"
+Uses
+.B realloc
+to change maximal number of entries in
+.B it 
+inode table to
+.BR inodes .
+
+Mean that after this call the
+.B si_inode_bitmap
+and
+.B si_inode_table
+entries of 
+.B any_sb_info
+structure of inode table may change its values
+i.e. inode table and map may change its location in the memory)
+and any pointers on inodes calculated before the call with expression like
+.I (it->si_inode_table + ino)
+or
+.I &(it->si_inode_table[ino])
+will needed to update.
+
+Returns 0 if successful or exit from program with ENOMEM status.
+
+.TP
+.BI "int read_it(struct any_sb_info **" it ", char " itfilename "[]);"
+Read inode table from
+.B itfilename
+file to the memory, puts inode table pointer to
+.BR *it .
+
+Returns 0 if successful or -ENOMEM, -ENAMETOOLONG, -EINVAL in case of error.
+If there was input/output error errno variable keeps more detailed error code.
+
+.TP
+.BI "int write_it(struct any_sb_info *" it ", char " itfilename "[]);"
+Write 
+.B it
+inode table to the 
+.B itfilename 
+file.
+
+If 
+.B itfilename 
+.IR "== NULL" ,
+then it gets filename from
+.BR it->si_itfilename .
+
+Mean that the call doesn't free memory with inode table
+(although
+.B read_it
+call allocate memory for new inode table)
+
+Return 0 if successful or 1 if there is error.
+In case of input/output error errno variable keeps more detailed error code.
+
+.TP
+.BI "void free_it(struct any_sb_info *" info ");"
+Free memory with inode table.
+
+.SH "WORK WITH BITMAPS"
+The next functions declared in
+.B bitops.h
+
+.TP
+.BI "int test_and_set_bit(unsigned int " nr ", unsigned long* " addr ");"
+Set
+.B nr
+bit in
+.B addr 
+bitmap.
+
+Returns the value of bit before setting.
+
+.TP
+.BI "set_bit(unsigned int " nr ", unsigned long* " addr ");"
+Set
+.B nr
+bit in
+.B addr 
+bitmap.
+
+.TP
+.BI "int test_and_clear_bit(unsigned int " nr ", unsigned long* " addr ");"
+Clear
+.B nr
+bit in
+.B addr 
+bitmap.
+
+Returns the value of bit before clearing.
+
+.TP
+.BI "clear_bit(unsigned int " nr ", unsigned long* " addr ");"
+Clear
+.B nr
+bit in
+.B addr 
+bitmap.
+
+.TP
+.BI "int test_bit(unsigned int " nr ", unsigned long* " addr ");"
+Returns the value of
+.B nr
+bit in the
+.B addr
+bitmap.
+
+.TP
+.BI "int find_first_zero_bit(const unsigned long* " addr ", int " size ");"
+Search the first zero bit in the
+.B addr 
+bitmap 
+.BR size .
+
+Return number of founded bit, or value which not less than
+.B size
+in unsuccessful case.
+
+.TP
+.BI "int find_next_zero_bit(const unsigned long* " addr ", int " size ", int " offset);"
+Search the first zero bit in the
+.B addr 
+bitmap with
+.BR size
+beginning from
+.BR offset .
+
+Return number of founded bit, or value which not less than
+.B size
+in unsuccessful case.
+
+.SH "CREATE BLOCKS MAP"
+The next functions declared in
+.B block_map.h
+
+.TP
+.BI "int fill_block_bitmap(struct any_sb_info *" info ", unsigned long *" block_bitmap ", any_blk_t " dev_size);"
+Fills blocks map, sets blocks of regular files,
+according to information from
+.B info
+inode table for device with
+.B dev_size
+size in blocks.
+
+Map before the call must be allocated and filled with zeroes.
+
+Besides the functions set the zero block as system.
+
+The function returns 0 if successful or -1, if in the inode table was founded
+files, with shared blocks.
+
+It means that the function must never find already set bit in the bitmap
+(possibly, set by itself as used block with other inode).
+
+.SH "CREATE FILES IN ANYFS"
+The next functions declared in
+.B new_inode.h
+
+.TP
+.BI "int any_new_inode(struct any_sb_info *" info ", int " mode ", void* "\
+                data ", uint32_t " dirino ", uint32_t *" newino ");"
+Creates inode in
+.B info
+inode table with
+.B mode 
+in directory inode
+.BR dirino .
+
+New inode number puts to
+.BR *newino .
+
+In case device creating (special file),
+.B data
+pointer must link to variable with
+.B dev_t
+type which keep device type.
+
+Returns zero in successful case. Close program (with exit)
+if not enough memory.
+
+.TP
+.BI "int getpathino(char *" path ", uint32_t " root ", struct any_sb_info*"\
+                  info ", uint32_t *" ino ");"
+Search (directory) entry with name
+.B path
+from directory inode
+.B root
+as root in 
+.B info 
+inodetable.
+
+Puts founded inode number to
+.BR *ino .
+
+Returns 0 in successful case, 1 if entry doesn't exist, or -1 if
+.B root
+inode is not directory or free inode.
+
+.TP
+.BI "int mkpathino(char *" path ", uint32_t " root ", struct any_sb_info*"\
+                info ", uint32_t *" ino ");"
+like
+.BR getpathino() ,
+but creates all directories in path if they doesn't exit.
+
+In the program must be difined
+.IB mode_t " dir_umask;"
+variable whick keeps umask for new directories.
+
+.SH "FREEING SYSTEM BLOCKS"
+The next functions declared in
+.B release_fssys.h
+
+.TP
+.BI "typedef int any_rwblk_t(unsigned long " from ", unsigned long " n \
+              ", char *" buffer ");"
+Type function to read/write block.
+
+Function of this type must read/write
+.B n 
+blocks beginning
+.B from
+in/from (before allocated)
+.BR buffer .
+
+The function must returns 0 in successful case or negative value in case of
+input/output error.
+
+.TP
+.BI "extern any_rwblk_t *" any_readblk ";"
+Pointer to the function to read blocks from device.
+
+Put to this variable right value before
+.B any_release()
+call.
+
+.TP
+.BI "extern any_rwblk_t *" any_writeblk ";"
+Pointer to the function to write blocks from device.
+
+Put to this variable right value before
+.B any_release()
+call.
+
+.TP
+.BI "typedef int any_testblk_t(unsigned long " bitno ");"
+Type function to test if block busy
+.BR bitno .
+
+The function of the type must return 0, if tested block is free.
+
+.TP
+.BI "extern any_testblk_t *" any_testblk ";"
+Pointer to function for test if device block busy.
+
+The function must return 1, only, if device block will kept with
+system information.
+
+Put to this variable right value before
+.B any_release()
+call.
+
+.TP
+.BI "typedef unsigned long any_getblkcount_t();"
+Type function to get device size in blocks.
+
+.TP 
+.BI "extern any_getblkcount_t *" any_getblkcount ";"
+Pointer to function to get device size.
+
+Put to this variable right value before
+.B any_release()
+call.
+
+.TP
+.BI "int any_release(struct any_sb_info *" info ", unsigned long*" \
+                 block_bitmap ", unsigned long " start \
+                 ", unsigned long " length ");"
+Free
+.B length
+(in future) system blocks of FS, beginning from
+.B start 
+block from user information. It gets information from
+.B info
+inodetable, blocks map (of user information)
+.BR block_bitmap .
+
+The function uses
+.B any_readblk
+and
+.B any_writeblk
+functions to read/write device,
+.B any_getblkcount
+function to get device size, also
+.B any_testblk
+function to get information about system blocks on device.
+
+.TP
+.BI "int any_adddadd(struct any_sb_info *" info ");"
+The function add to all directories of
+.B info
+inodetable "." and ".." entries.
+
+The function used in utilities for filesystem building
+.BR build_e2fs " and " build_xfs ,
+after freing blocks from system information. Because
+its declaration wasn't move to other file.
+
+.SH "PROGRESS LINE"
+The next functions declared in
+.B progress.h
+
+The functions was get from e2fsprogs with some modifications.
+
+.TP
+.B struct progress_struct;
+The structure keeps some progress data. The structure fields 
+uses by functions below. The programmer which uses that functions
+not needed to edit this fields self.
+
+.TP
+.BI "void progress_init(struct progress_struct *" progress \
+                 ", const char *" label ", uint32_t " max ");"
+Initialize
+.B progress
+progress line with 
+.B label
+(program action explanation for user) and 
+.B max 
+maximal value.
+
+Maximal value may be set to zero if count of precessed units
+(blocks, files and so on) not known (maybe the progress line will show
+counting if the entries), in this case the progress line will not
+.br
+<label>: <number of processed entry>/<total entries>
+
+but without printing "total entries" field:
+.br
+<label>: <number of processed entry>
+
+The possibility used in
+.B build_it 
+for filesystems which don't returns right count of used inodes (e.g. VFAT).
+
+.TP
+.BI "void progress_update(struct progress_struct *" progress \
+                 ", uint32_t " val ");"
+Updates 
+.B progress
+progress line to
+.B val
+value.
+
+The function write new progress value and returns cursor back for writing
+the next value.
+
+.TP
+.BI "void progress_close(struct progress_struct *" progress ");"
+Close
+.B progress
+progress line.
+
+.TP
+.BI "void progress_update_non_backup(struct progress_struct *" progress \
+                 ", uint32_t " val ");"
+Updates
+.B progress
+progress line to
+.B val 
+value without returning cursor for writing the next value.
+
+The function used in
+.B anysurrect
+to put after progress line indicator which show type of recognizer,
+which works at the moment.
+
+.TP
+.BI "void progress_backup(struct progress_struct *" progress ");"
+Returns cursor back for writing the next value.
+
+The function used in
+.B anysurrect
+to put after progress line indicator which show type of recognizer,
+which works at the moment.
+
+.SH "ANYFS-TOOLS VERSION"
+The 
+.B version.h
+file has declaration of two macroses.
+
+.TP
+.B ANYFSTOOLS_VERSION
+String of version anyfs-tools package.
+
+.TP
+.B ANYFSTOOLS_DATE
+String with release date of the version anyfs-tools package.
+
+.SH "AUTHOR"
+Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+
+.SH "BUG REPORTS"
+Messages about any problem with using
+.B anyfs-tools
+package send to
+undefer@gmail.com
+
+.SH "AVAILABILITY"
+You can obtain the last version of package at
+http://anyfs-tools.sourceforge.net
+
+.SH "SEE ALSO"
+
+.BR anyfs-tools(8),
+.BR build_it(8),
+.BR anysurrect(8),
+.BR stat(2)
