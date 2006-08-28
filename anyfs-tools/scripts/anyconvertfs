@@ -187,7 +187,18 @@ PAGESIZE=4096
 [ -z "$4" ] || usage
 [ -z "$2" ] && usage
 
-DEVICE=$1
+fullpath()
+{
+	F="$1"
+	DIR="${F%/*}"
+	NAME="${F##*/}"
+	pushd "$DIR" 1>/dev/null 2>&1
+	DIR="`pwd -P`"
+	popd 1>/dev/null 2>&1
+	echo "$DIR/$NAME"
+}
+
+DEVICE="$1"
 [ -z "$3" ] &&
 {
 	FROMFS="AUTO"
@@ -203,6 +214,8 @@ DEVICE=$1
 	PRINT "`$GT"{DEVICE} is not block device. Use {UNDER}'-f'{CLEAR} option."`"
 	exit 1
 }
+
+DEVICE="`fullpath "$DEVICE"`"
 
 BUILD_FS="build_$TOFS"
 BUILD_FS_OPS="-v"
