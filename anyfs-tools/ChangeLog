@@ -1,3 +1,7 @@
+* 28.08.06	Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- In build_e2fs added support of files with size more than 2 Gb.
+	- 0.84.6 Release
+
 * 17.08.06	Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
 	- Adding libany(3) manual page.
 	- 0.84.5c Release

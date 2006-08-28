@@ -1302,7 +1302,7 @@ void get_num_block(unsigned long block,
 {
 	blocksize/=4;
 	int i, j;
-	unsigned long l[4];
+	unsigned long long l[4];
 	unsigned long d;
 	
 	l[0] = EXT2_NDIR_BLOCKS;
@@ -1312,8 +1312,14 @@ void get_num_block(unsigned long block,
 
 	r[0] = r[1] = r[2] = r[3] = -1;
 	
-	for (j=0; l[j]<=block; j++)
+	for (j=0; j<4 && l[j]<=block; j++)
 		block-=l[j];
+
+	if (j==4)
+	{
+		fprintf(stderr, "Too large file\n");
+		exit(1);
+	}
 
 	if (!j) r[0] = block;
 	else r[0] = j + EXT2_NDIR_BLOCKS - 1;
@@ -1493,20 +1499,6 @@ int main (int argc, char *argv[])
 #endif
 
 	PRS(argc, argv, &info);
-
-	for (i=1; i<info->si_inodes; i++) {
-		if (!info->si_inode_table[i].i_links_count) continue;
-
-		if ( S_ISREG(info->si_inode_table[i].i_mode) ) {
-			if (info->si_inode_table[i].i_size > 0x7FFFFFFF)
-			{
-				fprintf (stderr,
-				_("There is file with size more than 2 GB (inode #%lu),\n"
-				  "\tbut ext2fs don't support it!\n"), i);
-				exit(1);
-			}
-		}
-	}
 
 #ifdef CONFIG_TESTIO_DEBUG
 	io_ptr = test_io_manager;
@@ -1866,7 +1858,7 @@ int main (int argc, char *argv[])
 			inode.i_mode  = info->si_inode_table[i].i_mode;
 			inode.i_uid   = info->si_inode_table[i].i_uid;
 			inode.i_gid   = info->si_inode_table[i].i_gid;
-			inode.i_size  = info->si_inode_table[i].i_size;
+			inode.i_size  = info->si_inode_table[i].i_size & ( (1ULL<<32) - 1);
 			inode.i_atime = info->si_inode_table[i].i_atime;
 			inode.i_ctime = info->si_inode_table[i].i_ctime;
 			inode.i_mtime = info->si_inode_table[i].i_mtime;
@@ -1903,6 +1895,8 @@ int main (int argc, char *argv[])
 			} else
 
 			if ( S_ISREG(info->si_inode_table[i].i_mode) ) {
+				inode.i_size_high  = info->si_inode_table[i].i_size >> 32;
+
 				unsigned long j;
 				for (j=0; j < info->si_inode_table[i].i_info.
 						file_frags->fr_nfrags; j++)
