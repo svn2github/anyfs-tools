@@ -1,3 +1,8 @@
+* 22.10.06	Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Some fix in progress bar of anysurrect to raise performance.
+	- Fix building with e2fsprogs-1.39
+	- 0.84.7 Release
+
 * 28.08.06	Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
 	- In build_e2fs added support of files with size more than 2 Gb.
 	- In anyconvertfs there was fixed searching mount point of device 

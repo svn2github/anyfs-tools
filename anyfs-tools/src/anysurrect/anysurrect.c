@@ -13,6 +13,7 @@
 #include <unistd.h>
 
 #include <stdio.h>
+#include <stdio_ext.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
@@ -738,10 +739,31 @@ void anysurrect_fromblock(struct any_sb_info *info)
 	char *mes;
 	any_size_t max_size=1;
 
-	char ind[1024];
-	int res;
+	static char *buffer = NULL;
 	int type;
-	
+        int i;
+
+	if (!buffer)
+	{
+		buffer = malloc(1024);
+		if (!buffer)
+		{
+			fprintf (stderr, _("Not enough memory\n"));
+			exit(1);
+		}
+
+		setvbuf(stdout, buffer, _IOLBF, 1024);
+	}
+
+	char typeline[21];
+
+	int pend = __fpending(stdout);
+	if ( (1024 - pend) < 32 )
+	{
+		fflush(stdout);
+		pend = __fpending(stdout);
+	}
+
 	static unsigned long *SKIP_TO_BLOCK = NULL;
 	if (!SKIP_TO_BLOCK) 
 	{
@@ -758,18 +780,40 @@ void anysurrect_fromblock(struct any_sb_info *info)
 	{
 		mode_t mode = *modes[type];
 		int text = *texts[type];
+
 		if (!quiet) {
-			memset(ind, ' ', 32);
-			progress_update_non_backup(&progress,
-					file_template_frags_list->frag.fr_start );
-			res=snprintf (ind, 1024, " [%s]", *indicators[type]);
-			ind[res]=' ';
-			ind[32]='\0';
-			printf ("%s", ind);
-			memset(ind, '\b', 32);
-			printf ("%s", ind);
-			progress_backup(&progress);
+			memset (typeline, ' ', 20);
+			typeline[20] = '\0';
+			int s = snprintf (typeline, 20, " [%s]", 
+					*indicators[type]);
+			if (s>=0 && s<=20) typeline[s]=' ';
+
+			if (!type)
+				printf("%s", typeline);
+			else
+			{
+				int pend2 = __fpending(stdout);
+				if ( (pend2-20)==pend )
+				{
+					memcpy(buffer + pend, typeline, 20);
+				}
+				else
+				{
+					for (i = 0; i < 20; i++)
+						fputc('\b', stdout);
+
+					pend = __fpending(stdout);
+					if ( (1024 - pend) < 32 )
+					{
+						fflush(stdout);
+						pend = __fpending(stdout);
+					}
+
+					printf("%s", typeline);
+				}
+			}
 		}
+
 		copy_frags_list (file_template_frags_list, &file_frags_list);
 		blocks_before_frag = 0;
 		cur_frag = file_frags_list;
@@ -791,6 +835,9 @@ void anysurrect_fromblock(struct any_sb_info *info)
 		}
 		free_frags_list (file_frags_list);
 	}
+
+	for (i = 0; i < 20; i++)
+		fputc('\b', stdout);
 
 	set_block( (max_size+get_blocksize()-1)/get_blocksize() );
 }
@@ -906,6 +953,27 @@ _("Illegal mode for directory umask. It must be 3 octal digits.\n"));
 	libs = strdup(libs);
 }
 
+void sigusr1_handler (int signal_number)
+{       
+	fflush(stdout);
+}
+
+void sigint_handler (int signal_number)
+{       
+	printf ("\nuser cancel\n");
+	fflush(stdout);
+
+	_exit(1);
+}
+
+void sigsegv_handler (int signal_number)
+{       
+	fflush(stdout);
+	fprintf (stderr, "Segmentation fault\n");
+
+	abort();
+}
+
 int main (int argc, const char *argv[])
 {
 	int r;
@@ -923,6 +991,36 @@ int main (int argc, const char *argv[])
 	bindtextdomain(NLS_CAT_NAME, LOCALEDIR);
 	textdomain(NLS_CAT_NAME);
 #endif
+
+	struct sigaction sa;
+	memset (&sa, 0, sizeof (sa));
+	sa.sa_handler = &sigint_handler;
+	sa.sa_flags = SA_RESTART;
+	sigemptyset(&sa.sa_mask);
+	sigaddset(&sa.sa_mask, SIGINT);
+	sigaddset(&sa.sa_mask, SIGSEGV);
+	sigaddset(&sa.sa_mask, SIGUSR1);
+	sigaction (SIGINT, &sa, NULL);
+
+	struct sigaction sa1;
+	memset (&sa1, 0, sizeof (sa1));
+	sa1.sa_handler = &sigsegv_handler;
+	sa1.sa_flags = SA_RESTART;
+	sigemptyset(&sa1.sa_mask);
+	sigaddset(&sa1.sa_mask, SIGINT);
+	sigaddset(&sa1.sa_mask, SIGSEGV);
+	sigaddset(&sa1.sa_mask, SIGUSR1);
+	sigaction (SIGSEGV, &sa1, NULL);
+
+	struct sigaction sa2;
+	memset (&sa2, 0, sizeof (sa2));
+	sa2.sa_handler = &sigusr1_handler;
+	sa2.sa_flags = SA_RESTART;
+	sigemptyset(&sa2.sa_mask);
+	sigaddset(&sa2.sa_mask, SIGINT);
+	sigaddset(&sa2.sa_mask, SIGSEGV);
+	sigaddset(&sa2.sa_mask, SIGUSR1);
+	sigaction (SIGUSR1, &sa2, NULL);
 
 	PRS(argc, argv);
 	

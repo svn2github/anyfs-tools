@@ -219,7 +219,8 @@ char *archieve_BZIP2_surrect()
 		FD_ZERO(&rfds);
 		FD_SET(stdindes[0], &rfds);
 
-		retval = select(stdindes[0]+1, &rfds, NULL, NULL, &tv);
+		do retval = select(stdindes[0]+1, &rfds, NULL, NULL, &tv);
+		while ( retval < 0 && errno == EINTR );
 
 		if (!retval)
 		{
@@ -243,7 +244,9 @@ char *archieve_BZIP2_surrect()
 		FD_ZERO(&rfds);
 		FD_SET(stdindes[0], &rfds);
 
-		retval = select(stdindes[0]+1, &rfds, NULL, NULL, &tv);
+		do retval = select(stdindes[0]+1, &rfds, NULL, NULL, &tv);
+		while ( retval < 0 && errno == EINTR );
+
 		if (retval)
 		{
 			n = read(stdindes[0], buf, BUFFER_SIZE);

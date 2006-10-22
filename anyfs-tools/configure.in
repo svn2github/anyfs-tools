@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(anyfs-tools, 0.84.6, undefer@gmail.com)
+AC_INIT(anyfs-tools, 0.84.7, undefer@gmail.com)
 #AM_INIT_AUTOMAKE(anyfs-tools, 0.84.5c)
 AC_CONFIG_SRCDIR([src/reblock.c], [include/any.h])
 AC_CONFIG_HEADER([include/config.h])
@@ -30,10 +30,10 @@ need_lib()
 
 # Checks for libraries.
 AC_CHECK_LIB([dl], [dlsym], , need_lib dl)
-AC_CHECK_LIB([blkid], [blkid_get_devname], , need_lib blkid)
 AC_CHECK_LIB([e2p], [e2p_os2string], , need_lib e2p)
 AC_CHECK_LIB([ext2fs], [ext2fs_read_bb_FILE], , need_lib ext2fs)
 AC_CHECK_LIB([uuid], [uuid_generate], , need_lib uuid)
+AC_CHECK_LIB([blkid], [blkid_get_devname], , need_lib blkid, , -luuid)
 AC_CHECK_LIB([bz2], [BZ2_bzRead],
 	     	BZ2LIB="-lbz2"; BZ2MODULES="archieve2_files_descr.o"; BZ2C="", \
 		BZ2LIB=""; BZ2MODULES=""; BZ2C="//")

@@ -10,7 +10,7 @@ CCFLAGS=-g3 -O3 -Wall -std=gnu99 -I$(INCLUDE) @EXT2FS_CFLAGS@ @CFLAGS@
 LDFLAGS=-L$(LIBANYPATH) @EXT2FS_LIBS@
 XFS_UTILS=@XFS_UTILS@
 
-LDFLAGSBDE2FS=-le2p -luuid -lblkid
+LDFLAGSBDE2FS=-le2p -lblkid -luuid
 OBJBDE2FS = build_e2fs.o util.o \
 	    $(LIBANYPATH)/libany.a
 
