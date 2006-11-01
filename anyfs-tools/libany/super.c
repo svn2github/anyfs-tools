@@ -234,6 +234,14 @@ int realloc_it(struct any_sb_info *info, unsigned long inodes)
 
 	for ( i = info->si_inodes; i < old_bitmap_l*sizeof(unsigned long); i++ )
 		clear_bit(i, info->si_inode_bitmap);
+
+	if ( inodes*sizeof(struct any_inode)/
+			sizeof(struct any_inode) < inodes )
+	{
+		fprintf (stderr, "Oops! %d-bit Overflow. I want too much memory\n",
+				sizeof(inodes)*8);
+		exit(1);
+	}
 	
 	info->si_inode_table = (typeof(info->si_inode_table))
 		realloc(info->si_inode_table, inodes*sizeof(struct any_inode));
@@ -277,6 +285,14 @@ int alloc_it(struct any_sb_info ** it, unsigned long blocksize,
 	memset(info->si_inode_bitmap, 0, bitmap_l*sizeof(unsigned long));
 
 	set_bit(0, info->si_inode_bitmap);
+
+	if ( info->si_inodes*sizeof(struct any_inode)/
+			sizeof(struct any_inode) < info->si_inodes )
+	{
+		fprintf (stderr, "Oops! %d-bit Overflow. I want too much memory\n",
+				sizeof(info->si_inodes)*8);
+		exit(1);
+	}
 
 	info->si_inode_table = (typeof(info->si_inode_table))
 		malloc(info->si_inodes*sizeof(struct any_inode));

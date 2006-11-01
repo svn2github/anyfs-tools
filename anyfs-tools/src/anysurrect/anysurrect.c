@@ -1211,19 +1211,21 @@ int main (int argc, const char *argv[])
 
 			while ( st.st_size/get_blocksize() > 0xFFFFFF )
 				set_blocksize(get_blocksize()*2);
+
+			if ( get_blocksize()>4096 )
+				set_blocksize(4096);
 		}
 		else
-		{
 			set_blocksize(input_blocksize);
 
-			if ( st.st_size/get_blocksize() > 0xFFFFFF )
-			{
-				fprintf(stderr,
-_("Blocksize very small for this device. Recommend to use greater blocksize\n"));
-			}
+
+		if ( st.st_size/get_blocksize() > 0xFFFFFFFFULL )
+		{
+			fprintf(stderr,
+					_("Sorry, too large device.\n"));
 		}
 
-		uint32_t inodes = st.st_size/( 4*get_blocksize() ) + 256;
+		uint32_t inodes = st.st_size/( 1024*get_blocksize() ) + 256;
 
 		r = alloc_it(&info, get_blocksize(), inodes);
 		if (r<0) goto out;
