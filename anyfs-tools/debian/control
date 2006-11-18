@@ -9,4 +9,10 @@ Package: anyfs-tools
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: unix-way toolset for recovering and converting filesystems
- unix-way toolset for recovering and converting filesystems for Linux OS
+ anyfs-tools allows you to recover and convert filesystems while using
+ minimal extra disk space. Unlike other recovery tools, anyfs-tools
+ doesn't copy all the files found on other disks (or partitions), but
+ only saves information about the location of the file blocks to an
+ external inode table. After recovery, a user may mount the damaged
+ filesystem with anyfs and the external inode table and then interact
+ with all recovered files with any program.
