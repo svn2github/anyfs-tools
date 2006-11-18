@@ -1,6 +1,7 @@
 * 18.11.06	Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
 	- Fix building with xfsprogs >= 2.8.11
 	- Add depmod to install target in anyfs/Makefile.in
+	- Fix progress bar
 	- 0.84.8 Release
 
 * 18.11.06       Kirill A. Kórinskiy <catap@catap.ru>
