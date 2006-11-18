@@ -187,6 +187,13 @@ PAGESIZE=4096
 [ -z "$4" ] || usage
 [ -z "$2" ] && usage
 
+modprobe any ||
+{
+	PRINT "`$GT"Sorry, seems {BOLD}any{CLEAR} module hasn't installed"`"
+	echo -e "${BOLD}${RED}`$GT"Exit"`${CLEAR}"
+	exit 1
+}
+
 fullpath()
 {
 	F="$1"

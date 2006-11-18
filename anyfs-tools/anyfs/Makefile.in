@@ -18,6 +18,7 @@ install: all
 		rm -f /lib/modules/$(shell uname -r)/kernel/fs/any.ko; \
 	fi
 	make -C $(KERNELSOURCES) M=$(PWD) INSTALL_MOD_DIR=$(INSTALL_MOD_DIR) INSTALL_MOD_PATH=$(DESTDIR) modules_install
+	/sbin/depmod $(shell uname -r)
 
 uninstall:
 	rm -f /lib/modules/$(shell uname -r)/kernel/fs/any/any.ko
