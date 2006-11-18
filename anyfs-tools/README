@@ -16,7 +16,7 @@ $ make depend
 
 The package has the following library dependencies:
  * e2fsprogs v1.38 (includes libext2fs, libe2p, libuuid, libblkid)
- * xfsprogs v2.8.10 (includes libxfs, libdisk)
+ * xfsprogs v2.8.11 (includes libxfs, libdisk)
 		(optionally, for converting to XFS)
  * libbz2 (optionally, for recovering BZIP2 files)
  * libmpeg2 (optionally, for recovering MPEG2 stream)

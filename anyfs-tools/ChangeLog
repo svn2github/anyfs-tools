@@ -1,3 +1,10 @@
+* 18.11.06	Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Fix building with xfsprogs >= 2.8.11
+	- 0.84.8 Release
+
+* 18.11.06       Kirill A. Kórinskiy <catap@catap.ru>
+        - Add debian/ for debian-like stuff
+
 * 22.10.06	Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
 	- Some fix in progress bar of anysurrect to raise performance.
 	- Fix building with e2fsprogs-1.39

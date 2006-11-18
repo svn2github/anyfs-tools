@@ -14,7 +14,7 @@ $ make depend
 При этом для сборки вам понадобятся библиотеки:
  * e2fsprogs версии 1.38 (включает библиотеки 
 		 libext2fs, libe2p, libuuid, libblkid)
- * xfsprogs версии 2.8.10 (включает библиотеки libxfs, libdisk)
+ * xfsprogs версии 2.8.11 (включает библиотеки libxfs, libdisk)
 		(опционально, для конвертирования в XFS)
  * libbz2 (опционально, для восстановления BZIP2 файлов)
  * libmpeg2 (опционально, для восстановления MPEG2 stream)

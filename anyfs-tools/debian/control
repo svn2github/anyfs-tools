@@ -1,0 +1,12 @@
+Source: anyfs-tools
+Section: otherosfs
+Priority: optional
+Maintainer: Kirill A. Kórinskiy <catap@catap.ru>
+Build-Depends: debhelper (>= 5), autotools-dev, ext2fs-dev,  xfslibs-dev, libbz2-dev, libmpeg2-4-dev,  uuid-dev, libblkid-dev
+Standards-Version: 3.7.2
+
+Package: anyfs-tools
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: unix-way toolset for recovering and converting filesystems
+ unix-way toolset for recovering and converting filesystems for Linux OS
