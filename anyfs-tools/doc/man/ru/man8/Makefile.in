@@ -16,3 +16,6 @@ uninstall:
 	$(INSTALLMANPATH)/anysurrect.8 $(INSTALLMANPATH)/build_e2fs.8 \
 	$(INSTALLMANPATH)/build_xfs.8 $(INSTALLMANPATH)/anyconvertfs.8 \
 	$(INSTALLMANPATH)/build_it.8 $(INSTALLMANPATH)/reblock.8
+
+distclean:
+	rm -f Makefile

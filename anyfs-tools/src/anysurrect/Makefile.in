@@ -28,10 +28,10 @@ all: anysurrect
 
 anysurrect: gzip_o scan_pes_o $(OBJS)
 	$(CC) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS)
-	
+
 gzip_o:
 	$(MAKE) $(AM_MAKEFLAGS) -C gzip
-	
+
 scan_pes_o:
 	$(MAKE) $(AM_MAKEFLAGS) -C scan_pes
 
@@ -56,6 +56,9 @@ clean:
 	$(MAKE) $(AM_MAKEFLAGS) -C gzip clean
 
 distclean:      clean
+	$(MAKE) $(AM_MAKEFLAGS) -C scan_pes distclean
+	$(MAKE) $(AM_MAKEFLAGS) -C gzip distclean
+	rm -f surrectlist.conf Makefile
 
 depend:
 	makedepend -- $(CCFLAGS) -- *.[ch] $(INCLUDE)/*.h

@@ -6,7 +6,7 @@ lib:
 	$(MAKE) $(AM_MAKEFLAGS) -C libany
 progs:
 	$(MAKE) $(AM_MAKEFLAGS) -C src
-	
+
 install: install_fs install_progs install_scripts install_docs install_include install_trans
 
 install_fs:
@@ -21,7 +21,7 @@ install_include:
 	$(MAKE) $(AM_MAKEFLAGS) -C include install
 install_trans:
 	$(MAKE) $(AM_MAKEFLAGS) -C po install
-	
+
 uninstall:
 	cd anyfs; $(MAKE) $(AM_MAKEFLAGS) uninstall; cd ..
 	$(MAKE) $(AM_MAKEFLAGS) -C src uninstall
@@ -36,6 +36,14 @@ clean:
 	cd anyfs; $(MAKE) $(AM_MAKEFLAGS) clean; cd ..
 
 distclean:      clean
+	$(MAKE) $(AM_MAKEFLAGS) -C doc distclean
+	$(MAKE) $(AM_MAKEFLAGS) -C include distclean
+	$(MAKE) $(AM_MAKEFLAGS) -C po distclean
+	$(MAKE) $(AM_MAKEFLAGS) -C scripts distclean
+	$(MAKE) $(AM_MAKEFLAGS) -C libany distclean
+	$(MAKE) $(AM_MAKEFLAGS) -C src distclean
+	cd anyfs; $(MAKE) $(AM_MAKEFLAGS) distclean; cd ..
+	rm -rf autom4te.cache config.h config.log config.status Makefile
 
 depend:
 	$(MAKE) $(AM_MAKEFLAGS) -C libany depend

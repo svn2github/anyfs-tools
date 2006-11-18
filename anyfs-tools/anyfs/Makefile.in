@@ -11,7 +11,11 @@ all:
 
 clean:
 	make -C $(KERNELSOURCES) M=$(PWD) clean
-	
+
+distclean:clean
+	rm -f Makefile
+
+
 install: all
 	if [ -z "$(DESTDIR)" ]; then \
 		rm -f /lib/modules/$(shell uname -r)/extra/any.ko; \

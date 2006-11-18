@@ -11,3 +11,5 @@ install: instlang.sh
 uninstall: uninstlang.sh
 	./uninstlang.sh $(INSTALLPATH) $(LANGS)
 
+distclean:
+	rm -f Makefile

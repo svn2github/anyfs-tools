@@ -23,6 +23,7 @@ clean:
 	rm -f *.o *~ libany.a
 
 distclean:      clean
+	rm -f Makefile
 
 depend:
 	makedepend -- $(CCFLAGS) -- *.[ch] ${INCLUDE}/.h

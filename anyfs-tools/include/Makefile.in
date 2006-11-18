@@ -16,3 +16,5 @@ uninstall:
 		$(INSTALLPATH)/include/anyfs-tools/somepaths.h
 	rmdir --ignore-fail-on-non-empty -p $(INSTALLPATH)/include/anyfs-tools
 
+distclean:
+	rm -f somepaths.h config.h Makefile

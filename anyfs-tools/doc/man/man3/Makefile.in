@@ -13,3 +13,6 @@ install: anysurrect-plugins libany
 uninstall:
 	rm -f $(INSTALLMANPATH)/anysurrect-plugins.3 \
 		$(INSTALLMANPATH)/libany.3
+
+distclean:
+	rm -f Makefile

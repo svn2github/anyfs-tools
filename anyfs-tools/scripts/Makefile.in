@@ -10,3 +10,6 @@ install: anyconvertfs
 
 uninstall:
 	rm -f $(INSTALLPATH)/sbin/anyconvertfs
+
+distclean:
+	rm -f Makefile

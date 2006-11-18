@@ -49,6 +49,10 @@ clean:
 	$(MAKE) $(AM_MAKEFLAGS) -C build_xfs clean
 
 distclean:      clean
+	$(MAKE) $(AM_MAKEFLAGS) -C anysurrect distclean
+	$(MAKE) $(AM_MAKEFLAGS) -C build_e2fs distclean
+	$(MAKE) $(AM_MAKEFLAGS) -C build_xfs distclean
+	rm -f Makefile
 
 depend:
 	makedepend -- $(CCFLAGS) -- *.[ch] $(INCLUDE)/*.h

@@ -12,3 +12,6 @@ install: anyfs_inode_table
 
 uninstall:
 	rm -f $(INSTALLMANPATH)/anyfs_inode_table.5
+
+distclean:
+	rm -f Makefile

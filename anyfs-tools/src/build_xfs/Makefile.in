@@ -33,6 +33,7 @@ clean:
 	rm -f *.o *~ build_xfs
 
 distclean:      clean
+	rm -f Makefile
 
 depend:
 	makedepend -- $(CCFLAGS) -- *.[ch] $(INCLUDE)/*.h
