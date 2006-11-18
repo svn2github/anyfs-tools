@@ -10,7 +10,6 @@
 #include <stdlib.h>
 
 int quiet;
-
 /*
  * These functions implement a generalized progress meter.
  */
@@ -29,6 +28,7 @@ void progress_init(struct progress_struct *progress,
 	progress->max = max;
 	progress->next_update = 0;
 	progress->skip_progress = 0;
+	progress->len = 0;
 	if (getenv("ANYFSTOOLS_SKIP_PROGRESS"))
 		progress->skip_progress++;
 
@@ -38,7 +38,6 @@ void progress_init(struct progress_struct *progress,
 
 void progress_update(struct progress_struct *progress, uint32_t val)
 {
-	static int len = 0;
 	int i;
 
 	if (progress->skip_progress)
@@ -47,13 +46,13 @@ void progress_update(struct progress_struct *progress, uint32_t val)
 	if (val < progress->next_update)
 		return;
 
-	for (i = 0; i < len; i++)
+	for (i = 0; i < progress->len; i++)
 		fputc('\b', stdout);
 
 	if (progress->max)
-		len = printf("%.2f%% (%i/%i)", (float)val / progress->pr, val, progress->max);
+		progress->len = printf("%.2f%% (%i/%i)", (float)val / progress->pr, val, progress->max);
 	else
-		len = printf("%i", val);
+		progress->len = printf("%i", val);
 
 	progress->next_update += progress->pr / 100;
 	fflush (stdout);

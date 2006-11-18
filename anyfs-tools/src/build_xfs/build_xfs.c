@@ -1453,7 +1453,7 @@ main(
 	bzero(&fsx, sizeof(fsx));
 
 	bzero(&xi, sizeof(xi));
-	xi.isdirect = LIBXFS_DIRECT;
+	xi.isdirect = 0;
 	xi.isreadonly = LIBXFS_EXCLUSIVELY;
 
 	verbose = 0;

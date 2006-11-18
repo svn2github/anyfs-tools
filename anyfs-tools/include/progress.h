@@ -5,6 +5,7 @@ struct progress_struct {
         float           pr;
 	uint32_t        next_update;
 	uint32_t	max;
+	int		len;
 	int		skip_progress;
 };
 
