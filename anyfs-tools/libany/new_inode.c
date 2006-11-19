@@ -86,6 +86,7 @@ int getpathino(char *path, uint32_t root, struct any_sb_info *info,
 	struct any_inode *root_inode;
 	struct any_dirent *dirent;
 	char *slash;
+	char olds;
 	
 	if ( !test_bit(root, info->si_inode_bitmap) ) return -1;
 		
@@ -95,28 +96,38 @@ int getpathino(char *path, uint32_t root, struct any_sb_info *info,
 
 	while ( (*path)=='/' ) path++;
 
+	if (!path[0]) 
+	{
+		*ino = root;
+		return 0;
+	}
+
 	slash = strchr(path, '/');
-	if (slash) slash[0] = '\0';
+	if (slash) 
+	{
+		olds = slash[0];
+		slash[0] = '\0';
+	}
 	
 	dirent = root_inode->i_info.dir->d_dirent;
 
 	for (; dirent; dirent=dirent->d_next)
 	{
-		if (strcmp((void*)dirent, path)==0)
+		if (strcmp((void*)dirent->d_name, path)==0)
 		{
-			if (slash)
-			{
-				slash[0] = '/';
-				return getpathino(slash,
-						dirent->d_inode, info, ino);
-			}
+			if (slash) slash[0] = olds;
 			else
+			{
 				*ino = dirent->d_inode;
 				return 0;
+			}
+
+			return getpathino(slash,
+					dirent->d_inode, info, ino);
 		}
 	}
 
-	if (slash) slash[0] = '/';
+	if (slash) slash[0] = olds;
 	return 1;
 }
 

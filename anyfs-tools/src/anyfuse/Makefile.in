@@ -1,0 +1,36 @@
+CC=gcc
+INSTALL=install -c
+prefix=@prefix@
+DESTDIR=@DESTDIR@
+INSTALLPATH=$(DESTDIR)$(prefix)
+SRCROOT=../..
+INCLUDE=$(SRCROOT)/include
+LIBANYPATH=$(SRCROOT)/src/lib
+CCFLAGS=-g3 -O3 -Wall -std=gnu99 -I$(INCLUDE) -I/include -D_FILE_OFFSET_BITS=64 -DFUSE_USE_VERSION=25
+LDFLAGS=-L$(LIBANYPATH) -lfuse -lpthread @EXT2FS_LIBS@
+
+OBJANYFUSE = anyfuse.o $(LIBANYPATH)/libany.a
+
+all: anyfuse
+
+anyfuse: $(OBJANYFUSE)
+	$(CC) $(CCFLAGS) -o $@ $(OBJANYFUSE) $(LDFLAGS)
+
+%.o: %.c
+	$(CC) $(CCFLAGS) -c $<
+
+install: anyfs
+	$(INSTALL) -d $(INSTALLPATH)/bin
+	$(INSTALL) anyfs $(INSTALLPATH)/bin
+
+uninstall:
+	rm -f $(INSTALLPATH)/bin/anyfs
+
+clean:
+	rm -f *.o *~ anyfuse
+
+distclean:      clean
+	rm -f Makefile
+
+depend:
+	makedepend -- $(CCFLAGS) -- *.[ch] $(INCLUDE)/*.h

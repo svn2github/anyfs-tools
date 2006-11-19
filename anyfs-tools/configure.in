@@ -18,6 +18,38 @@ export PKG_CONFIG_PATH
 EXT2FS_REQUIRED=1.38
 PKG_CHECK_MODULES(EXT2FS, ext2fs >= $EXT2FS_REQUIRED )
 
+PKG_CHECK_MODULES(FUSE, fuse >= 2.5, \
+		ANYFUSE_MODULE="anyfuse_module"; \
+		ANYFUSE_MODULE="" )
+
+if test $ANYFUSE_MODULE; then
+	echo -n "Check if there is fuse module... "
+
+	if LC_ALL=C /sbin/modprobe fuse | grep -q "not found";
+		echo "yes"
+		ANYFUSE_MODULE=""
+	else
+		echo "no"
+	fi
+fi
+
+echo -n "Check if there is kernel sources... "
+if test -f /lib/modules/`uname -r`/build/Makefile; then
+	echo "yes"
+	ANYFS_MODULE="anyfs_module"
+else
+	echo "no"
+	ANYFS_MODULE=""
+fi
+
+if test -z "$ANYFS_MODULE" && test -z "$ANYFUSE_MODULE"; then
+	echo
+	echo "ERROR! Cannot to build anyfs and anyfuse module."
+	echo
+	echo "You must have fuse library and module to build anyfuse FUSE module"
+	echo "Or kernel sources to build anyfs kernel module"
+fi
+
 PKG_CHECK_MODULES(MPEG2, libmpeg2, \
 		MPEG2_MODULES="audio_video2_files_descr.o"; MPEG2C="", \
 		MPEG2_LIBS=""; MPEG2_CFLAGS=""; MPEG2_MODULES=""; MPEG2C="//")
@@ -55,23 +87,37 @@ AC_SUBST(DESTDIR)
 # Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
+AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS([fcntl.h stdint.h stdlib.h string.h sys/ioctl.h sys/vfs.h unistd.h])
 AC_CHECK_HEADERS([libintl.h locale.h], LANGS="ru", LANGS="")
 AC_SUBST(LANGS)
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
+AC_TYPE_UID_T
+AC_C_INLINE
 AC_TYPE_MODE_T
 AC_TYPE_OFF_T
+AC_TYPE_PID_T
 AC_TYPE_SIZE_T
+AC_CHECK_MEMBERS([struct stat.st_blksize])
+AC_STRUCT_ST_BLOCKS
 AC_CHECK_MEMBERS([struct stat.st_rdev])
+AC_HEADER_TIME
 
 # Checks for library functions.
 AC_FUNC_CLOSEDIR_VOID
+AC_FUNC_ERROR_AT_LINE
+AC_FUNC_FORK
 AC_PROG_GCC_TRADITIONAL
+AC_HEADER_MAJOR
 AC_FUNC_MALLOC
+AC_FUNC_MEMCMP
+AC_FUNC_REALLOC
+AC_FUNC_SELECT_ARGTYPES
+AC_FUNC_SETVBUF_REVERSED
 AC_FUNC_STAT
-AC_CHECK_FUNCS([memset putenv setlocale strcasecmp strchr strdup strerror strrchr strstr strtol strtoul strtoull uname])
+AC_CHECK_FUNCS([__fpending bzero dup2 fdatasync memmove memset putenv select setlocale strcasecmp strchr strcspn strdup strerror strrchr strspn strstr strtol strtoul strtoull uname])
 
 #AC_CONFIG_FILES([Makefile
 #                 anyfs/Makefile
@@ -86,7 +132,8 @@ AC_CHECK_FUNCS([memset putenv setlocale strcasecmp strchr strdup strerror strrch
 #                 src/anysurrect/Makefile])
 
 AC_OUTPUT(Makefile 
-	anyfs/Makefile 
+	src/anyfs/Makefile 
+	src/anyfuse/Makefile 
 	doc/man/man3/Makefile
 	doc/man/man5/Makefile
 	doc/man/man8/Makefile
@@ -101,7 +148,7 @@ AC_OUTPUT(Makefile
 	src/build_e2fs/Makefile
 	src/build_xfs/Makefile
 	include/Makefile
-	libany/Makefile
+	lib/Makefile
 	scripts/Makefile
 	po/Makefile
 	include/somepaths.h)

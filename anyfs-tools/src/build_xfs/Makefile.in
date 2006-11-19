@@ -5,7 +5,7 @@ DESTDIR=@DESTDIR@
 INSTALLPATH=$(DESTDIR)$(prefix)
 SRCROOT=../..
 INCLUDE=$(SRCROOT)/include
-LIBANYPATH=$(SRCROOT)/libany
+LIBANYPATH=$(SRCROOT)/lib
 CCFLAGS=-g3 -O3 -Wall -std=gnu99 -I$(INCLUDE) -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 \
 	-DDEBUG -funsigned-char -fno-strict-aliasing @EXT2FS_CFLAGS@ @CFLAGS@
 LDFLAGS=-L$(LIBANYPATH) -L//lib -ldisk -lxfs -luuid -lm -lrt @EXT2FS_LIBS@
