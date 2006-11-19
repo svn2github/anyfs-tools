@@ -836,8 +836,9 @@ void anysurrect_fromblock(struct any_sb_info *info)
 		free_frags_list (file_frags_list);
 	}
 
-	for (i = 0; i < 20; i++)
-		fputc('\b', stdout);
+	if (!quiet)
+		for (i = 0; i < 20; i++)
+			fputc('\b', stdout);
 
 	set_block( (max_size+get_blocksize()-1)/get_blocksize() );
 }

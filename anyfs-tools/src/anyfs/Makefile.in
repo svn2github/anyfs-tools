@@ -5,23 +5,28 @@ any-y := inode.o file.o dir.o namei.o symlink.o
 DESTDIR=@DESTDIR@
 KERNELSOURCES=/lib/modules/$(shell uname -r)/build
 INSTALL_MOD_DIR=kernel/fs/any 
+ANYFS_KO=@ANYFS_KO@
 
-all:
+all: $(ANYFS_KO)
+
+anyfs.ko:
 	make -C $(KERNELSOURCES) M=$(PWD) modules
 
 clean:
 	make -C $(KERNELSOURCES) M=$(PWD) clean
 
-distclean:clean
+distclean: clean
 	rm -f Makefile
 
 
-install: all
+install: $(ANYFS_KO)
 	if [ -z "$(DESTDIR)" ]; then \
 		rm -f /lib/modules/$(shell uname -r)/extra/any.ko; \
 		rm -f /lib/modules/$(shell uname -r)/kernel/fs/any.ko; \
 	fi
-	make -C $(KERNELSOURCES) M=$(PWD) INSTALL_MOD_DIR=$(INSTALL_MOD_DIR) INSTALL_MOD_PATH=$(DESTDIR) modules_install
+	if [ -f anyfs.ko ]; then \
+		make -C $(KERNELSOURCES) M=$(PWD) INSTALL_MOD_DIR=$(INSTALL_MOD_DIR) INSTALL_MOD_PATH=$(DESTDIR) modules_install \
+	fi
 	/sbin/depmod $(shell uname -r)
 
 uninstall:

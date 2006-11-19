@@ -13,7 +13,8 @@ Svyatoslav
 (for bugreports, anyrename-utils, Makefiles corrections and ebuild)
 
 Kirill A. Korinskiy
-(for building bugreports)
+(for building bugreports, for debianizing)
 
 Mihail Zenkov
 (for improving progress bar in anysurrect to raise performance)
+

@@ -6,7 +6,7 @@ struct progress_struct {
 	uint32_t        next_update;
 	uint32_t	max;
 	int		len;
-	int		skip_progress;
+	int		progress;
 };
 
 void progress_init(struct progress_struct *progress,

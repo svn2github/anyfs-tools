@@ -19,27 +19,29 @@ EXT2FS_REQUIRED=1.38
 PKG_CHECK_MODULES(EXT2FS, ext2fs >= $EXT2FS_REQUIRED )
 
 PKG_CHECK_MODULES(FUSE, fuse >= 2.5, \
-		ANYFUSE_MODULE="anyfuse_module"; \
-		ANYFUSE_MODULE="" )
+		ANYFUSE_MODULE="anyfuse_module"; ANYFUSE="anyfuse", \
+		ANYFUSE_MODULE=""; ANYFUSE="" )
 
 if test $ANYFUSE_MODULE; then
-	echo -n "Check if there is fuse module... "
-
-	if LC_ALL=C /sbin/modprobe fuse | grep -q "not found";
+	echo -n "checking for fuse kernel module... "
+	if LC_ALL=C /sbin/modprobe fuse | grep -q "not found"; then
 		echo "yes"
 		ANYFUSE_MODULE=""
+		ANYFUSE=""
 	else
 		echo "no"
 	fi
 fi
 
-echo -n "Check if there is kernel sources... "
+echo -n "checking for kernel sources... "
 if test -f /lib/modules/`uname -r`/build/Makefile; then
 	echo "yes"
 	ANYFS_MODULE="anyfs_module"
+	ANYFS_KO="anyfs.ko"
 else
 	echo "no"
 	ANYFS_MODULE=""
+	ANYFS_KO=""
 fi
 
 if test -z "$ANYFS_MODULE" && test -z "$ANYFUSE_MODULE"; then
@@ -48,6 +50,7 @@ if test -z "$ANYFS_MODULE" && test -z "$ANYFUSE_MODULE"; then
 	echo
 	echo "You must have fuse library and module to build anyfuse FUSE module"
 	echo "Or kernel sources to build anyfs kernel module"
+	exit 1
 fi
 
 PKG_CHECK_MODULES(MPEG2, libmpeg2, \
@@ -76,6 +79,7 @@ AC_CHECK_LIB([disk], [fstype],
 AC_CHECK_LIB([xfs], [libxfs_purgebuf], 
 	     XFS_UTILS="build_xfs_util"; BUILD_XFS="build_xfs", , -lrt))) 
 	
+AC_SUBST(ANYFS_MODULE ANYFS_KO ANYFUSE_MODULE ANYFUSE)
 AC_SUBST(EXT2FS_CFLAGS EXT2FS_LIBS)
 AC_SUBST(BZ2LIB BZ2MODULES BZ2C)
 AC_SUBST(MPEG2_LIBS MPEG2_CFLAGS MPEG2_MODULES MPEG2C)
@@ -153,10 +157,14 @@ AC_OUTPUT(Makefile
 	po/Makefile
 	include/somepaths.h)
 
-if test -z "$MPEG2_LIBS" || test -z "$BZ2LIB" || test -z "$BUILD_XFS"; then
+if test -z "$MPEG2_LIBS" || test -z "$BZ2LIB" || test -z "$BUILD_XFS" || test -z "$ANYFS_MODULE" || test -z "$ANYFUSE_MODULE"; then
 	echo
 	echo "WARNING! The package configured successful, but the next features was disabled:"
 	echo
+	test -z "$ANYFS_MODULE" &&
+		echo "* Building anyfs kernel module (depends on kernel sources)"
+	test -z "$ANYFUSE_MODULE" &&
+		echo "* Building anyfuse FUSE module (depends on fuse library >= 2.5.0, and fuse kernel module)"
 	test -z "$MPEG2_LIBS" &&
 		echo "* Mpeg2 recovering with anysurrect (depends on libmpeg2)"
 	test -z "$BZ2LIB" &&

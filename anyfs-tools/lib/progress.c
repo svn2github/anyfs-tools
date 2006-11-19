@@ -27,10 +27,10 @@ void progress_init(struct progress_struct *progress,
 
 	progress->max = max;
 	progress->next_update = 0;
-	progress->skip_progress = 0;
+	progress->progress = 1;
 	progress->len = 0;
 	if (getenv("ANYFSTOOLS_SKIP_PROGRESS"))
-		progress->skip_progress++;
+		progress->progress = 0;
 
 	fputs(label, stdout);
 	fflush(stdout);
@@ -40,7 +40,7 @@ void progress_update(struct progress_struct *progress, uint32_t val)
 {
 	int i;
 
-	if (progress->skip_progress)
+	if (!progress->progress)
 		return;
 
 	if (val < progress->next_update)

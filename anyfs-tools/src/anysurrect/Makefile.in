@@ -7,7 +7,7 @@ SRCROOT=../..
 INCLUDE=$(SRCROOT)/include
 LIBANYPATH=$(SRCROOT)/lib
 CCFLAGS= -O3 -Wall -std=gnu99 -I$(INCLUDE) @MPEG2_CFLAGS@ @EXT2FS_CFLAGS@ @CFLAGS@
-LDFLAGS= -rdynamic -L$(LIBANYPATH) @BZ2LIB@ -ldl @MPEG2_LIBS@ @EXT2FS_LIBS@
+LDFLAGS= -rdynamic -L$(LIBANYPATH) -lany @BZ2LIB@ -ldl @MPEG2_LIBS@ @EXT2FS_LIBS@
 
 OBJS = anysurrect.o \
        audio_files_descr.o \
@@ -21,8 +21,7 @@ OBJS = anysurrect.o \
        cd-image_files_descr.o \
        archieve3_files_descr.o \
        gzip/gzip.o gzip/unzip.o gzip/inflate.o gzip/util.o\
-       gzip/unlzw.o gzip/unpack.o gzip/unlzh.o \
-       $(LIBANYPATH)/libany.a
+       gzip/unlzw.o gzip/unpack.o gzip/unlzh.o
 
 all: anysurrect
 

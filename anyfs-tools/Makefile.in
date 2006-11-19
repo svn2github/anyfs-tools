@@ -1,7 +1,7 @@
 all: libany progs
 
-lib:
-	$(MAKE) $(AM_MAKEFLAGS) -C libany
+libany:
+	$(MAKE) $(AM_MAKEFLAGS) -C lib
 progs:
 	$(MAKE) $(AM_MAKEFLAGS) -C src
 

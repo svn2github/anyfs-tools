@@ -16,8 +16,18 @@ all: libany.a
 libany.a: $(OBJLIBANY)
 	$(AR) $(ARFLAGS) $@ $(OBJLIBANY)
 
+libany.so: $(OBJLIBANY)
+	$(CC) -nostdlib -shared $(CCFLAGS) $(LDFLAGS) -o $@ $(OBJLIBANY)
+
 %.o: %.c
-	$(CC) $(CCFLAGS) -c $<
+	$(CC) -fPIC $(CCFLAGS) -c $<
+
+install: libany.a
+	$(INSTALL) -d $(INSTALLPATH)/lib
+	$(INSTALL) libany.a $(INSTALLPATH)/lib
+
+uninstall:
+	rm -f $(INSTALLPATH)/lib/libany.a
 
 clean:
 	rm -f *.o *~ libany.a

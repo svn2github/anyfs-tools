@@ -5,13 +5,15 @@ DESTDIR=@DESTDIR@
 INSTALLPATH=$(DESTDIR)$(prefix)
 SRCROOT=../..
 INCLUDE=$(SRCROOT)/include
-LIBANYPATH=$(SRCROOT)/src/lib
+LIBANYPATH=$(SRCROOT)/lib
 CCFLAGS=-g3 -O3 -Wall -std=gnu99 -I$(INCLUDE) -I/include -D_FILE_OFFSET_BITS=64 -DFUSE_USE_VERSION=25
-LDFLAGS=-L$(LIBANYPATH) -lfuse -lpthread @EXT2FS_LIBS@
+LDFLAGS=-L$(LIBANYPATH) -lany -lfuse -lpthread @EXT2FS_LIBS@
 
-OBJANYFUSE = anyfuse.o $(LIBANYPATH)/libany.a
+ANYFUSE=@DESTDIR@
 
-all: anyfuse
+OBJANYFUSE = anyfuse.o
+
+all: $(ANYFUSE)
 
 anyfuse: $(OBJANYFUSE)
 	$(CC) $(CCFLAGS) -o $@ $(OBJANYFUSE) $(LDFLAGS)
@@ -19,12 +21,12 @@ anyfuse: $(OBJANYFUSE)
 %.o: %.c
 	$(CC) $(CCFLAGS) -c $<
 
-install: anyfs
+install: $(ANYFUSE)
 	$(INSTALL) -d $(INSTALLPATH)/bin
-	$(INSTALL) anyfs $(INSTALLPATH)/bin
+	if [ -f anyfuse ]; then $(INSTALL) anyfuse $(INSTALLPATH)/bin; fi
 
 uninstall:
-	rm -f $(INSTALLPATH)/bin/anyfs
+	rm -f $(INSTALLPATH)/bin/anyfuse
 
 clean:
 	rm -f *.o *~ anyfuse

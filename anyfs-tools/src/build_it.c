@@ -178,6 +178,9 @@ int fill_anyinodeinfo(struct any_inode *inode, const char *path,
 			return -EIO;
 		}
 
+		if ( geteuid()!=0 && getuid()==0 )
+			setreuid( geteuid(), getuid() );
+
 		if (unpack)
 		{
 			if (fs_type == REISERFS_SUPER_MAGIC) {
@@ -285,6 +288,9 @@ int fill_anyinodeinfo(struct any_inode *inode, const char *path,
 			fr_start = fr_start;
 		inode->i_info.file_frags->fr_frags[numfrags].
 			fr_length = fr_length;
+
+		if ( geteuid()==0 && getuid()!=0 )
+			setreuid( geteuid(), getuid() );
 
 		close(fd);
 		

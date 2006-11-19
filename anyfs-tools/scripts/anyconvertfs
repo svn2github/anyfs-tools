@@ -5,7 +5,7 @@
 # License GPL
 
 SCRIPT="anyconvertfs"
-VERSION="v0.84.5"
+VERSION="v0.84.8"
 if [ "${0:0:1}" != '/' ]; then F0=$PWD/$0; else F0=$0; fi
 export TEXTDOMAIN="anyfs-tools"
 export TEXTDOMAINDIR="${F0%%$SCRIPT}../share/locale"
@@ -31,6 +31,7 @@ PRINT()
 	STRING="${STRING//\{TMPDIR\}/${BOLD}\"$TMPDIR\"${CLEAR}}"
 	STRING="${STRING//\{BUILD_FS\}/${BOLD}\"$BUILD_FS\"${CLEAR}}"
 	STRING="${STRING//\{LABEL\}/${BOLD}\"$LABEL\"${CLEAR}}"
+	STRING="${STRING//\{USE_ANY_FS_OR_FUSE\}/${BOLD}\"$USE_ANY_FS_OR_FUSE\"${CLEAR}}"
 
 	STRING="${STRING//\{MESG\}/$MESG}"
 
@@ -77,8 +78,8 @@ usage ()
     echo -e "${BOLD}$SCRIPT ${WHITE}$VERSION${CLEAR}"
     echo -e "${BOLD}${BROWN}`$GT"usage:"`${CLEAR}""\n$ ${BOLD}$SCRIPT [--tmpdir${CLEAR} ${UNDER}directory${CLEAR}${BOLD}] [--blocksize${CLEAR} ${UNDER}blocksize${CLEAR}${BOLD}] [-f] [--dry]"
     echo -e "\t[--inodetable${CLEAR} ${UNDER}inodetable${CLEAR}${BOLD}] [--color|--no-color] [--label${CLEAR} ${UNDER}label${CLEAR}${BOLD}]"
-    echo -e "\t[--dontstop] [--pause${CLEAR} ${UNDER}seconds${CLEAR}${BOLD}] [--] ${CLEAR}${UNDER}device${CLEAR} ${BOLD}[${CLEAR}${UNDER}source_fs${CLEAR}${BOLD}] "
-    echo -e "\t ${CLEAR}${UNDER}destination_fs${CLEAR}"
+    echo -e "\t[--dontstop] [--pause${CLEAR} ${UNDER}seconds${CLEAR}${BOLD}] [--use-anyfs|--use-anyfuse] [--] "
+    echo -e "\t ${CLEAR}${UNDER}device${CLEAR} ${BOLD}[${CLEAR}${UNDER}source_fs${CLEAR}${BOLD}] ${CLEAR}${UNDER}destination_fs${CLEAR}"
 
     exit 1
 }
@@ -95,6 +96,7 @@ DRYRUN="N"
 LABEL="AUTO"
 DONTSTOP="N"
 PAUSE=7
+USE_ANY_FS_OR_FUSE="AUTO"
 
 END="0"
 while [[ "$END" == '0' ]]; do
@@ -138,6 +140,14 @@ while [[ "$END" == '0' ]]; do
 		'--pause')
 			PAUSE="$2"
 			shift 2
+			;;
+		'--use-anyfs')
+			USE_ANY_FS_OR_FUSE="ANYFS"
+			shift 1
+			;;
+		'--use-anyfuse')
+			USE_ANY_FS_OR_FUSE="ANYFUSE"
+			shift 1
 			;;
 		'--')
 			END=1
@@ -187,11 +197,46 @@ PAGESIZE=4096
 [ -z "$4" ] || usage
 [ -z "$2" ] && usage
 
-modprobe any ||
+[[ $USE_ANY_FS_OR_FUSE == "ANYFS" ]] &&
 {
-	PRINT "`$GT"Sorry, seems {BOLD}any{CLEAR} module hasn't installed"`"
-	echo -e "${BOLD}${RED}`$GT"Exit"`${CLEAR}"
-	exit 1
+	modprobe any ||
+	{
+		PRINT "`$GT"Sorry, seems {BOLD}any{CLEAR} module hasn't installed"`"
+		echo -e "${BOLD}${RED}`$GT"Exit"`${CLEAR}"
+		exit 1
+	}
+}
+
+[[ $USE_ANY_FS_OR_FUSE == "ANYFUSE" ]] &&
+{
+	modprobe fuse ||
+	{
+		PRINT "`$GT"Sorry, seems {BOLD}fuse{CLEAR} kernel module hasn't installed"`"
+		echo -e "${BOLD}${RED}`$GT"Exit"`${CLEAR}"
+		exit 1
+	} 
+
+	which "anyfuse" >/dev/null 2>&1 ||
+	{
+		PRINT "`$GT"Sorry, seems {BOLD}anyfuse{CLEAR} FUSE module hasn't installed"`"
+		echo -e "${BOLD}${RED}`$GT"Exit"`${CLEAR}"
+		exit 1
+	}
+}
+
+[[ $USE_ANY_FS_OR_FUSE == "AUTO" ]] &&
+{
+	if modprobe any; then
+		USE_ANY_FS_OR_FUSE="ANYFS"
+	elif ( modprobe fuse && which "anyfuse" >/dev/null 2>&1 ); then
+		USE_ANY_FS_OR_FUSE="ANYFUSE"
+	else
+		PRINT "`$GT""\
+"Sorry, you must have {BOLD}anyfs{CLEAR} kernel module or
+  {BOLD}anyfuse{CLEAR} FUSE module with {BOLD}fuse{CLEAR} kernel module"`"
+		echo -e "${BOLD}${RED}`$GT"Exit"`${CLEAR}"
+		exit 1
+	fi
 }
 
 fullpath()
@@ -538,7 +583,11 @@ HANDLER()
 
 	if [[ "$WASMOUNTED" == "Y" ]]; then
 		if [[ "$FROMFS" == "any" ]]; then
+			[[ $USE_ANY_FS_OR_FUSE == "ANYFS" ]] &&
 			mount -t any -o "$MOUNTOPTIONS" "$DEVICE" "$MOUNTPOINT"
+
+			[[ $USE_ANY_FS_OR_FUSE == "ANYFUSE" ]] &&
+			anyfuse "$INODETABLE" "$DEVICE" "$MOUNTPOINT"
 		else
 			mount -o remount,"$MOUNTOPTIONS" "$MOUNTPOINT"
 		fi
@@ -582,7 +631,8 @@ Mount point: {MOUNTPOINT}
 Mount options: {MOUNTOPTIONS}
 Temporary directory: {TMPDIR}
 Inode table: {INODETABLE}
-First step which destroy old filesystem: {FIRSTDESTROYSTEP}"`"
+First step which destroy old filesystem: {FIRSTDESTROYSTEP}
+Use anyfs kernel module or anyfuse FUSE module: {USE_ANY_FS_OR_FUSE}"`"
 
 echo
 
@@ -646,7 +696,11 @@ HANDLER()
 	fi
 
 	if [[ "$FROMFS" == "any" ]] && [[ "$WASMOUNTED" == "Y" ]]; then
+		[[ $USE_ANY_FS_OR_FUSE == "ANYFS" ]] &&
 		mount -t any -o "$MOUNTOPTIONS" "$DEVICE" "$MOUNTPOINT"
+
+		[[ $USE_ANY_FS_OR_FUSE == "ANYFUSE" ]] &&
+		anyfuse "$INODETABLE" "$DEVICE" "$MOUNTPOINT"
 	fi
 
 	if [[ "$WASMOUNTED" == "N" ]]; then
@@ -675,10 +729,23 @@ O.K. I try to be helpful and now.."`"
 
 	MOUNTOPTIONS="rw"
 	[ -b "$DEVICE" ] || MOUNTOPTIONS="rw,loop"
-	mount -t any -o "$MOUNTOPTIONS",inodetable="$INODETABLE" "$DEVICE" "$MOUNTPOINT" ||
+
+	[[ $USE_ANY_FS_OR_FUSE == "ANYFS" ]] &&
 	{
-		echo -e "`$GT"Error while mount anyfs filesystem"`"
-		HANDLER
+		mount -t any -o "$MOUNTOPTIONS",inodetable="$INODETABLE" "$DEVICE" "$MOUNTPOINT" ||
+		{
+			echo -e "`$GT"Error while mount anyfs filesystem"`"
+			HANDLER
+		}
+	}
+
+	[[ $USE_ANY_FS_OR_FUSE == "ANYFUSE" ]] &&
+	{
+		anyfuse "$INODETABLE" "$DEVICE" "$MOUNTPOINT" ||
+		{
+			echo -e "`$GT"Error while mount anyfs filesystem"`"
+			HANDLER
+		}
 	}
 
 	echo
