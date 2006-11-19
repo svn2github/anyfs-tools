@@ -24,7 +24,7 @@ build_xfs: $(OBJ)
 
 install: $(BUILD_XFS)
 	$(INSTALL) -d $(INSTALLPATH)/sbin
-	if [ -f build_xfs ]; then $(INSTALL) -c build_xfs $(INSTALLPATH)/sbin; fi
+	if [ -f build_xfs ]; then $(INSTALL) build_xfs $(INSTALLPATH)/sbin; fi
 
 uninstall:
 	rm -f $(INSTALLPATH)/sbin/build_xfs
