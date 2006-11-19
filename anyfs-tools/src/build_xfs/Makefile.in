@@ -23,6 +23,7 @@ build_xfs: $(OBJ)
 	$(CC) $(CCFLAGS) -c $<
 
 install: $(BUILD_XFS)
+	$(INSTALL) -d $(INSTALLPATH)/sbin
 	if [ -f build_xfs ]; then $(INSTALL) -c build_xfs $(INSTALLPATH)/sbin; fi
 
 uninstall:
