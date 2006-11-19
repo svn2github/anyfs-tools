@@ -7730,7 +7730,7 @@ done
 #                 src/Makefile
 #                 src/anysurrect/Makefile])
 
-                                                                                                                                                                                                                  ac_config_files="$ac_config_files Makefile src/anyfs/Makefile src/anyfuse/Makefile doc/man/man3/Makefile doc/man/man5/Makefile doc/man/man8/Makefile doc/man/ru/man3/Makefile doc/man/ru/man5/Makefile doc/man/ru/man8/Makefile src/Makefile src/anysurrect/Makefile src/anysurrect/surrectlist.conf src/anysurrect/gzip/Makefile src/anysurrect/scan_pes/Makefile src/build_e2fs/Makefile src/build_xfs/Makefile include/Makefile lib/Makefile scripts/Makefile po/Makefile include/somepaths.h"
+                                                                                                                                                                                                                  ac_config_files="$ac_config_files Makefile anyfs/Makefile src/anyfuse/Makefile doc/man/man3/Makefile doc/man/man5/Makefile doc/man/man8/Makefile doc/man/ru/man3/Makefile doc/man/ru/man5/Makefile doc/man/ru/man8/Makefile src/Makefile src/anysurrect/Makefile src/anysurrect/surrectlist.conf src/anysurrect/gzip/Makefile src/anysurrect/scan_pes/Makefile src/build_e2fs/Makefile src/build_xfs/Makefile include/Makefile lib/Makefile scripts/Makefile po/Makefile include/somepaths.h"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -8257,7 +8257,7 @@ do
   case "$ac_config_target" in
   # Handling of arguments.
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
-  "src/anyfs/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/anyfs/Makefile" ;;
+  "anyfs/Makefile" ) CONFIG_FILES="$CONFIG_FILES anyfs/Makefile" ;;
   "src/anyfuse/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/anyfuse/Makefile" ;;
   "doc/man/man3/Makefile" ) CONFIG_FILES="$CONFIG_FILES doc/man/man3/Makefile" ;;
   "doc/man/man5/Makefile" ) CONFIG_FILES="$CONFIG_FILES doc/man/man5/Makefile" ;;

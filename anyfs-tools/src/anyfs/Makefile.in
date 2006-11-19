@@ -25,7 +25,7 @@ install: $(ANYFS_KO)
 		rm -f /lib/modules/$(shell uname -r)/kernel/fs/any.ko; \
 	fi
 	if [ -f anyfs.ko ]; then \
-		make -C $(KERNELSOURCES) M=$(PWD) INSTALL_MOD_DIR=$(INSTALL_MOD_DIR) INSTALL_MOD_PATH=$(DESTDIR) modules_install \
+		make -C $(KERNELSOURCES) M=$(PWD) INSTALL_MOD_DIR=$(INSTALL_MOD_DIR) INSTALL_MOD_PATH=$(DESTDIR) modules_install; \
 	fi
 	/sbin/depmod $(shell uname -r)
 

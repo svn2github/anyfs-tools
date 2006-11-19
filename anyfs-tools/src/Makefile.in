@@ -9,7 +9,6 @@ LIBANYPATH=$(SRCROOT)/lib
 CCFLAGS=-g3 -O3 -Wall -std=gnu99 -I$(INCLUDE) @EXT2FS_CFLAGS@ @CFLAGS@
 LDFLAGS=-L$(LIBANYPATH) @EXT2FS_LIBS@
 XFS_UTILS=@XFS_UTILS@
-ANYFS_MODULE=@ANYFS_MODULE@
 ANYFUSE_MODULE=@ANYFUSE_MODULE@
 
 OBJREBLOCK = reblock.o
@@ -18,7 +17,7 @@ OBJBDIT = build_it.o
 REBLOCKLDFLAGS= -lany
 BDITLDFLAGS= -lany
 
-all: reblock build_it anysurrect_util build_e2fs_util $(XFS_UTILS) $(ANYFS_MODULE) $(ANYFUSE_MODULE)
+all: reblock build_it anysurrect_util build_e2fs_util $(XFS_UTILS) $(ANYFUSE_MODULE)
 
 reblock: $(OBJREBLOCK)
 	$(CC) $(CCFLAGS) -o $@ $(OBJREBLOCK) $(LDFLAGS) $(REBLOCKLDFLAGS)
@@ -32,8 +31,6 @@ build_xfs_util:
 	$(MAKE) $(AM_MAKEFLAGS) -C build_xfs
 anyfuse_module:
 	$(MAKE) $(AM_MAKEFLAGS) -C anyfuse
-anyfs_module:
-	cd anyfs; $(MAKE) $(AM_MAKEFLAGS); cd ..
 
 %.o: %.c
 	$(CC) $(CCFLAGS) -c $<
@@ -46,7 +43,6 @@ install: reblock build_it
 	$(MAKE) $(AM_MAKEFLAGS) -C build_e2fs install
 	$(MAKE) $(AM_MAKEFLAGS) -C build_xfs install
 	$(MAKE) $(AM_MAKEFLAGS) -C anyfuse install
-	cd anyfs; $(MAKE) $(AM_MAKEFLAGS) install; cd ..
 
 uninstall:
 	rm -f $(INSTALLPATH)/sbin/reblock $(INSTALLPATH)/sbin/build_it
@@ -54,7 +50,6 @@ uninstall:
 	$(MAKE) $(AM_MAKEFLAGS) -C build_e2fs uninstall
 	$(MAKE) $(AM_MAKEFLAGS) -C build_xfs uninstall
 	$(MAKE) $(AM_MAKEFLAGS) -C anyfuse uninstall
-	cd anyfs; $(MAKE) $(AM_MAKEFLAGS) uninstall; cd ..
 
 clean:
 	rm -f *.o *~ reblock build_it
@@ -62,14 +57,12 @@ clean:
 	$(MAKE) $(AM_MAKEFLAGS) -C build_e2fs clean
 	$(MAKE) $(AM_MAKEFLAGS) -C build_xfs clean
 	$(MAKE) $(AM_MAKEFLAGS) -C anyfuse clean
-	cd anyfs; $(MAKE) $(AM_MAKEFLAGS) clean; cd ..
 
 distclean:      clean
 	$(MAKE) $(AM_MAKEFLAGS) -C anysurrect distclean
 	$(MAKE) $(AM_MAKEFLAGS) -C build_e2fs distclean
 	$(MAKE) $(AM_MAKEFLAGS) -C build_xfs distclean
 	$(MAKE) $(AM_MAKEFLAGS) -C anyfuse distclean
-	cd anyfs; $(MAKE) $(AM_MAKEFLAGS) distclean; cd ..
 	rm -f Makefile
 
 depend:

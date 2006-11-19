@@ -1,16 +1,23 @@
-all: libany progs
+ANYFS_MODULE=@ANYFS_MODULE@
+
+all: libany progs $(ANYFS_MODULE)
 
 libany:
 	$(MAKE) $(AM_MAKEFLAGS) -C lib
 progs:
 	$(MAKE) $(AM_MAKEFLAGS) -C src
 
-install: install_lib install_progs install_scripts install_docs install_include install_trans
+anyfs_module:
+	cd anyfs; $(MAKE) $(AM_MAKEFLAGS); cd ..
+
+install: install_lib install_progs install_anyfs install_scripts install_docs install_include install_trans
 
 install_lib:
 	$(MAKE) $(AM_MAKEFLAGS) -C lib install
 install_progs:
 	$(MAKE) $(AM_MAKEFLAGS) -C src install
+install_anyfs:
+	cd anyfs; $(MAKE) $(AM_MAKEFLAGS) install; cd ..
 install_scripts:
 	$(MAKE) $(AM_MAKEFLAGS) -C scripts install
 install_docs:
@@ -27,10 +34,12 @@ uninstall:
 	$(MAKE) $(AM_MAKEFLAGS) -C doc uninstall
 	$(MAKE) $(AM_MAKEFLAGS) -C include uninstall
 	$(MAKE) $(AM_MAKEFLAGS) -C po uninstall
+	cd anyfs; $(MAKE) $(AM_MAKEFLAGS) uninstall; cd ..
 
 clean:
 	$(MAKE) $(AM_MAKEFLAGS) -C src clean
 	$(MAKE) $(AM_MAKEFLAGS) -C lib clean
+	cd anyfs; $(MAKE) $(AM_MAKEFLAGS) clean; cd ..
 
 distclean:      clean
 	$(MAKE) $(AM_MAKEFLAGS) -C doc distclean
@@ -39,6 +48,7 @@ distclean:      clean
 	$(MAKE) $(AM_MAKEFLAGS) -C scripts distclean
 	$(MAKE) $(AM_MAKEFLAGS) -C src distclean
 	$(MAKE) $(AM_MAKEFLAGS) -C lib distclean
+	cd anyfs; $(MAKE) $(AM_MAKEFLAGS) distclean; cd ..
 	rm -rf autom4te.cache config.h config.log config.status Makefile
 
 depend:

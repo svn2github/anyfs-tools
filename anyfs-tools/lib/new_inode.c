@@ -86,7 +86,7 @@ int getpathino(char *path, uint32_t root, struct any_sb_info *info,
 	struct any_inode *root_inode;
 	struct any_dirent *dirent;
 	char *slash;
-	char olds;
+	char olds = 0;
 	
 	if ( !test_bit(root, info->si_inode_bitmap) ) return -1;
 		

@@ -136,7 +136,7 @@ AC_CHECK_FUNCS([__fpending bzero dup2 fdatasync memmove memset putenv select set
 #                 src/anysurrect/Makefile])
 
 AC_OUTPUT(Makefile 
-	src/anyfs/Makefile 
+	anyfs/Makefile 
 	src/anyfuse/Makefile 
 	doc/man/man3/Makefile
 	doc/man/man5/Makefile
