@@ -38,7 +38,6 @@ anyfuse_module:
 install: reblock build_it
 	$(INSTALL) -d $(INSTALLPATH)/sbin
 	$(INSTALL) reblock build_it $(INSTALLPATH)/sbin
-	chmod +s $(INSTALLPATH)/sbin/build_it
 	$(MAKE) $(AM_MAKEFLAGS) -C anysurrect install
 	$(MAKE) $(AM_MAKEFLAGS) -C build_e2fs install
 	$(MAKE) $(AM_MAKEFLAGS) -C build_xfs install
