@@ -31,7 +31,7 @@ Description: build_it -- builds inode table from directory tree
  the external inode table to recover data from the device.
 
 Package: anysurrect
-Architecture: ant
+Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: anysurrect - search files on device to build inode table
  anysurrect search on device files proceeds from knowing different
