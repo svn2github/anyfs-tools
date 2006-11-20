@@ -1,0 +1,1 @@
+shlibs:Depends=e2fslibs, libc6 (>= 2.3.5-1), libcomerr2 (>= 1.33-3), libfuse2

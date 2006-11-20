@@ -26,7 +26,7 @@ endif
 
 config.status: configure
 	dh_testdir
-	# Add here commands to configure the package.
+# Add here commands to configure the package.
 	./configure --host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs"
 
 
@@ -35,10 +35,15 @@ build: build-stamp
 build-stamp:  config.status
 	dh_testdir
 
-	# Add here commands to compile the package.
-	$(MAKE)
-	#docbook-to-man debian/anyfs-tools.sgml > anyfs-tools.1
-
+# Add here commands to compile the package.
+#	$(MAKE)
+	$(MAKE)	libany
+	$(MAKE) progs
+	find doc/man/ru -iname "*.?"| while read man_page; do\
+		iconv -f utf8 -t koi8r "$$man_page" >temp_uconv;\
+		mv temp_uconv "$$man_page"; done
+#docbook-to-man debian/anyfs-tools.sgml > anyfs-tools.1
+	exit
 	touch $@
 
 clean:
@@ -46,8 +51,8 @@ clean:
 	dh_testroot
 	rm -f build-stamp 
 
-	# Add here commands to clean up after the build process.
-	-$(MAKE) distclean
+# Add here commands to clean up after the build process.
+#	-$(MAKE) distclean
 ifneq "$(wildcard /usr/share/misc/config.sub)" ""
 	cp -f /usr/share/misc/config.sub config.sub
 endif
@@ -58,30 +63,92 @@ endif
 
 	dh_clean 
 
-install: build
+install: build install-indep install-arch
+install-arch:
 	dh_testdir
 	dh_testroot
-	dh_clean -k 
-	dh_installdirs
+	dh_clean -k -s
+	dh_installdirs -s
 
-	# Add here commands to install the package into debian/anyfs-tools.
-	$(MAKE) prefix=$(CURDIR)/debian/anyfs-tools/usr install
+# Add here commands to install the package into debian/anyfs-tools.
+#install build_xfs to build-xfs package
+	$(MAKE) prefix=$(CURDIR)/debian/build-xfs/usr -C src/build_xfs install
+	$(MAKE) prefix=$(CURDIR)/debian/build-e2fs/usr -C doc/man/man8 build_xfs
+	$(MAKE) prefix=$(CURDIR)/debian/build-e2fs/usr -C doc/man/ru/man8 build_xfs
+
+#install build_e2fs to build-e2fs package
+	$(MAKE) prefix=$(CURDIR)/debian/build-e2fs/usr -C src/build_e2fs install
+	$(MAKE) prefix=$(CURDIR)/debian/build-e2fs/usr -C doc/man/man8 build_e2fs
+	$(MAKE) prefix=$(CURDIR)/debian/build-e2fs/usr -C doc/man/ru/man8 build_e2fs
+
+#install build_it to build-it package
+#	$(MAKE) prefix=$(CURDIR)/debian/build-it/usr -C src/build_e2fs install
+	install -c -d $(CURDIR)/debian/build-it/usr/sbin
+	install -c src/build_it $(CURDIR)/debian/build-it/usr/sbin
+	$(MAKE) prefix=$(CURDIR)/debian/build-it/usr -C doc/man/man8 build_it
+	$(MAKE) prefix=$(CURDIR)/debian/build-it/usr -C doc/man/ru/man8 build_it
+
+#install reblock to reblock package
+#	$(MAKE) prefix=$(CURDIR)/debian/build-it/usr -C src/build_e2fs install
+	install -c -d $(CURDIR)/debian/reblock/usr/sbin
+	install -c src/reblock $(CURDIR)/debian/reblock/usr/sbin
+	$(MAKE) prefix=$(CURDIR)/debian/reblock/usr -C doc/man/man8 reblock
+	$(MAKE) prefix=$(CURDIR)/debian/reblock/usr -C doc/man/ru/man8 reblock
+
+#install anysurrect to anysurrect package
+	$(MAKE) prefix=$(CURDIR)/debian/anysurrect/usr -C src/anysurrect install
+	$(MAKE) prefix=$(CURDIR)/debian/anysurrect/usr -C doc/man/man8 anysurrect
+	$(MAKE) prefix=$(CURDIR)/debian/anysurrect/usr -C doc/man/ru/man8 anysurrect
+	$(MAKE) prefix=$(CURDIR)/debian/anysurrect/usr -C doc/man/man3 anysurrect-plugins
+	$(MAKE) prefix=$(CURDIR)/debian/anysurrect/usr -C doc/man/ru/man3 anysurrect-plugins
+
+#create anyfuse package
+	$(MAKE) prefix=$(CURDIR)/debian/anyfuse/usr -C src/anyfuse install
 
 
-# Build architecture-independent files here.
-binary-indep: build install
-# We have nothing to do by default.
+#install libany to libany package
+	install -c -d $(CURDIR)/debian/reblock/usr/lib
+	install -c lib/libany.a $(CURDIR)/debian/reblock/usr/lib
+
+#install libany-dev to libany-dev package
+	install -c -d $(CURDIR)/debian/reblock/usr/include/libany
+	cd include; install -c any.h block_map.h\
+		find_next_zero_bit.h\
+		progress.h somepaths.h\
+		version.h\
+		bitops.h\
+		config.h\
+		new_inode.h\
+		release_fssys.h\
+		super.h $(CURDIR)/debian/reblock/usr/include/libany
+	$(MAKE) prefix=$(CURDIR)/debian/anysurrect/usr -C doc/man/man3 libany
+	$(MAKE) prefix=$(CURDIR)/debian/anysurrect/usr -C doc/man/ru/man3 libany
+
+install-indep:
+	dh_testdir
+	dh_testroot
+	dh_clean -k -i
+	dh_installdirs -i
+
+#install anyconvertfs to anyconvertfs package
+	$(MAKE) prefix=$(CURDIR)/debian/anyconvertfs/usr -C scripts install
+	$(MAKE) prefix=$(CURDIR)/debian/anyconvertfs/usr -C doc/man/man8 anyconvertfs
+	$(MAKE) prefix=$(CURDIR)/debian/anyconvertfs/usr -C doc/man/ru/man8 anyconvertfs
+
+#create anyfs-tools package
+	$(MAKE) prefix=$(CURDIR)/debian/anyfs-tools/usr -C doc/man/man8 anyfs-tools
+	$(MAKE) prefix=$(CURDIR)/debian/anyfs-tools/usr -C doc/man/ru/man8 anyfs-tools
+	$(MAKE) prefix=$(CURDIR)/debian/anyfs-tools/usr -C po install
 
 # Build architecture-dependent files here.
-binary-arch: build install
+binary-common:
 	dh_testdir
 	dh_testroot
 	dh_installchangelogs ChangeLog
 	dh_installdocs
 	dh_installexamples
-#	dh_install
 #	dh_installmenu
-#	dh_installdebconf	
+#	dh_installdebconf
 #	dh_installlogrotate
 #	dh_installemacsen
 #	dh_installpam
@@ -93,15 +160,23 @@ binary-arch: build install
 	dh_installman
 	dh_link
 	dh_strip
-	dh_compress
+	dh_compress 
 	dh_fixperms
 #	dh_perl
-#	dh_makeshlibs
+	dh_makeshlibs
 	dh_installdeb
 	dh_shlibdeps
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb
 
-binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install 
+# Build architecture independant packages using the common target.
+binary-indep: install-indep
+	$(MAKE) -f debian/rules DH_OPTIONS=-i binary-common
+
+# Build architecture dependant packages using the common target.
+binary-arch: install-arch
+	$(MAKE) -f debian/rules DH_OPTIONS=-s binary-common
+
+binary: build binary-arch binary-indep
+.PHONY: build clean binary-indep binary-arch binary install install-indep install-arch 

@@ -1,13 +1,99 @@
 Source: anyfs-tools
 Section: otherosfs
 Priority: optional
-Maintainer: Kirill A. Kórinskiy <catap@catap.ru>
-Build-Depends: debhelper (>= 5), autotools-dev, ext2fs-dev,  xfslibs-dev, libbz2-dev, libmpeg2-4-dev,  uuid-dev, libblkid-dev
+Maintainer: Kirill A. Korinskiy <catap@catap.ru>
+Build-Depends: debhelper (>= 5), autotools-dev, ext2fs-dev,  xfslibs-dev, libbz2-dev, libmpeg2-4-dev,  uuid-dev, libblkid-dev, libfuse-dev
 Standards-Version: 3.7.2
 
-Package: anyfs-tools
+Package: build-e2fs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: build e2fs filesystem based external inode table file
+ build_e2fs proceeds from external inode table information for building
+ XFS filesystems on device.
+
+Package: build-xfs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: build XFS filesystem based external inode table file
+ build_xfs proceeds from external inode table information for building
+ XFS filesystems on device.
+
+
+Package: build-it
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: build_it -- builds inode table from directory tree
+ build_it uses Linux OS filesystem drivers to recursively read
+ directory entries in order to obtain information about all of the
+ filesystem inodes.  The information is then saved to an external
+ inode table. The original block device can then be mounted along with
+ the external inode table to recover data from the device.
+
+Package: anysurrect
+Architecture: ant
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: anysurrect - search files on device to build inode table
+ anysurrect search on device files proceeds from knowing different
+ file types structure. Information about founded files also saves to
+ external inode table.
+ 
+
+Package:reblock
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: change filesystem block size
+ reblock using information from inode table change each files'
+ fragments placing so, that it was align by blocks bounds with new
+ size.
+
+
+#Package:anyfs-kernel
+#Architecture: any
+#Depends: ${shlibs:Depends}, ${misc:Depends}
+#Description: filesystem with external inode table
+# anyfs filesystem driver for Linux allows to mount device using inode
+# table information. At mounted filesystem will be allow so file
+# operations as deleting, moving files; making symbolic and hard links,
+# special files; changing file access permissions. All this changes
+# saves on unmounting to the same external inode table file and doesn't
+# affect the device.
+
+Package:anyfuse
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: filesystem with external inode table
+ anyfs filesystem driver for FUSE allows to mount device using inode
+ table information. At mounted filesystem will be allow so file
+ operations as deleting, moving files; making symbolic and hard links,
+ special files; changing file access permissions. All this changes
+ saves on unmounting to the same external inode table file and doesn't
+ affect the device.
+
+Package:anyconvertfs
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, build-it, reblock, anyfuse
+Recommends: build-xfs, build-e2fs
+Description: converts filesystem
+ anyconvertfs converts device filesystem with applying other
+ anyfs-tools utilities.
+
+
+Package:libany
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: anyfs-tools library
+ libany library used by anyfs-tools
+
+Package:libany-dev
+Architecture: any
+Depends: libany, ${shlibs:Depends}, ${misc:Depends}
+Description: anyfs-tools headers
+ headers for library used by anyfs-tools
+
+Package: anyfs-tools
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, build-xfs, build-e2fs, anyconvertfs
 Description: unix-way toolset for recovering and converting filesystems
  anyfs-tools allows you to recover and convert filesystems while using
  minimal extra disk space. Unlike other recovery tools, anyfs-tools

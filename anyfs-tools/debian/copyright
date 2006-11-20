@@ -1,4 +1,4 @@
-This package was debianized by Kirill A. Kórinskiy <catap@catap.ru> on
+This package was debianized by Kirill A. Korinskiy <catap@catap.ru> on
 Fri, 17 Nov 2006 05:30:17 +0300.
 
 It was downloaded from http://anyfs-tools.sourceforge.net/
@@ -24,5 +24,5 @@ License:
    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 
 
-The Debian packaging is (C) 2006, Kirill A. Kórinskiy <catap@catap.ru> and
+The Debian packaging is (C) 2006, Kirill A. Korinskiy <catap@catap.ru> and
 is licensed under the GPL, see `/usr/share/common-licenses/GPL'.
