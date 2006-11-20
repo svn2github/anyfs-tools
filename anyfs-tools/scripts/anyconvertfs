@@ -5,7 +5,7 @@
 # License GPL
 
 SCRIPT="anyconvertfs"
-VERSION="v0.84.8"
+VERSION="v0.84.9"
 if [ "${0:0:1}" != '/' ]; then F0=$PWD/$0; else F0=$0; fi
 export TEXTDOMAIN="anyfs-tools"
 export TEXTDOMAINDIR="${F0%%$SCRIPT}../share/locale"
