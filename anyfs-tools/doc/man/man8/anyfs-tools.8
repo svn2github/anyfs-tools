@@ -28,8 +28,8 @@ data from a block device.
 
 .BI "anyconvertfs [\-\-tmpdir " directory "] [\-\-" blocksize "] [\-f] [\-\-dry]"
 .BI "   [\-\-inodetable " inodetable "] [\-\-color|\-\-no\-color] [\-\-label" " label" "] "
-.BI "   [--dontstop] [--pause " seconds "] [\-\-] " device " [" source_fs ]
-.IB "    destination_fs"
+.BI "   [--dontstop] [--pause " seconds "] [--use-anyfs|--use-anyfuse] [\-\-] " 
+.IB "    device " "[" source_fs "]" " destination_fs"
 .fi
 
 .RB "mount -t " any " -o

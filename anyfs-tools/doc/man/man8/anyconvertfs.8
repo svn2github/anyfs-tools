@@ -1,12 +1,12 @@
-.TH anyconvertfs 8 "08 Aug 2006" "Version 0.84.5"
+.TH anyconvertfs 8 "20 Nov 2006" "Version 0.84.9"
 .SH "NAME"
 anyconvertfs \- converts filesystem.
 .SH "SYNOPSIS"
 .nf
 .BI "anyconvertfs [\-\-tmpdir " directory "] [\-\-" blocksize "] [\-f] [\-\-dry]" 
 .BI "   [\-\-inodetable " inodetable "] [\-\-color|\-\-no\-color] [\-\-label" " label" "] "
-.BI "   [--dontstop] [--pause " seconds "] [\-\-] " device " [" source_fs ]
-.IB "    destination_fs"
+.BI "   [--dontstop] [--pause " seconds "] [--use-anyfs|--use-anyfuse] [\-\-] " 
+.IB "    device " "[" source_fs "]" " destination_fs"
 .fi
 
 .SH "DESCRIPTION"
@@ -104,6 +104,14 @@ The option talks to the script: "I sure".
 Seconds of pause before destroying the old filesystem.
 By default the script give you chance till 7 second to press Ctrl+C for
 saving old filesystem.
+.TP
+.BI \-\-use-anyfs
+Use anyfs kernel module as anyfs driver
+(by default if its found)
+.TP
+.BI \-\-use-anyfuse
+Use anyfuse FUSE module as anyfs driver
+(by default if anyfs kernel module not found)
 .TP
 .B \-\-
 The end of not necessarily options.
@@ -233,3 +241,4 @@ http://anyfs-tools.sourceforge.net
 .BR build_e2fs(8),
 .BR build_xfs(8),
 .BR anyfs(8)
+.BR anyfuse(8)
