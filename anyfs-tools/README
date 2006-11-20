@@ -29,13 +29,13 @@ Before building you may want to change some settings in files:
 anyfs-tools/src/anysurrect/surrectlist.conf
 anyfs-tools/src/anysurrect/config.h
 
+You also need one in two (or both):
+1) Kernel sources for anyfs kernel module building (kernel-source package).
+2) FUSE >= 2.5.0 and fuse kernel module for anyfuse module building.
+
 anyfs kernel module building was tested on kernels 2.6.9-2.6.17.
 The module installs to file
 /lib/modules/<kernel-version>/kernel/fs/any/any.ko
-
-You need to have linux kernel source for building.
-So if you use distributive linux kernel, before building you need to install
-kernel-source package.
 
 After installing the package, read the manual:
 $ man anyfs-tools
