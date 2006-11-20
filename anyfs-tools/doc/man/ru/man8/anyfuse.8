@@ -1,0 +1,38 @@
+.TH anyfs 8 "20 Nov 2006" "Version 0.84.9"
+.SH "НАЗВАНИЕ"
+anyfs \- файловая система в пользовательском простанстве \
+с внешней таблицей информационных узлов.
+.SH "СИНТАКСИС"
+.BI "anyfuse " "<inode_table> <device> <mount_point> <FUSE OPTIONS>"
+
+.SH "ОПИСАНИЕ"
+.B anyfuse 
+является FUSE реализацией anyfs(8).
+
+.SH "ПРИМЕРЫ ИСПОЛЬЗОВАНИЯ"
+Монтирование /dev/hda1 в /mnt/hda1 используя inode.table:
+.br
+$ anyfuse inode.table /dev/hda1 /mnt/hda1
+
+После изменений на ФС незабудьте её отмонтировать:
+.br
+$ fusermount -u /mnt/hda1
+
+.SH "АВТОР"
+Николай Кривченков aka unDEFER <undefer@gmail.com>
+
+.SH "СООБЩЕНИЯ ОБ ОШИБКАХ"
+Сообщения о любых проблемах с применением пакета
+.B anyfs-tools
+направляйте по адресу:
+undefer@gmail.com
+
+.SH "ДОСТУПНОСТЬ"
+Последнюю версию пакета вы можете получить на сайте проекта: \
+http://anyfs-tools.sourceforge.net
+
+.SH "СМ. ТАКЖЕ"
+.BR anyfs-tools(8),
+.BR anyfs(8),
+.BR anyfs_inode_table(5),
+.BR mount(8)

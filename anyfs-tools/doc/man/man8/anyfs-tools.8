@@ -1,4 +1,4 @@
-.TH anyfs-tools 8 "08 Aug 2006" "Version 0.84.1"
+.TH anyfs-tools 8 "20 Nov 2006" "Version 0.84.9"
 .SH "NAME"
 anyfs-tools \- toolset for recovering and converting filesystems and recovering
 data from a block device.
@@ -34,6 +34,8 @@ data from a block device.
 
 .RB "mount -t " any " -o
 .BI inodetable= file.it "[," other_mount_options ] " device dir"
+
+.BI "anyfuse " "<inode_table> <device> <mount_point> <FUSE OPTIONS>"
 
 .SH "DESCRIPTION"
 
@@ -86,6 +88,9 @@ perform file operations such as deleting, moving files, making symbolic and
 hard links, special files and changing file access permissions.
 All changes are applied to the external inode table on unmounting the 
 filesystem, leaving the data on the block device unchanged.
+
+.B anyfuse 
+is FUSE realization of anyfs.
 	
 .SH "USING"
 .TP
@@ -119,6 +124,8 @@ inode table.
 
 2) maybe
 .B anyfs
+( or
+.BR anyfuse ")"
 driver for clear some space for new filesystem.
 
 3) maybe
@@ -140,6 +147,8 @@ For recovering files from a damaged filesystem, first use the
 command to specify any file types or data that you wish to recover.
 It is then possible to use the 
 .B anyfs
+( or
+.BR anyfuse ")"
 filesystem  drive to view the recovered data or files and possibly save the 
 recovered data to another filesystem. The anyfs filesystem driver can also be
 used to rename or sort files into directories, depending on the users 
@@ -196,6 +205,7 @@ http://anyfs-tools.sourceforge.net
 .BR build_xfs(8),
 .BR anyconvertfs(8),
 .BR anyfs(8),
+.BR anyfuse(8),
 .BR mount(8),
 .BR anyfs_inode_table(5),
 .BR anysurrect-plugins(3),

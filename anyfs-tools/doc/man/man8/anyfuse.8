@@ -1,0 +1,37 @@
+.TH anyfs 8 "20 Nov 2006" "Version 0.84.9"
+.SH "NAME"
+anyfuse \- filesystem in user space with external inode table.
+.SH "SYNOPSIS"
+.BI "anyfuse " "<inode_table> <device> <mount_point> <FUSE OPTIONS>"
+
+.SH "DESCRIPTION"
+.B anyfuse 
+is FUSE realization of anyfs(8).
+	
+.SH "USAGE EXAMPLES"
+Mounts /dev/hda1 to /mnt/hda1 using inode.table:
+.br
+$ anyfuse inode.table /dev/hda1 /mnt/hda1
+
+After changes on filesystem don't forgot umount it:
+.br
+$ fusermount -u /mnt/hda1
+
+.SH "AUTHOR"
+Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+
+.SH "BUG REPORTS"
+Messages about any problem with using
+.B anyfs-tools
+package send to
+undefer@gmail.com
+
+.SH "AVAILABILITY"
+You can obtain the last version of package at
+http://anyfs-tools.sourceforge.net
+
+.SH "SEE ALSO"
+.BR anyfs-tools(8),
+.BR anyfs(8),
+.BR anyfs_inode_table(5),
+.BR mount(8)

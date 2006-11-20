@@ -1,4 +1,4 @@
-.TH build_it 8 "08 Aug 2006" "Version 0.84.5"
+.TH build_it 8 "20 Nov 2006" "Version 0.84.9"
 .SH "NAME"
 build_it \- reads directory entries to obtain information about the
 physical location of files on a block device along with file access permissions
@@ -28,6 +28,9 @@ syscall support.
 call requires 
 .BR root
 permissions.
+From 0.84.9 version utility use effective identificator
+if it's binary file has SUID bit set to call this syscall.
+So you can run its without root permissions.
 
 The 
 .B build_it
