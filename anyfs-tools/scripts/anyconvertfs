@@ -226,7 +226,7 @@ PAGESIZE=4096
 
 [[ $USE_ANY_FS_OR_FUSE == "AUTO" ]] &&
 {
-	if modprobe any; then
+	if modprobe any 2>/dev/null; then
 		USE_ANY_FS_OR_FUSE="ANYFS"
 	elif ( modprobe fuse && which "anyfuse" >/dev/null 2>&1 ); then
 		USE_ANY_FS_OR_FUSE="ANYFUSE"
