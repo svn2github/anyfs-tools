@@ -224,8 +224,6 @@ int fill_anyinodeinfo(struct any_inode *inode, const char *path,
 
 		numblocks = (stat_info->st_size + (bs-1)) / bs;
 
-		BS = bs;
-
 		/* Count number of fragments */
 		for (i=0; i < numblocks; i++) {
 			block = get_bmap(fd, i, &r);
@@ -261,6 +259,18 @@ int fill_anyinodeinfo(struct any_inode *inode, const char *path,
 			return -ENOMEM;
 		}
 
+		int ibs = BS/bs;
+		if (ibs<1) 
+		{
+			fprintf(stderr, _("Blocksize returned by statfs lesser than returned FIGETBSZ\n"
+					"Please, send information about this filesystem to undefer@gmail.com\n"
+					"statfs blocksize: %d\n"
+					"FIGETBSZ blocksize: %d\n"
+					"Filesystem type: %x\n"), 
+					BS, bs, (unsigned) fs_type );
+			exit(1);
+		};
+
 		fr_length = 0;
 		numfrags = 0;
 		for (i=0; i < numblocks; i++) {
@@ -273,10 +283,22 @@ int fill_anyinodeinfo(struct any_inode *inode, const char *path,
 			
 			if ( (fr_start) ? block != (fr_start+fr_length)
 					: block ) {
+				if ( fr_start%ibs )
+				{
+					fprintf(stderr, _("Blocksize returned by statfs greater than returned FIGETBSZ, and\n"
+							"FIBMAP return start fragment not alligned to statfs blocksize\n"
+							"Please, send information about this filesystem to undefer@gmail.com\n"
+							"statfs blocksize: %d\n"
+							"FIGETBSZ blocksize: %d\n"
+							"Filesystem type: %x\n"), 
+							BS, bs, (unsigned) fs_type );
+					exit(1);
+				}
+
 				inode->i_info.file_frags->fr_frags[numfrags].
-					fr_start = fr_start;
+					fr_start = fr_start/ibs;
 				inode->i_info.file_frags->fr_frags[numfrags].
-					fr_length = fr_length;
+					fr_length = (fr_length +ibs-1)/ibs;
 					
 				fr_start = block;
 				fr_length = 0;
@@ -285,9 +307,9 @@ int fill_anyinodeinfo(struct any_inode *inode, const char *path,
 			fr_length++;
 		}
 		inode->i_info.file_frags->fr_frags[numfrags].
-			fr_start = fr_start;
+			fr_start = fr_start/ibs;
 		inode->i_info.file_frags->fr_frags[numfrags].
-			fr_length = fr_length;
+			fr_length = (fr_length +ibs-1)/ibs;
 
 		if ( geteuid()==0 && getuid()!=0 )
 			setreuid( geteuid(), getuid() );
@@ -710,8 +732,8 @@ int main(int argc, const char *argv[])
 		ac = statfs_info.f_blocks/1024 + 256;
 #endif
 
-	BS = 512;
-	
+	BS = statfs_info.f_bsize;
+
 	r = alloc_it(&info, BS, ac);
 	if (r<0) goto out;
 
@@ -731,8 +753,6 @@ int main(int argc, const char *argv[])
 	}
 	
 	progress_close(&progress);
-
-	info->si_blocksize = BS;
 	
 	if (verbose)
 		printf (_("writing inode table\n"));

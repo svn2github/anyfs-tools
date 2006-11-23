@@ -616,8 +616,6 @@ OLDBLOCKSIZE=`stat -c "%s" -f "$MOUNTPOINT"`
 	OLDBLOCKSIZE=$[16#`head -n 1 "$INODETABLE" | awk -- '{print $2}'`
 									]
 }
-[[ "$FROMFS" == "vfat" ]] &&
-	OLDBLOCKSIZE=512
 
 FIRSTDESTROYSTEP=5
 [[ "$TOFS" == "any" ]]  && FIRSTDESTROYSTEP=`$GT"Never"`

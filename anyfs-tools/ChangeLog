@@ -2,9 +2,10 @@
 	- Fix broken build_xfs
 	- Fix progress bar
 	- Add anyfuse module
+	- build_it now gets blocksize from statfs (not FIGETBSZ)
 	- 0.84.9 Release
 
-* 19.11.06       Kirill A. Kórinskiy <catap@catap.ru>
+* 19.11.06       Kirill A. Korinskiy <catap@catap.ru>
         - Split deb-package in multi package
 
 * 18.11.06	Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
@@ -12,7 +13,7 @@
 	- Add depmod to install target in anyfs/Makefile.in
 	- 0.84.8 Release
 
-* 18.11.06       Kirill A. Kórinskiy <catap@catap.ru>
+* 18.11.06       Kirill A. Korinskiy <catap@catap.ru>
         - Add debian/ for debian-like stuff
 
 * 22.10.06	Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>

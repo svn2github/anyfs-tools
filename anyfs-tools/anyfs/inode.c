@@ -64,10 +64,13 @@ void any_free(void *addr)
 static int any_sbmap(struct inode *inode, sector_t sector, sector_t *phys)
 {
 	struct any_sb_info * info = inode->i_sb->s_fs_info;
+	int ibs = (info->si_blocksize > 4096)? info->si_blocksize/4096 :1;
 	int i;
 	unsigned long block = 0;
 	unsigned long fr_length;
 	unsigned long fr_start;
+	int osc = sector%ibs;
+	sector/=ibs;
 	
 	for (i=0; i<info->si_inode_table[inode->i_ino].
 			i_info.file_frags->fr_nfrags; i++)
@@ -78,7 +81,7 @@ static int any_sbmap(struct inode *inode, sector_t sector, sector_t *phys)
 			fr_start = info->si_inode_table[inode->i_ino].
 				i_info.file_frags->fr_frags[i].fr_start;
 			
-			*phys = (fr_start) ? fr_start + sector - block : 0;
+			*phys = (fr_start) ? (fr_start + sector - block)*ibs + osc : 0;
 			return 0;
 		}
 		
@@ -723,7 +726,9 @@ static int any_fill_super(struct super_block *s, void *data, int silent)
 	info->si_inodes = simple_strtoul (buffer + ANY_INODES_OFFSET,
 			NULL, 16);
 
-	if (!sb_set_blocksize(s, info->si_blocksize))
+	if ( (info->si_blocksize>4096 && info->si_blocksize%4096) || 
+			!sb_set_blocksize(s, (info->si_blocksize > 4096)?
+				4096:info->si_blocksize ) )
 	{
 		printk("AnyFS: bad blocksize.\n");
 		goto close_fail2;
