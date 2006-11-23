@@ -27,7 +27,7 @@ anyfs-tools/src/anysurrect/surrectlist.conf
 anyfs-tools/src/anysurrect/config.h
 
 Вам также понадобиться одно из двух (или оба пункта сразу):
-1) Исходники ядра для сборки модуля ядра anyfs (пакет kernel-source).
+1) Исходники ядра (пакет kernel-source) для сборки модуля ядра anyfs.
 2) FUSE версии >= 2.5.0 и модуль ядра fuse для сборки модуля anyfuse.
 
 Сборка модуля ядра anyfs протестирована на ядрах 2.6.9-2.6.17.
