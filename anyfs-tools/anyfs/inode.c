@@ -65,12 +65,17 @@ static int any_sbmap(struct inode *inode, sector_t sector, sector_t *phys)
 {
 	struct any_sb_info * info = inode->i_sb->s_fs_info;
 	int ibs = (info->si_blocksize > 4096)? info->si_blocksize/4096 :1;
+	unsigned long d = 0;
 	int i;
 	unsigned long block = 0;
 	unsigned long fr_length;
 	unsigned long fr_start;
-	int osc = sector%ibs;
-	sector/=ibs;
+	int osc;
+
+	while (ibs>1) { d++; ibs>>=1; }
+
+	osc = sector&( (1<<d) - 1);
+	sector>>=d;
 	
 	for (i=0; i<info->si_inode_table[inode->i_ino].
 			i_info.file_frags->fr_nfrags; i++)
@@ -81,7 +86,7 @@ static int any_sbmap(struct inode *inode, sector_t sector, sector_t *phys)
 			fr_start = info->si_inode_table[inode->i_ino].
 				i_info.file_frags->fr_frags[i].fr_start;
 			
-			*phys = (fr_start) ? (fr_start + sector - block)*ibs + osc : 0;
+			*phys = (fr_start) ? (fr_start + sector - block)<<d | osc : 0;
 			return 0;
 		}
 		
