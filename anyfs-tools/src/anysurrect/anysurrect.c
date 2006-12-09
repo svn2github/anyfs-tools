@@ -508,17 +508,18 @@ any_size_t fd_size()
 }
 
 any_off_t cur_offset = 0;
+int	  cur_wh = 1;
 
-any_off_t fd_seek(any_off_t offset, int whence)
+any_off_t _fd_seek(any_off_t offset, int whence)
 {
-	if (offset==0 && whence==SEEK_CUR)
-		return cur_offset;
-	
 	if (whence==SEEK_CUR)
 		offset += cur_offset;
 	
 	if (whence==SEEK_END)
 		offset += fd_size();
+
+	if (offset==cur_offset && !cur_wh)
+		return cur_offset;
 	
 	if ( blocks_before_frag > offset || !cur_frag )
 	{
@@ -541,7 +542,12 @@ any_off_t fd_seek(any_off_t offset, int whence)
 		}
 	}
 
+	lseek64(fd, (any_size_t) cur_frag->frag.fr_start * get_blocksize() + offset - 
+			(any_size_t) blocks_before_frag * get_blocksize() , 
+			SEEK_SET);
+
 	cur_offset = offset;
+	cur_wh = 0;
 	
 	return cur_offset;
 }
@@ -559,11 +565,7 @@ any_ssize_t fd_read(void *buf, any_size_t count)
 		if ( p>(io_buffer.start + io_buffer.size - 1) ||
 		  p<io_buffer.start || io_buffer.size==0 )
 		{
-			fd_seek(p, SEEK_SET);
-			if (cur_frag)
-			lseek64(fd, (any_size_t) cur_frag->frag.fr_start * get_blocksize() + cur_offset - 
-					(any_size_t) blocks_before_frag * get_blocksize() , 
-					SEEK_SET);
+			_fd_seek(p, SEEK_SET);
 
 			io_buffer.start = p;
 			io_buffer.size = read (fd, io_buffer.buffer, get_blocksize());
@@ -590,6 +592,7 @@ any_ssize_t fd_read(void *buf, any_size_t count)
 	}
 
 	cur_offset = p;
+	cur_wh = 1;
 	return count;
 }
 

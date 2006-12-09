@@ -3,6 +3,9 @@
  *      CopyRight (C) 2006, Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
  */
 
+#ifndef	_ANYSURRECT_H
+#define _ANYSURRECT_H
+
 #include <stdint.h>
 #include "any.h"
 
@@ -186,6 +189,24 @@ int read_belong(uint32_t *value);
 int read_leshort(uint16_t *value);
 int read_lelong(uint32_t *value);
 
-any_off_t fd_seek(any_off_t offset, int whence);
+extern any_off_t	cur_offset;
+extern int		cur_wh;
+
 any_size_t fd_size();
 any_ssize_t fd_read(void *buf, any_size_t count);
+
+extern inline any_off_t fd_seek(any_off_t offset, int whence)
+{
+	if (whence==SEEK_CUR)
+		offset += cur_offset;
+
+	if (whence==SEEK_END)
+		offset += fd_size();
+
+	cur_offset = offset;
+	cur_wh = 1;
+
+	return cur_offset;
+}
+
+#endif	/*_ANYSURRECT_H*/
