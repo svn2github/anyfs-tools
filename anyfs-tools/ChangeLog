@@ -1,3 +1,9 @@
+* 09.12.06      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Fix anysurrect not efficient i/o buffer. So it faster more than in
+		2 times.
+	- Some Gentoo building fix.
+	- 0.84.10 Release
+	
 * 25.11.06      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
 	- Fix anyfs building (replacing added 64-bit division to bit operations)
 	- 0.84.9a Release

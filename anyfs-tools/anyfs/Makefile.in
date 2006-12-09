@@ -27,7 +27,9 @@ install: $(ANYFS_KO)
 	if [ -f any.ko ]; then \
 		make -C $(KERNELSOURCES) M=$(PWD) INSTALL_MOD_DIR=$(INSTALL_MOD_DIR) INSTALL_MOD_PATH=$(DESTDIR) modules_install; \
 	fi
-	/sbin/depmod $(shell uname -r)
+	if [ -z "$(DESTDIR)" ]; then \
+		/sbin/depmod $(shell uname -r); \
+	fi
 
 uninstall:
 	rm -f /lib/modules/$(shell uname -r)/kernel/fs/any/any.ko
