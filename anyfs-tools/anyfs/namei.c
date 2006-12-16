@@ -1,10 +1,25 @@
 /*
  *	fs/any/namei.c
- *	Copyright (C) 2005 Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+ *	Copyright (C) 2005-2006 
+ *		Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
  */
 
 #include <linux/smp_lock.h>
 #include "any.h"
+
+#ifndef	KERNEL_2_6_19_PLUS
+
+#define	inode_dec_link_count(inode) 	\
+	inode->i_nlink--; 		\
+	mark_inode_dirty(inode);
+
+#define drop_nlink(inode)		\
+	inode->i_nlink--;
+
+#define inc_nlink(inode)		\
+	inode->i_nlink++;
+
+#endif
 
 extern void *any_malloc(size_t size);
 extern void any_free(void *addr);
@@ -203,7 +218,7 @@ static int any_link (struct dentry * old, struct inode * dir,
 		unlock_kernel();
 		return err;
 	}
-	inode->i_nlink++;
+	inc_nlink(inode);
 	inode->i_ctime = CURRENT_TIME_SEC;
 	mark_inode_dirty(inode);
 	atomic_inc(&inode->i_count);
@@ -233,9 +248,8 @@ static int any_unlink(struct inode * dir, struct dentry * dentry)
 		inode->i_nlink = 1;
 	}
 	
-	inode->i_nlink--;
 	inode->i_ctime = dir->i_ctime;
-	mark_inode_dirty(inode);
+	inode_dec_link_count(inode);
 	err = 0;
 	
 #ifdef	ANYFS_DEBUG
@@ -365,7 +379,7 @@ static int any_mkdir(struct inode * dir, struct dentry * dentry, int mode)
 	printk("anyfs: mkdir?\n");
 #endif
 
-	dir->i_nlink++;
+	inc_nlink(dir);
 	dir->i_ctime = CURRENT_TIME_SEC;
 	mark_inode_dirty(dir);
 	
@@ -381,7 +395,7 @@ static int any_mkdir(struct inode * dir, struct dentry * dentry, int mode)
 		goto dir_fail;
 	}
 	
-	inode->i_nlink++;
+	inc_nlink(inode);
 	mark_inode_dirty(inode);
 	
 #ifdef	ANYFS_DEBUG
@@ -403,8 +417,7 @@ dir_fail2:
 	unlock_kernel();
 
 dir_fail:
-	dir->i_nlink--;
-	mark_inode_dirty(dir);
+	inode_dec_link_count(dir);
 	
 	return err;
 }
@@ -424,10 +437,8 @@ static int any_rmdir (struct inode * dir, struct dentry *dentry)
 #endif
 		err = any_unlink(dir, dentry);
 		if (!err) {
-			inode->i_nlink--;
-			mark_inode_dirty(inode);
-			dir->i_nlink--;
-			mark_inode_dirty(dir);
+			inode_dec_link_count(inode);
+			inode_dec_link_count(dir);
 		}
 	}
 	return err;
@@ -485,10 +496,8 @@ static int any_rename(struct inode * old_dir, struct dentry * old_dentry,
 		if (!err) {
 			if (is_dir)
 			{
-				new_inode->i_nlink--;
-				mark_inode_dirty(new_inode);
-				new_dir->i_nlink--;
-				mark_inode_dirty(new_dir);
+				inode_dec_link_count(new_inode);
+				inode_dec_link_count(new_dir);
 			}
 		}
 		else goto out;
@@ -508,9 +517,8 @@ static int any_rename(struct inode * old_dir, struct dentry * old_dentry,
 
 	if (is_dir)
 	{
-		old_dir->i_nlink--;
-		mark_inode_dirty(old_dir);
-		new_dir->i_nlink++;
+		inode_dec_link_count(old_dir);
+		inc_nlink(new_dir);
 		mark_inode_dirty(new_dir);
 	}
 	

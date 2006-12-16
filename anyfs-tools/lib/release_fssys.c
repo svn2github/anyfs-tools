@@ -55,6 +55,7 @@ static unsigned long any_blocksize;
 
 extern int noaction;
 extern int verbose;
+extern int quiet;
 
 /* This function move _blocks_ group _from_ old offset _to_ new offset */
 int any_move( unsigned long *block_bitmap,
@@ -552,6 +553,84 @@ int any_release(struct any_sb_info *info,
 	}
 	
 	return 0;
+}
+
+#include <progress.h>
+#include <super.h>
+
+int any_release_sysinfo(struct any_sb_info *info, 
+		unsigned long *block_bitmap,
+		any_rwblk_t *readblk,
+		any_rwblk_t *writeblk,
+		any_testblk_t *testblk,
+		any_getblkcount_t *getblkcount)
+{
+	int retval;
+	uint32_t i;
+	struct progress_struct progress;
+	unsigned long start = 0;
+	unsigned long length = 0;
+
+	if (verbose)
+		printf(_("Starting search of info blocks at system blocks\n"));
+
+	any_readblk = readblk;
+	any_writeblk = writeblk;
+	any_testblk = testblk;
+	any_getblkcount = getblkcount;
+
+	if (quiet)
+		memset(&progress, 0, sizeof(progress));
+	else
+		progress_init(&progress, _("Search user info at system blocks: "),
+				getblkcount());
+
+	for (i=0; i<getblkcount(); i++) {
+		progress_update(&progress, i);
+		if ( testblk(i) ) {
+			if (i!=(start+length)) {
+				if (verbose>=2)
+					printf (_("\nRelease blocks from %lu to %lu\n"), start,
+							start+length-1);
+				retval = any_release(info, block_bitmap,
+						start, length);
+				if (retval<0) 
+				{
+					if (!noaction)
+						write_it (info, NULL);
+					goto out;
+				}
+
+				start = i;
+				length = 0;
+			}
+			length++;
+		}
+	}
+
+	if (verbose>=2)
+		printf (_("\nRelease blocks from %lu to %lu\n"), start,
+				start+length-1);
+	retval = any_release(info, block_bitmap,
+			start, length);
+	if (retval<0) goto out;
+
+	if (!noaction) 
+	{
+		retval = write_it (info, NULL);
+		if (retval) 
+		{
+			fprintf(stderr,
+					_("Error while writing inode table: %s\n"),
+					(errno)?strerror(errno):_("format error"));
+			exit(retval);
+		}
+	}
+
+out:	
+	progress_close(&progress);
+
+	return retval;
 }
 
 #include <string.h>

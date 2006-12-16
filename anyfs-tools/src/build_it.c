@@ -1,6 +1,6 @@
 /*
  * build_it.c
- * Copyright (C) 2005 Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+ * Copyright (C) 2005-2006 Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
  *
  * From filefrag from e2fsprogs, Copyright 2003 by Theodore Ts'o.
  * 

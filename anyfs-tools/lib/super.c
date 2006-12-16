@@ -1,6 +1,7 @@
 /*
  *	build_it/super.h
- *	Copyright (C) 2005 Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+ *	Copyright (C) 2005-2006 
+ *		Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
  *
  */
 #include <sys/types.h>

@@ -1,6 +1,6 @@
 /*
  *	block_map.h
- *	(C) 2005, Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+ *	(C) 2005-2006, Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
  */
 
 #ifndef _ANY_BLOCK_MAP_H

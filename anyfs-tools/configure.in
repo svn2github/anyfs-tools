@@ -25,11 +25,11 @@ PKG_CHECK_MODULES(FUSE, fuse >= 2.5, \
 if test $ANYFUSE_MODULE; then
 	echo -n "checking for fuse kernel module... "
 	if LC_ALL=C /sbin/modprobe fuse | grep -q "not found"; then
-		echo "yes"
+		echo "no"
 		ANYFUSE_MODULE=""
 		ANYFUSE=""
 	else
-		echo "no"
+		echo "yes"
 	fi
 fi
 

@@ -1,10 +1,13 @@
 /*
-    FUSE: Filesystem in Userspace
-    Copyright (C) 2001-2006  Miklos Szeredi <miklos@szeredi.hu>
-
-    This program can be distributed under the terms of the GNU GPL.
-    See the file COPYING.
-*/
+ *  Copyright (C) 2006 Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+ *  
+ *  From 
+ *  FUSE: Filesystem in Userspace
+ *  Copyright (C) 2001-2006  Miklos Szeredi <miklos@szeredi.hu>
+ *
+ *  This program can be distributed under the terms of the GNU GPL.
+ *  See the file COPYING.
+ */
 
 #include <config.h>
 

@@ -1,6 +1,7 @@
 /*
  *	fs/any/dir.c
- *	Copyright (C) 2005 Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+ *	Copyright (C) 2005-2006 
+ *		Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
  */
 
 #include "any.h"

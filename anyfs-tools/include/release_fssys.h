@@ -20,6 +20,13 @@ int any_release(struct any_sb_info *info,
 		unsigned long *block_bitmap,
 		unsigned long start, unsigned long length);
 
+int any_release_sysinfo(struct any_sb_info *info, 
+		unsigned long *block_bitmap,
+		any_rwblk_t *readblk,
+		any_rwblk_t *writeblk,
+		any_testblk_t *testblk,
+		any_getblkcount_t *getblkcount);
+
 /*add dot (".") and dotdot ("..") entries to directories*/
 int any_adddadd(struct any_sb_info *info);
 

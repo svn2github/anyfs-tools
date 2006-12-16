@@ -1,6 +1,7 @@
 /*
  *	bitops.h
- *	Copyright (C) 2005 Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+ *	Copyright (C) 2005-2006
+ *		Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
  */
 #ifndef _ANY_BITOPS_H
 #define _ANY_BITOPS_H

@@ -1,6 +1,7 @@
 /*
  *	fs/any/inode.c
- *	Copyright (C) 2005 Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+ *	Copyright (C) 2005-2006 
+ *		Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
  *
  *      From fs/minix, Copyright (C) 1991, 1992 Linus Torvalds.
  *	From fs/bfs, Copyright (C) 1999,2000 Tigran Aivazian.
@@ -590,8 +591,15 @@ static void any_put_super(struct super_block *sb)
 	return;
 }
 
+#ifdef KERNEL_2_6_18_PLUS
+static int any_statfs(struct dentry *dentry, struct kstatfs *buf)
+#else
 static int any_statfs(struct super_block *sb, struct kstatfs *buf)
+#endif
 {               
+#ifdef KERNEL_2_6_18_PLUS
+	struct super_block *sb = dentry->d_sb;
+#endif
 	struct any_sb_info * info = sb->s_fs_info;
 	unsigned long d = 0;
 	typeof(info->si_blocksize) bs = info->si_blocksize;
@@ -1125,11 +1133,19 @@ free_info:
 	return (ret)?ret:-EINVAL;
 }
 
+#ifdef KERNEL_2_6_18_PLUS
+static int any_get_sb(struct file_system_type *fs_type,
+	int flags, const char *dev_name, void *data, struct vfsmount *mnt)
+{
+	return get_sb_bdev(fs_type, flags, dev_name, data, any_fill_super, mnt);
+}
+#else
 static struct super_block *any_get_sb(struct file_system_type *fs_type,
-		int flags, const char *dev_name, void *data)
+	int flags, const char *dev_name, void *data)
 {
 	return get_sb_bdev(fs_type, flags, dev_name, data, any_fill_super);
 }
+#endif
 
 static struct file_system_type any_fs_type = {
 	.owner          = THIS_MODULE,

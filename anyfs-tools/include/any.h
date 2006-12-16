@@ -1,6 +1,7 @@
 /*
  *	build_it/any.h
- *	Copyright (C) 2005 Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+ *	Copyright (C) 2005-2006 
+ *		Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
  */
 
 #ifndef _FS_ANY_ANY_H

@@ -1,6 +1,7 @@
 /*
  *	fs/any/any.h
- *	Copyright (C) 2005 Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+ *	Copyright (C) 2005-2006 
+ *		Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
  */
 
 #ifndef _FS_ANY_ANY_H
@@ -22,6 +23,12 @@
 #  define KERNEL_2_6
 #  if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,13)
 #    define KERNEL_2_6_13_PLUS
+#  endif
+#  if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,18)
+#    define KERNEL_2_6_18_PLUS
+#  endif
+#  if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19)
+#    define KERNEL_2_6_19_PLUS
 #  endif
 #endif
 
