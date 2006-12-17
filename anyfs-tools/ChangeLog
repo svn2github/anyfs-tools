@@ -1,3 +1,7 @@
+* 16.12.06      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Fix anyfs building with kernel version >=2.6.18
+	- 0.84.11 Release
+
 * 09.12.06      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
 	- Fix anysurrect not efficient i/o buffer. So it faster more than in
 		2 times.
