@@ -2573,12 +2573,12 @@ echo "${ECHO_T}$FUSE_LIBS" >&6
 
 if test $ANYFUSE_MODULE; then
 	echo -n "checking for fuse kernel module... "
-	if LC_ALL=C /sbin/modprobe fuse | grep -q "not found"; then
+	if grep -q fuse /lib/modules/`uname -r`/modules.dep; then
+		echo "yes"
+	else
 		echo "no"
 		ANYFUSE_MODULE=""
 		ANYFUSE=""
-	else
-		echo "yes"
 	fi
 fi
 
