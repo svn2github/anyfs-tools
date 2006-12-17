@@ -1,4 +1,4 @@
-.TH libany 3 "15 Aug 2006" "Version 0.84.5"
+.TH libany 3 "17 Dec 2006" "Version 0.84.11"
 .SH "НАЗВАНИЕ"
 libany \- библиотека anyfs-tools.
 
@@ -165,8 +165,10 @@ struct any_file_fragment {
 .BR super.h .
 
 .TP
-.BI "int alloc_it(struct any_sb_info **" it ", unsigned long " blocksize \
-		", unsigned long " inodes ");"
+.nf
+.BI "int alloc_it(struct any_sb_info **" it ", unsigned long " "blocksize,"
+.BI "        unsigned long " inodes ");"
+.fi
 Выделяет память для таблицы инф.узлов с размером блока
 .B blocksize
 и максимальным числом инф.узлов
@@ -298,7 +300,10 @@ struct any_file_fragment {
 в случае неудачи.
 
 .TP
-.BI "int find_next_zero_bit(const unsigned long* " addr ", int " size ", int " offset);"
+.nf
+.BI "int find_next_zero_bit(const unsigned long* " addr ", int " size ", "
+.BI "        int " offset ");"
+.fi
 Ищет первый, начиная с бита
 .BR offset ,
 нулевой бит в карте битов
@@ -315,7 +320,11 @@ struct any_file_fragment {
 .B block_map.h
 
 .TP
-.BI "int fill_block_bitmap(struct any_sb_info *" info ", unsigned long *" block_bitmap ", any_blk_t " dev_size);"
+.nf
+.BI "int fill_block_bitmap(struct any_sb_info *" info ", "
+.BI "        unsigned long *" block_bitmap "," 
+.BI "        any_blk_t " dev_size ");"
+.fi
 Заполняет карту блоков, помечая блоки занятые простыми файлами, \
 в соответствии с информацией из таблицы инф.узлов
 .B info
@@ -339,8 +348,10 @@ struct any_file_fragment {
 .B new_inode.h
 
 .TP
-.BI "int any_new_inode(struct any_sb_info *" info ", int " mode ", void* "\
-                data ", uint32_t " dirino ", uint32_t *" newino ");"
+.nf
+.BI "int any_new_inode(struct any_sb_info *" info ", int " mode ", void* " data ,
+.BI "        uint32_t " dirino ", uint32_t *" newino ");"
+.fi
 Создаёт инф.узел в таблице инф.узлов
 .B info
 с режимом доступа (и типом)
@@ -361,8 +372,10 @@ struct any_file_fragment {
 не хватке памяти.
 
 .TP
-.BI "int getpathino(char *" path ", uint32_t " root ", struct any_sb_info*"\
-                  info ", uint32_t *" ino ");"
+.nf
+.BI "int getpathino(char *" path ", uint32_t " root ", struct any_sb_info* " info ", 
+.BI "        uint32_t *" ino ");"
+.fi
 Ищет элемент (директорию) с именем (путём)
 .B path
 считая корневым инф.узел (директорию)
@@ -379,8 +392,10 @@ struct any_file_fragment {
 не является директорией или является свободным инф.узлом.
 
 .TP
-.BI "int mkpathino(char *" path ", uint32_t " root ", struct any_sb_info*"\
-                info ", uint32_t *" ino ");"
+.nf
+.BI "int mkpathino(char *" path ", uint32_t " root ", struct any_sb_info* " info ", 
+.BI "        uint32_t *" ino ");"
+.fi
 Тоже что
 .BR getpathino() ,
 но создаёт все директории пути в случае их отсутствия.
@@ -394,8 +409,10 @@ struct any_file_fragment {
 .B release_fssys.h
 
 .TP
-.BI "typedef int any_rwblk_t(unsigned long " from ", unsigned long " n \
-              ", char *" buffer ");"
+.nf
+.BI "typedef int any_rwblk_t(unsigned long " from ", unsigned long " n ","
+.BI "        char *" buffer ");"
+.fi
 Тип функции чтения/записи блока.
 
 Функция этого типа должна считывать/записывать блоки начиная с
@@ -452,9 +469,10 @@ struct any_file_fragment {
 .BR any_release() .
 
 .TP
-.BI "int any_release(struct any_sb_info *" info ", unsigned long*" \
-                 block_bitmap ", unsigned long " start \
-                 ", unsigned long " length ");"
+.nf
+.BI "int any_release(struct any_sb_info *" info ", unsigned long *" block_bitmap "," 
+.BI "        unsigned long " start ", unsigned long " length ");"
+.fi
 Освобождает
 .B length
 (в будущем) системных блоков ФС, начиная с блока
@@ -462,7 +480,7 @@ struct any_file_fragment {
 от пользовательской информации, \
 основываясь на информации из таблицы инф.узлов
 .B info
-карте блоков (пользовательской информации)
+и карте блоков (пользовательской информации)
 .BR block_bitmap .
 
 Функция будет использовать функции
@@ -473,6 +491,34 @@ struct any_file_fragment {
 .B any_getblkcount
 для получения размера устройства, а также функцию
 .B any_testblk
+для получения информации о расположении системных блоков на устройстве.
+
+.TP
+.nf
+.BI "int any_release_sysinfo(struct any_sb_info *" info ","
+.BI "        unsigned long *" block_bitmap ,
+.BI "        any_rwblk_t *" readblk ,
+.BI "        any_rwblk_t *" writeblk ,
+.BI "        any_testblk_t *" testblk ,
+.BI "        any_getblkcount_t *" getblkcount ");"
+.fi
+Освобождает 
+.B все
+(в будущем) системные блоки \
+от пользовательской информации, \
+основываясь на информации из таблицы инф.узлов
+.B info
+и карте блоков (пользовательской информации)
+.BR block_bitmap .
+
+Функция будет использовать функции
+.B readblk
+и
+.B writeblk
+для чтения/записи с устройства, функцию
+.B getblkcount
+для получения размера устройства, а также функцию
+.B testblk
 для получения информации о расположении системных блоков на устройстве.
 
 .TP
@@ -499,8 +545,10 @@ struct any_file_fragment {
 нет нужды исправлять их самостоятельно
 
 .TP
-.BI "void progress_init(struct progress_struct *" progress \
-                 ", const char *" label ", uint32_t " max ");"
+.nf
+.BI "void progress_init(struct progress_struct *" progress ,
+.BI "        const char *" label ", uint32_t " max ");"
+.fi
 Инициализация строки прогресса
 .B progress
 с именем (пояснением действий программы для пользователя)
@@ -532,36 +580,12 @@ struct any_file_fragment {
 до значения
 .BR val .
 
-Эта функция записывает новое значение прогресса и возвращает курсор \
-назад для записи следующего значения.
+Эта функция возвращает курсор и записывает новое значение прогресса.
 
 .TP
 .BI "void progress_close(struct progress_struct *" progress ");"
 Закрытие строки прогресса
 .BR progress .
-
-.TP
-.BI "void progress_update_non_backup(struct progress_struct *" progress \
-                 ", uint32_t " val ");"
-Обновление строки прогресса
-.B progress
-до значения
-.B val 
-без возвращения курсора для записи следующего значения.
-
-Эта функция используется в
-.B anysurrect
-для помещения в строку прогресса индикатора обозначающего тип распознаватель,
-которого работает в данный момент.
-
-.TP
-.BI "void progress_backup(struct progress_struct *" progress ");"
-Возвращает курсор для записи следующего значения прогресса.
-
-Эта функция используется в
-.B anysurrect
-для помещения в строку прогресса индикатора обозначающего тип распознаватель,
-которого работает в данный момент.
 
 .SH "ВЕРСИЯ ANYFS-TOOLS"
 Файл

@@ -1,4 +1,4 @@
-.TH libany 3 "16 Aug 2006" "Version 0.84.5"
+.TH libany 3 "17 Dec 2006" "Version 0.84.11"
 .SH "NAME"
 libany \- anyfs-tools library.
 
@@ -162,8 +162,10 @@ The next functions declared in
 .BR super.h .
 
 .TP
-.BI "int alloc_it(struct any_sb_info **" it ", unsigned long " blocksize \
-		", unsigned long " inodes ");"
+.nf
+.BI "int alloc_it(struct any_sb_info **" it ", unsigned long " "blocksize,"
+.BI "        unsigned long " inodes ");"
+.fi
 Allocate memory for inode table with
 .B blocksize
 and maximal count of inodes
@@ -298,7 +300,10 @@ Return number of founded bit, or value which not less than
 in unsuccessful case.
 
 .TP
-.BI "int find_next_zero_bit(const unsigned long* " addr ", int " size ", int " offset);"
+.nf
+.BI "int find_next_zero_bit(const unsigned long* " addr ", int " size ", "
+.BI "        int " offset ");"
+.fi
 Search the first zero bit in the
 .B addr 
 bitmap with
@@ -315,7 +320,11 @@ The next functions declared in
 .B block_map.h
 
 .TP
-.BI "int fill_block_bitmap(struct any_sb_info *" info ", unsigned long *" block_bitmap ", any_blk_t " dev_size);"
+.nf
+.BI "int fill_block_bitmap(struct any_sb_info *" info ", "
+.BI "        unsigned long *" block_bitmap "," 
+.BI "        any_blk_t " dev_size ");"
+.fi
 Fills blocks map, sets blocks of regular files,
 according to information from
 .B info
@@ -338,8 +347,10 @@ The next functions declared in
 .B new_inode.h
 
 .TP
-.BI "int any_new_inode(struct any_sb_info *" info ", int " mode ", void* "\
-                data ", uint32_t " dirino ", uint32_t *" newino ");"
+.nf
+.BI "int any_new_inode(struct any_sb_info *" info ", int " mode ", void* " data ,
+.BI "        uint32_t " dirino ", uint32_t *" newino ");"
+.fi
 Creates inode in
 .B info
 inode table with
@@ -360,8 +371,10 @@ Returns zero in successful case. Close program (with exit)
 if not enough memory.
 
 .TP
-.BI "int getpathino(char *" path ", uint32_t " root ", struct any_sb_info*"\
-                  info ", uint32_t *" ino ");"
+.nf
+.BI "int getpathino(char *" path ", uint32_t " root ", struct any_sb_info* " info ", 
+.BI "        uint32_t *" ino ");"
+.fi
 Search (directory) entry with name
 .B path
 from directory inode
@@ -378,8 +391,10 @@ Returns 0 in successful case, 1 if entry doesn't exist, or -1 if
 inode is not directory or free inode.
 
 .TP
-.BI "int mkpathino(char *" path ", uint32_t " root ", struct any_sb_info*"\
-                info ", uint32_t *" ino ");"
+.nf
+.BI "int mkpathino(char *" path ", uint32_t " root ", struct any_sb_info* " info ", 
+.BI "        uint32_t *" ino ");"
+.fi
 like
 .BR getpathino() ,
 but creates all directories in path if they doesn't exit.
@@ -393,8 +408,10 @@ The next functions declared in
 .B release_fssys.h
 
 .TP
-.BI "typedef int any_rwblk_t(unsigned long " from ", unsigned long " n \
-              ", char *" buffer ");"
+.nf
+.BI "typedef int any_rwblk_t(unsigned long " from ", unsigned long " n ","
+.BI "        char *" buffer ");"
+.fi
 Type function to read/write block.
 
 Function of this type must read/write
@@ -454,9 +471,10 @@ Put to this variable right value before
 call.
 
 .TP
-.BI "int any_release(struct any_sb_info *" info ", unsigned long*" \
-                 block_bitmap ", unsigned long " start \
-                 ", unsigned long " length ");"
+.nf
+.BI "int any_release(struct any_sb_info *" info ", unsigned long *" block_bitmap "," 
+.BI "        unsigned long " start ", unsigned long " length ");"
+.fi
 Free
 .B length
 (in future) system blocks of FS, beginning from
@@ -474,6 +492,33 @@ functions to read/write device,
 .B any_getblkcount
 function to get device size, also
 .B any_testblk
+function to get information about system blocks on device.
+
+.TP
+.nf
+.BI "int any_release_sysinfo(struct any_sb_info *" info ","
+.BI "        unsigned long *" block_bitmap ,
+.BI "        any_rwblk_t *" readblk ,
+.BI "        any_rwblk_t *" writeblk ,
+.BI "        any_testblk_t *" testblk ,
+.BI "        any_getblkcount_t *" getblkcount ");"
+.fi
+Free
+.B all
+(in future) system blocks of FS
+from user information. It gets information from
+.B info
+inodetable, blocks map (of user information)
+.BR block_bitmap .
+
+The function uses
+.B readblk
+and
+.B writeblk
+functions to read/write device,
+.B getblkcount
+function to get device size, also
+.B testblk
 function to get information about system blocks on device.
 
 .TP
@@ -500,8 +545,10 @@ uses by functions below. The programmer which uses that functions
 not needed to edit this fields self.
 
 .TP
-.BI "void progress_init(struct progress_struct *" progress \
-                 ", const char *" label ", uint32_t " max ");"
+.nf
+.BI "void progress_init(struct progress_struct *" progress ,
+.BI "        const char *" label ", uint32_t " max ");"
+.fi
 Initialize
 .B progress
 progress line with 
@@ -533,37 +580,13 @@ progress line to
 .B val
 value.
 
-The function write new progress value and returns cursor back for writing
-the next value.
+The function returns cursor and write new progress value.
 
 .TP
 .BI "void progress_close(struct progress_struct *" progress ");"
 Close
 .B progress
 progress line.
-
-.TP
-.BI "void progress_update_non_backup(struct progress_struct *" progress \
-                 ", uint32_t " val ");"
-Updates
-.B progress
-progress line to
-.B val 
-value without returning cursor for writing the next value.
-
-The function used in
-.B anysurrect
-to put after progress line indicator which show type of recognizer,
-which works at the moment.
-
-.TP
-.BI "void progress_backup(struct progress_struct *" progress ");"
-Returns cursor back for writing the next value.
-
-The function used in
-.B anysurrect
-to put after progress line indicator which show type of recognizer,
-which works at the moment.
 
 .SH "ANYFS-TOOLS VERSION"
 The 
