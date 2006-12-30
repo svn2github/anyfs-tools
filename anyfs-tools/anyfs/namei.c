@@ -288,7 +288,11 @@ struct inode *any_new_inode(struct inode *dir, int mode, void* data)
 	inode->i_uid = current->fsuid;
 	inode->i_gid = (dir->i_mode & S_ISGID) ? dir->i_gid : current->fsgid;
 	inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME_SEC;
+#ifdef KERNEL_2_6_19_PLUS
+	inode->i_blocks = 0;
+#else
 	inode->i_blocks = inode->i_blksize = 0;
+#endif
 	inode->i_mode = mode;
 	inode->i_ino = ino;
 	

@@ -181,7 +181,9 @@ static void any_read_inode(struct inode * inode)
 
 	inode->i_nlink = info->si_inode_table[inode->i_ino].i_links_count;
 
+#ifndef KERNEL_2_6_19_PLUS
 	inode->i_blksize = info->si_blocksize;
+#endif
 	inode->i_blocks = 0;
 	
 	if ( S_ISREG(inode->i_mode) )
