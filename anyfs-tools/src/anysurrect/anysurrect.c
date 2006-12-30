@@ -763,10 +763,10 @@ void anysurrect_fromblock(struct any_sb_info *info)
 		setvbuf(stdout, buffer, _IOLBF, 1024);
 	}
 
-	char typeline[21];
+	char typeline[33];
 
 	int pend = __fpending(stdout);
-	if ( (1024 - pend) < 32 )
+	if ( (1024 - pend) < 48 )
 	{
 		fflush(stdout);
 		pend = __fpending(stdout);
@@ -790,28 +790,28 @@ void anysurrect_fromblock(struct any_sb_info *info)
 		int text = *texts[type];
 
 		if (!quiet) {
-			memset (typeline, ' ', 20);
-			typeline[20] = '\0';
-			int s = snprintf (typeline, 20, " [%s]", 
+			memset (typeline, ' ', 32);
+			typeline[32] = '\0';
+			int s = snprintf (typeline, 32, " [%s]", 
 					*indicators[type]);
-			if (s>=0 && s<=20) typeline[s]=' ';
+			if (s>=0 && s<=32) typeline[s]=' ';
 
 			if (!type)
 				printf("%s", typeline);
 			else
 			{
 				int pend2 = __fpending(stdout);
-				if ( (pend2-20)==pend )
+				if ( (pend2-32)==pend )
 				{
-					memcpy(buffer + pend, typeline, 20);
+					memcpy(buffer + pend, typeline, 32);
 				}
 				else
 				{
-					for (i = 0; i < 20; i++)
+					for (i = 0; i < 32; i++)
 						fputc('\b', stdout);
 
 					pend = __fpending(stdout);
-					if ( (1024 - pend) < 32 )
+					if ( (1024 - pend) < 48 )
 					{
 						fflush(stdout);
 						pend = __fpending(stdout);
@@ -845,7 +845,7 @@ void anysurrect_fromblock(struct any_sb_info *info)
 	}
 
 	if (!quiet)
-		for (i = 0; i < 20; i++)
+		for (i = 0; i < 32; i++)
 			fputc('\b', stdout);
 
 	set_block( (max_size+get_blocksize()-1)/get_blocksize() );

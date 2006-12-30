@@ -16,7 +16,7 @@ clean:
 	make -C $(KERNELSOURCES) M=$(PWD) clean
 
 distclean: clean
-	rm -f Makefile
+	rm -f Makefile Module.symvers Modules.symvers
 
 
 install: $(ANYFS_KO)

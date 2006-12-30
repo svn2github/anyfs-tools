@@ -195,7 +195,7 @@ extern int		cur_wh;
 any_size_t fd_size();
 any_ssize_t fd_read(void *buf, any_size_t count);
 
-extern inline any_off_t fd_seek(any_off_t offset, int whence)
+static inline any_off_t fd_seek(any_off_t offset, int whence)
 {
 	if (whence==SEEK_CUR)
 		offset += cur_offset;
