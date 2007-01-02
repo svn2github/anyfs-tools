@@ -1,6 +1,7 @@
 * 30.12.06      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
 	- Fix anyfs building with kernel version >=2.6.19
 	- Some other building fix
+	- Fix new (from v0.84.10) i/o buffer bug in anysurrect.
 
 * 16.12.06      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
 	- Fix anyfs building with kernel version >=2.6.18
