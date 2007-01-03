@@ -576,7 +576,9 @@ any_ssize_t fd_read(void *buf, any_size_t count)
 		r = min_t(any_size_t, c, io_buffer.size - (p - io_buffer.start) );
 		if (r==0) 
 		{
-			printf ("%lld, %lld\n", c, io_buffer.size - (p - io_buffer.start));
+			return count - c;
+			printf ("%lld, %lld, %lld, %lld\n", c, io_buffer.size - (p - io_buffer.start),
+					p, io_buffer.start);
 			exit (1);
 		}
 
