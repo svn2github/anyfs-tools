@@ -65,7 +65,10 @@
 #define LIST_STRING(name, len, list_strings...) ({		\
 	char *val=MALLOC(len+1);			\
 	res = fd_read(val, len);			\
-	if (!res) RETURN (ERROR_VALUE);			\
+	if (!res) {					\
+		free(val);				\
+		RETURN (ERROR_VALUE);			\
+	}						\
 	val[len] = '\0';				\
 	int eq=0;					\
 	char *LIST[]=list_strings;			\
@@ -75,8 +78,10 @@
 			eq=1;				\
 			break;				\
 		}					\
-	if (!eq)					\
+	if (!eq) {					\
+		free(val);				\
 		RETURN (ERROR_VALUE);			\
+	}						\
 	free(val);					\
 })
 
