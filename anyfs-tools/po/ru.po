@@ -2027,8 +2027,8 @@ msgid "unexpected end of file\n"
 msgstr "неожиданный конец файла\n"
 
 #: ../lib/progress.c:65
-msgid " done\n"
-msgstr " выполнено\n"
+msgid " done   \n"
+msgstr " выполнено   \n"
 
 #: ../lib/block_map.c:28
 #, c-format

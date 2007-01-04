@@ -1918,7 +1918,7 @@ msgid "unexpected end of file\n"
 msgstr ""
 
 #: ../lib/progress.c:65
-msgid " done\n"
+msgid " done   \n"
 msgstr ""
 
 #: ../lib/block_map.c:28

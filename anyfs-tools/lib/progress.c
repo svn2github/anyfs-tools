@@ -62,7 +62,7 @@ void progress_update(struct progress_struct *progress, uint32_t val)
 void progress_close(struct progress_struct *progress)
 {
 	if (progress->max)
-		fputs(_(" done\n"), stdout);
+		fputs(_(" done   \n"), stdout);
 	else fputs("\n", stdout);
 }
 
