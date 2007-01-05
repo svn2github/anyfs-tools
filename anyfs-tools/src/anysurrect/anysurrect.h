@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include "any.h"
 #include "anysurrect_malloc.h"
+#include "anysurrect_io.h"
 
 #define RETURN(r) ({							\
 	/*printf("anysurrect: in %s() at %s:%d, offset=%x\n", 		\
@@ -193,31 +194,5 @@
 		fd_seek(offset, SEEK_SET);		\
 	ret;						\
 })
-
-int read_byte(uint8_t *value);
-
-int read_beshort(uint16_t *value);
-int read_belong(uint32_t *value);
-
-int read_leshort(uint16_t *value);
-int read_lelong(uint32_t *value);
-
-extern any_off_t	cur_offset;
-
-any_size_t fd_size();
-any_ssize_t fd_read(void *buf, any_size_t count);
-
-static inline any_off_t fd_seek(any_off_t offset, int whence)
-{
-	if (whence==SEEK_CUR)
-		offset += cur_offset;
-
-	if (whence==SEEK_END)
-		offset += fd_size();
-
-	cur_offset = offset;
-
-	return cur_offset;
-}
 
 #endif	/*_ANYSURRECT_H*/

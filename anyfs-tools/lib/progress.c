@@ -27,6 +27,7 @@ void progress_init(struct progress_struct *progress,
 
 	progress->max = max;
 	progress->next_update = 0;
+	progress->updated = 0xFFFFFFFF;
 	progress->progress = 1;
 	progress->len = 0;
 	if (getenv("ANYFSTOOLS_SKIP_PROGRESS"))
@@ -54,10 +55,10 @@ void progress_update(struct progress_struct *progress, uint32_t val)
 	else
 		progress->len = printf("%i", val);
 
+	progress->updated = val;
 	progress->next_update += progress->pr / 100;
 	fflush (stdout);
 }
-
 
 void progress_close(struct progress_struct *progress)
 {

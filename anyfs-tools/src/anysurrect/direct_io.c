@@ -23,9 +23,9 @@
 #include "version.h"
 
 extern int fd;
-extern any_size_t blocksize;
+extern uint32_t blocksize;
 extern any_size_t device_blocks;
-extern any_size_t get_blocksize();
+extern uint32_t get_blocksize();
 
 any_off_t direct_start = 0;
 

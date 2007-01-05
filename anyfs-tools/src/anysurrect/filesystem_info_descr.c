@@ -22,7 +22,7 @@
 
 /*ext2fs direct blocks links*/
 #include "any.h"
-extern any_size_t get_blocksize();
+extern uint32_t get_blocksize();
 extern any_size_t device_blocks;
 
 char *filesystem_info_ext2fs_direct_blocks_links_surrect()

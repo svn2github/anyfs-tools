@@ -86,6 +86,7 @@ const mode_t **modes;
 const int **texts;
 const char ***indicators;
 char **typelines;
+static int ind_type=-1;
 int num_types = 0; 
 
 static void usage(void)
@@ -115,13 +116,6 @@ char *concat_strings(int n, ...)
 	va_end (ap);
 	return concat;
 }
-
-struct frags_list {
-	struct any_file_fragment frag;
-	signed long	offnext;
-	long whole;
-	unsigned long	num_frags;
-};
 
 unsigned long *block_bitmap;
 struct frags_list *frags_list;
@@ -462,22 +456,17 @@ int redirect_frags(struct frags_list *frags_list, unsigned long after,
  */
 
 int fd;
-any_size_t blocksize;
-
-struct io_buffer {
-	char	*buffer;
-	any_off_t	start;
-	any_size_t	size;
-};
+uint32_t blocksize;
+uint64_t blocksize64;
+int 	 log2blocksize;
+uint32_t bitsblocksize;
+uint64_t bitsblocksize64;
+uint32_t nbitsblocksize;
+uint64_t nbitsblocksize64;
 
 struct io_buffer io_buffer = {NULL, -1, 0};
 
-inline void set_blocksize(any_ssize_t s_blocksize)
-{
-	blocksize = s_blocksize;
-}
-
-inline int set_block(any_ssize_t s_block)
+int set_block(any_ssize_t s_block)
 {
 	cut_frags(&file_template_frags_list, 0, s_block);
 	io_buffer.size = 0;
@@ -489,16 +478,6 @@ inline int set_block(any_ssize_t s_block)
 	return (file_template_frags_list)?0:1;
 }
 
-inline any_size_t get_blocksize()
-{
-	return blocksize;
-}
-
-inline unsigned long get_block()
-{
-	return file_frags_list->frag.fr_start;
-}
-
 any_size_t fd_size()
 {
 	any_size_t blocks = 0;
@@ -507,7 +486,7 @@ any_size_t fd_size()
 	for (; frags_list; NEXT_FRAG(frags_list) )
 		blocks += frags_list->frag.fr_length;
 
-	return blocks*get_blocksize();
+	return blocks<<get_log2blocksize();
 }
 
 any_off_t cur_offset = 0;
@@ -520,20 +499,20 @@ any_off_t _fd_seek(any_off_t offset, int whence)
 	if (whence==SEEK_END)
 		offset += fd_size();
 
-	if ( ( blocks_before_frag * get_blocksize() ) > offset || !cur_frag )
+	if ( ( blocks_before_frag << get_log2blocksize() ) > offset || !cur_frag )
 	{
 		blocks_before_frag = 0;
 		cur_frag = file_frags_list;
 	}
 
-	while ( ( ( blocks_before_frag + cur_frag->frag.fr_length ) *
-					get_blocksize() )<=offset )
+	while ( ( ( blocks_before_frag + cur_frag->frag.fr_length ) <<
+					get_log2blocksize() )<=offset )
 	{
 		blocks_before_frag += cur_frag->frag.fr_length;
 		NEXT_FRAG(cur_frag);
 		if ( !cur_frag )
 		{
-			if ( ( blocks_before_frag*get_blocksize() )<offset )
+			if ( ( blocks_before_frag << get_log2blocksize() )<offset )
 				return -1;
 			lseek64(fd, 0, SEEK_END);
 			cur_offset = offset;
@@ -541,160 +520,13 @@ any_off_t _fd_seek(any_off_t offset, int whence)
 		}
 	}
 
-	lseek64(fd, (any_size_t) cur_frag->frag.fr_start * get_blocksize() + offset - 
-			(any_size_t) blocks_before_frag * get_blocksize() , 
+	lseek64(fd, (any_size_t) ( (cur_frag->frag.fr_start - blocks_before_frag) << 
+				get_log2blocksize()) + offset, 
 			SEEK_SET);
 
 	cur_offset = offset;
 	
 	return cur_offset;
-}
-
-any_ssize_t fd_read(void *buf, any_size_t count)
-{
-	any_size_t c = count;
-	any_size_t p, r;
-	
-	any_off_t from = cur_offset;
-
-	p = from;
-	while (c)
-	{
-		if ( p>(io_buffer.start + io_buffer.size - 1) ||
-		  p<io_buffer.start || io_buffer.size==0 )
-		{
-			any_size_t bp = p / get_blocksize() * get_blocksize();
-			_fd_seek(bp, SEEK_SET);
-
-			io_buffer.start = bp;
-
-			io_buffer.size = read (fd, io_buffer.buffer, get_blocksize());
-			if (io_buffer.size<0) 
-			{
-				cur_offset = p;
-				return 0;
-			}
-			
-			if (io_buffer.size==0)
-			{
-				cur_offset = p;
-				return count - c;
-			}
-		}
-
-		r = min_t(any_size_t, c, io_buffer.size - (p - io_buffer.start) );
-
-		switch(r)
-		{
-			case 0:
-				cur_offset = p;
-				return count - c;
-				printf ("%lld, %lld, %lld, %lld\n", c, io_buffer.size - (p - io_buffer.start),
-						p, io_buffer.start);
-				exit (1);
-				break;
-
-			case 1:
-				*(char*)(buf + (p-from)) = 
-					*(char*)(io_buffer.buffer + (p - io_buffer.start));
-				break;
-			case 2:
-				*(uint16_t*)(buf + (p-from)) = 
-					*(uint16_t*)(io_buffer.buffer + (p - io_buffer.start));
-				break;
-			case 4:
-				*(uint32_t*)(buf + (p-from)) = 
-					*(uint32_t*)(io_buffer.buffer + (p - io_buffer.start));
-				break;
-			default:
-				memcpy (buf + (p-from),
-						io_buffer.buffer + (p - io_buffer.start), 
-						r);
-		}
-
-		c-=r;
-		p+=r;
-	}
-
-	cur_offset = p;
-	return count;
-}
-
-int read_byte(uint8_t *value)
-{
-	int res=0;
-	res=fd_read(value, 1);
-	if (!res) return 1;
-
-	return 0;
-}
-
-int read_beshort(uint16_t *value)
-{
-	int res=0;
-	res=fd_read(value, 2);
-	if (!res) return 1;
-		
-#if	BYTE_ORDER==LITTLE_ENDIAN
-	char *s = (char*) value;
-	char b = s[0];
-	s[0] = s[1];
-	s[1] = b;
-#endif
-	return 0;
-}
-
-int read_belong(uint32_t *value)
-{
-	int res=0;
-	res=fd_read(value, 4);
-	if (!res) return 1;
-		
-#if	BYTE_ORDER==LITTLE_ENDIAN
-	char *s = (char*) value;
-	char b = s[0];
-	s[0] = s[3];
-	s[3] = b;
-
-	b = s[1];
-	s[1] = s[2];
-	s[2] = b;
-#endif
-	return 0;
-}
-
-int read_leshort(uint16_t *value)
-{
-	int res=0;
-	res=fd_read(value, 2);
-	if (!res) return 1;
-		
-#if	BYTE_ORDER==BIG_ENDIAN
-	char *s = (char*) value;
-	char b = s[0];
-	s[0] = s[1];
-	s[1] = b;
-#endif
-	return 0;
-}
-
-int read_lelong(uint32_t *value)
-{
-	int res=0;
-	res=fd_read(value, 4);
-	if (!res) return 1;
-		
-#if	BYTE_ORDER==BIG_ENDIAN
-	char *s = (char*) value;
-	char b = s[0];
-	s[0] = s[3];
-	s[3] = b;
-
-	b = s[1];
-	s[1] = s[2];
-	s[2] = b;
-#endif
-	return 0;
 }
 
 void anysurrect_file(struct any_sb_info *info, char *dirn, mode_t mode)
@@ -752,8 +584,7 @@ void anysurrect_file(struct any_sb_info *info, char *dirn, mode_t mode)
 	inode->i_size = fd_seek(0, SEEK_CUR);
 	
 	pick_frags(&file_frags_list, 0,
-			( fd_seek(0, SEEK_CUR) + 
-			   get_blocksize() - 1   )/get_blocksize() );
+			( (inode->i_size-1) >> get_log2blocksize()) ) + 1;
 
 /*	printf ("%d, %d\n", file_frags_list->frag.fr_start,
 			file_frags_list->frag.fr_length);
@@ -771,27 +602,7 @@ void anysurrect_fromblock(struct any_sb_info *info)
 	char *mes;
 	any_size_t max_size=1;
 
-	static char *buffer = NULL;
 	int type;
-
-	if (!buffer)
-	{
-		buffer = malloc(1024);
-		if (!buffer)
-		{
-			fprintf (stderr, _("Not enough memory\n"));
-			exit(1);
-		}
-
-		setvbuf(stdout, buffer, _IOLBF, 1024);
-	}
-
-	int pend = __fpending(stdout);
-	if ( (1024 - pend) < 48 )
-	{
-		fflush(stdout);
-		pend = __fpending(stdout);
-	}
 
 	static unsigned long *SKIP_TO_BLOCK = NULL;
 	if (!SKIP_TO_BLOCK) 
@@ -809,36 +620,15 @@ void anysurrect_fromblock(struct any_sb_info *info)
 	
 	for (type=0; type<num_types; type++)
 	{
-		mode_t mode = *modes[type];
+		ind_type = type;
 		int text = *texts[type];
 
-		if (!quiet) {
-			if (!type)
-				fwrite( typelines[type], 32, 1, stdout);
-			else
-			{
-				int pend2 = __fpending(stdout);
-				if ( (pend2-32)==pend )
-				{
-					memcpy(buffer + pend, typelines[type], 32);
-				}
-				else
-				{
-					fwrite( "\b\b\b\b\b\b\b\b"
-						"\b\b\b\b\b\b\b\b"
-						"\b\b\b\b\b\b\b\b"
-						"\b\b\b\b\b\b\b\b", 32, 1, stdout);
-
-					pend = __fpending(stdout);
-					if ( (1024 - pend) < 48 )
-					{
-						fflush(stdout);
-						pend = __fpending(stdout);
-					}
-
-					fwrite( typelines[type], 32, 1, stdout);
-				}
-			}
+		if (!quiet && !type &&
+				if_progress_updated(&progress,
+					file_template_frags_list->frag.fr_start))
+		{
+			fwrite( typelines[type], 32, 1, stdout);
+			fflush(stdout);
 		}
 
 		if (copy_file_template_frags_list)
@@ -855,6 +645,7 @@ void anysurrect_fromblock(struct any_sb_info *info)
 		if (!text || (get_block()>=SKIP_TO_BLOCK[type]) ) {
 			mes = surrects[type](); 
 			if (mes) { 
+				mode_t mode = *modes[type];
 				char* dupmes = strdup(mes);
 				if (verbose) printf("file %s, block=%ld, size=%llx\n",
 						mes, get_block(), fd_seek(0, SEEK_CUR));
@@ -864,8 +655,9 @@ void anysurrect_fromblock(struct any_sb_info *info)
 				free_frags_list (file_frags_list);
 			}
 			else {	
-				SKIP_TO_BLOCK[type] = get_block() + 
-					(fd_seek(0, SEEK_CUR)+get_blocksize()-1)/get_blocksize();
+				any_size_t pos = fd_seek(0, SEEK_CUR);
+				if (text) SKIP_TO_BLOCK[type] = get_block() + 
+					((pos-1) >> get_log2blocksize()) + 1;
 				copy_file_template_frags_list = file_frags_list;
 			}
 		}
@@ -874,13 +666,16 @@ void anysurrect_fromblock(struct any_sb_info *info)
 	if (copy_file_template_frags_list)
 		free_frags_list (copy_file_template_frags_list);
 
-	if (!quiet)
+	ind_type = -1;
+
+	set_block( ( (max_size-1) >> get_log2blocksize() ) + 1 );
+
+	if (!quiet && if_progress_update(&progress,
+				file_template_frags_list->frag.fr_start))
 		fwrite( "\b\b\b\b\b\b\b\b"
 			"\b\b\b\b\b\b\b\b"
 			"\b\b\b\b\b\b\b\b"
 			"\b\b\b\b\b\b\b\b", 32, 1, stdout);
-
-	set_block( (max_size+get_blocksize()-1)/get_blocksize() );
 }
 
 static void PRS(int argc, const char *argv[])
@@ -996,11 +791,27 @@ _("Illegal mode for directory umask. It must be 3 octal digits.\n"));
 
 void sigusr1_handler (int signal_number)
 {       
+	if (ind_type >= 0)
+	{
+		fwrite( "\b\b\b\b\b\b\b\b"
+			"\b\b\b\b\b\b\b\b"
+			"\b\b\b\b\b\b\b\b"
+			"\b\b\b\b\b\b\b\b", 32, 1, stdout);
+		fwrite( typelines[ind_type], 32, 1, stdout);
+	}
 	fflush(stdout);
 }
 
 void sigint_handler (int signal_number)
 {       
+	if (ind_type >= 0)
+	{
+		fwrite( "\b\b\b\b\b\b\b\b"
+			"\b\b\b\b\b\b\b\b"
+			"\b\b\b\b\b\b\b\b"
+			"\b\b\b\b\b\b\b\b", 32, 1, stdout);
+		fwrite( typelines[ind_type], 32, 1, stdout);
+	}
 	printf ("\nuser cancel\n");
 	fflush(stdout);
 
@@ -1009,6 +820,14 @@ void sigint_handler (int signal_number)
 
 void sigsegv_handler (int signal_number)
 {       
+	if (ind_type >= 0)
+	{
+		fwrite( "\b\b\b\b\b\b\b\b"
+			"\b\b\b\b\b\b\b\b"
+			"\b\b\b\b\b\b\b\b"
+			"\b\b\b\b\b\b\b\b", 32, 1, stdout);
+		fwrite( typelines[ind_type], 32, 1, stdout);
+	}
 	fflush(stdout);
 	fprintf (stderr, "\nSegmentation fault\n");
 
@@ -1270,7 +1089,7 @@ int main (int argc, const char *argv[])
 		{
 			set_blocksize(512);
 
-			while ( st.st_size/get_blocksize() > 0xFFFFFF )
+			while ( st.st_size >> get_log2blocksize() > 0xFFFFFF )
 				set_blocksize(get_blocksize()*2);
 
 			if ( get_blocksize()>4096 )
@@ -1280,13 +1099,13 @@ int main (int argc, const char *argv[])
 			set_blocksize(input_blocksize);
 
 
-		if ( st.st_size/get_blocksize() > 0xFFFFFFFFULL )
+		if ( st.st_size >> get_log2blocksize() > 0xFFFFFFFFULL )
 		{
 			fprintf(stderr,
 					_("Sorry, too large device.\n"));
 		}
 
-		uint32_t inodes = st.st_size/( 1024*get_blocksize() ) + 256;
+		uint32_t inodes = ( st.st_size >> get_log2blocksize() )/1024 + 256;
 
 		r = alloc_it(&info, get_blocksize(), inodes);
 		if (r<0) goto out;
@@ -1324,7 +1143,7 @@ _("Specified input inode table has %lu blocksize,\n"
 		set_blocksize(info->si_blocksize);
 	}
 	
-	any_size_t blocks = (st.st_size+get_blocksize()-1)/get_blocksize();
+	any_size_t blocks = ((st.st_size-1) >> get_log2blocksize()) + 2;
 	device_blocks = blocks;
 
 	if (!blocks)

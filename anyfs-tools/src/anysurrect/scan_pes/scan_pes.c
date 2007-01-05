@@ -134,7 +134,7 @@ any_size_t scan_pes(int verbose)
   uint8_t * tmp2=NULL;
   int complain_loudly;
   
-  long int pack_header_last=0, pack_header_ctr=0, pack_header_pos=0, pack_header_inc=0;
+  any_ssize_t pack_header_last=0, pack_header_ctr=0, pack_header_pos=0, pack_header_inc=0;
   
   char scan_buf[256];
   
