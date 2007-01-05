@@ -85,6 +85,7 @@ surrect_function_t** surrects;
 const mode_t **modes;
 const int **texts;
 const char ***indicators;
+char **typelines;
 int num_types = 0; 
 
 static void usage(void)
@@ -179,7 +180,7 @@ static void *	anysurrect_allocbuf = NULL;
 static size_t 	anysurrect_allocbuf_size = 0;
 static int 	anysurrect_allocbuf_busy = 0;
 
-void *anysurrect_malloc(size_t size)
+inline void *anysurrect_malloc(size_t size)
 {
 	if (anysurrect_allocbuf_busy)
 		return malloc(size);
@@ -201,7 +202,7 @@ void *anysurrect_malloc(size_t size)
 	return anysurrect_allocbuf;
 }
 
-void anysurrect_free(void *ptr)
+inline void anysurrect_free(void *ptr)
 {
 	if (ptr == anysurrect_allocbuf)
 		anysurrect_allocbuf_busy = 0;
@@ -514,12 +515,12 @@ struct io_buffer {
 
 struct io_buffer io_buffer = {NULL, -1, 0};
 
-void set_blocksize(any_ssize_t s_blocksize)
+inline void set_blocksize(any_ssize_t s_blocksize)
 {
 	blocksize = s_blocksize;
 }
 
-int set_block(any_ssize_t s_block)
+inline int set_block(any_ssize_t s_block)
 {
 	cut_frags(&file_template_frags_list, 0, s_block);
 	io_buffer.size = 0;
@@ -531,12 +532,12 @@ int set_block(any_ssize_t s_block)
 	return (file_template_frags_list)?0:1;
 }
 
-any_size_t get_blocksize()
+inline any_size_t get_blocksize()
 {
 	return blocksize;
 }
 
-unsigned long get_block()
+inline unsigned long get_block()
 {
 	return file_frags_list->frag.fr_start;
 }
@@ -799,7 +800,6 @@ void anysurrect_fromblock(struct any_sb_info *info)
 
 	static char *buffer = NULL;
 	int type;
-        int i;
 
 	if (!buffer)
 	{
@@ -812,8 +812,6 @@ void anysurrect_fromblock(struct any_sb_info *info)
 
 		setvbuf(stdout, buffer, _IOLBF, 1024);
 	}
-
-	char typeline[33];
 
 	int pend = __fpending(stdout);
 	if ( (1024 - pend) < 48 )
@@ -840,29 +838,21 @@ void anysurrect_fromblock(struct any_sb_info *info)
 		int text = *texts[type];
 
 		if (!quiet) {
-			typeline[32] = '\0';
-			typeline[0] = ' ';
-			typeline[1] = '[';
-			int typeline_length = strlen(*indicators[type]);
-			typeline_length = min_t(int, typeline_length, 29);
-			memcpy(typeline+2, *indicators[type], typeline_length);
-			typeline[2+typeline_length] = ']';
-			memset (typeline + (3+typeline_length), ' ', 
-					32 - (3+typeline_length) );
-
 			if (!type)
-				printf("%s", typeline);
+				fwrite( typelines[type], 32, 1, stdout);
 			else
 			{
 				int pend2 = __fpending(stdout);
 				if ( (pend2-32)==pend )
 				{
-					memcpy(buffer + pend, typeline, 32);
+					memcpy(buffer + pend, typelines[type], 32);
 				}
 				else
 				{
-					for (i = 0; i < 32; i++)
-						fputc('\b', stdout);
+					fwrite( "\b\b\b\b\b\b\b\b"
+						"\b\b\b\b\b\b\b\b"
+						"\b\b\b\b\b\b\b\b"
+						"\b\b\b\b\b\b\b\b", 32, 1, stdout);
 
 					pend = __fpending(stdout);
 					if ( (1024 - pend) < 48 )
@@ -871,7 +861,7 @@ void anysurrect_fromblock(struct any_sb_info *info)
 						pend = __fpending(stdout);
 					}
 
-					printf("%s", typeline);
+					fwrite( typelines[type], 32, 1, stdout);
 				}
 			}
 		}
@@ -899,10 +889,10 @@ void anysurrect_fromblock(struct any_sb_info *info)
 	}
 
 	if (!quiet)
-		printf("\b\b\b\b\b\b\b\b"
-		       "\b\b\b\b\b\b\b\b"
-		       "\b\b\b\b\b\b\b\b"
-		       "\b\b\b\b\b\b\b\b");
+		fwrite( "\b\b\b\b\b\b\b\b"
+			"\b\b\b\b\b\b\b\b"
+			"\b\b\b\b\b\b\b\b"
+			"\b\b\b\b\b\b\b\b", 32, 1, stdout);
 
 	set_block( (max_size+get_blocksize()-1)/get_blocksize() );
 }
@@ -1248,6 +1238,26 @@ int main (int argc, const char *argv[])
 
 		begin = end;
 		while ( begin[0] == ' ' ) begin++;
+	}
+
+	typelines = (char**)
+		MALLOC( sizeof(char*) * num_types );
+
+	type = 0;
+
+	for (type=0; type<num_types; type++)
+	{
+		typelines[type] = (char*) MALLOC(33);
+
+		typelines[type][32] = '\0';
+		typelines[type][0] = ' ';
+		typelines[type][1] = '[';
+		int typeline_length = strlen(*indicators[type]);
+		typeline_length = min_t(int, typeline_length, 29);
+		memcpy(typelines[type]+2, *indicators[type], typeline_length);
+		typelines[type][2+typeline_length] = ']';
+		memset (typelines[type] + (3+typeline_length), ' ', 
+				32 - (3+typeline_length) );
 	}
 
 	fd = open(device_name, O_RDONLY | O_LARGEFILE);
