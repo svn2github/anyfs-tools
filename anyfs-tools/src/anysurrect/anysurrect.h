@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 #include "any.h"
+#include "anysurrect_malloc.h"
 
 #define RETURN(r) ({							\
 	/*printf("anysurrect: in %s() at %s:%d, offset=%x\n", 		\
@@ -42,19 +43,26 @@
 		exit(1);				\
 	} m; })
 
+#define ANYSURRECT_MALLOC(len, num) ({ 			\
+	char* m=anysurrect_malloc(len, num);			\
+	if (!m) {					\
+		fprintf (stderr, "Not enough memory\n");\
+		exit(1);				\
+	} m; })
+
 #define COND_STRING(name, len, CONDITION) ({ 		\
-	char *val=MALLOC(len+1);			\
+	char *val=ANYSURRECT_MALLOC(len+1, COND_STRING_MALLOC_BUFFER);\
 	res = fd_read(val, len);			\
 	if (!res) {					\
-		free(val);				\
+		anysurrect_free(val, COND_STRING_MALLOC_BUFFER);	\
 		RETURN (ERROR_VALUE);			\
 	}						\
 	val[len] = '\0';				\
 	if (!(CONDITION)) {				\
-		free (val);				\
+		anysurrect_free (val, COND_STRING_MALLOC_BUFFER);	\
 		RETURN (ERROR_VALUE);			\
 	}						\
-	free(val);					\
+	anysurrect_free(val, COND_STRING_MALLOC_BUFFER);		\
 })
 
 #define EX_STRING(name, string) ({ 			\
@@ -63,10 +71,10 @@
 })
 
 #define LIST_STRING(name, len, list_strings...) ({		\
-	char *val=MALLOC(len+1);			\
+	char *val=ANYSURRECT_MALLOC(len+1, LIST_STRING_MALLOC_BUFFER);	\
 	res = fd_read(val, len);			\
 	if (!res) {					\
-		free(val);				\
+		anysurrect_free(val, LIST_STRING_MALLOC_BUFFER);\
 		RETURN (ERROR_VALUE);			\
 	}						\
 	val[len] = '\0';				\
@@ -79,10 +87,10 @@
 			break;				\
 		}					\
 	if (!eq) {					\
-		free(val);				\
+		anysurrect_free(val, LIST_STRING_MALLOC_BUFFER);\
 		RETURN (ERROR_VALUE);			\
 	}						\
-	free(val);					\
+	anysurrect_free(val, LIST_STRING_MALLOC_BUFFER);	\
 })
 
 #define READ_BELONG(name) ({				\

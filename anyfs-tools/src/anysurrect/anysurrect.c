@@ -176,51 +176,6 @@ int create_frags_list(unsigned long *block_bitmap,
 #define NEXT_FRAG(frag) NEXT_FRAG_OFS(frag, frag->offnext)
 #define NEXT_FRAG_WA(frag) NEXT_FRAG_WA_OFS(frag, frag->offnext)
 
-static void *	anysurrect_allocbuf = NULL;
-static size_t 	anysurrect_allocbuf_size = 0;
-static int 	anysurrect_allocbuf_busy = 0;
-
-inline void *anysurrect_malloc(size_t size)
-{
-	if (anysurrect_allocbuf_busy)
-		return malloc(size);
-
-	if (!anysurrect_allocbuf)
-	{
-		anysurrect_allocbuf = malloc(size);
-		anysurrect_allocbuf_size = size;
-	}
-
-	if (size > anysurrect_allocbuf_size)
-	{
-		anysurrect_allocbuf = realloc (anysurrect_allocbuf, size);
-		anysurrect_allocbuf_size = size;
-	}
-
-	anysurrect_allocbuf_busy = 1;
-
-	return anysurrect_allocbuf;
-}
-
-inline void anysurrect_free(void *ptr)
-{
-	if (ptr == anysurrect_allocbuf)
-		anysurrect_allocbuf_busy = 0;
-	else
-		free(ptr);
-}
-
-void anysurrect_free_clean()
-{
-	if (anysurrect_allocbuf)
-	{
-		free(anysurrect_allocbuf);
-		anysurrect_allocbuf = NULL;
-		anysurrect_allocbuf_size = 0;
-		anysurrect_allocbuf_busy = 0;
-	}
-}
-
 int copy_frags_list(struct frags_list *from, struct frags_list **pto)
 {
 	struct frags_list *new;
@@ -230,7 +185,8 @@ int copy_frags_list(struct frags_list *from, struct frags_list **pto)
 	if (from->whole!=-1)
 	{
 		struct frags_list *whole = 
-			anysurrect_malloc(sizeof(struct frags_list)*from->num_frags);
+			anysurrect_malloc(sizeof(struct frags_list)*from->num_frags,
+					COPY_FRAGS_MALLOC_BUFFER);
 		if (!whole)
 		{
 			fprintf(stderr, _("Not enough memory\n"));
@@ -287,7 +243,8 @@ int free_frags_list(struct frags_list *frags_list)
 
 	if (frags_list->whole!=-1)
 	{
-		anysurrect_free(frags_list - frags_list->whole);
+		anysurrect_free(frags_list - frags_list->whole,
+				COPY_FRAGS_MALLOC_BUFFER);
 		return 0;
 	}
 
@@ -626,18 +583,34 @@ any_ssize_t fd_read(void *buf, any_size_t count)
 		}
 
 		r = min_t(any_size_t, c, io_buffer.size - (p - io_buffer.start) );
-		if (r==0) 
-		{
-			cur_offset = p;
-			return count - c;
-			printf ("%lld, %lld, %lld, %lld\n", c, io_buffer.size - (p - io_buffer.start),
-					p, io_buffer.start);
-			exit (1);
-		}
 
-		memcpy (buf + (p-from),
-				io_buffer.buffer + (p - io_buffer.start), 
-				r);
+		switch(r)
+		{
+			case 0:
+				cur_offset = p;
+				return count - c;
+				printf ("%lld, %lld, %lld, %lld\n", c, io_buffer.size - (p - io_buffer.start),
+						p, io_buffer.start);
+				exit (1);
+				break;
+
+			case 1:
+				*(char*)(buf + (p-from)) = 
+					*(char*)(io_buffer.buffer + (p - io_buffer.start));
+				break;
+			case 2:
+				*(uint16_t*)(buf + (p-from)) = 
+					*(uint16_t*)(io_buffer.buffer + (p - io_buffer.start));
+				break;
+			case 4:
+				*(uint32_t*)(buf + (p-from)) = 
+					*(uint32_t*)(io_buffer.buffer + (p - io_buffer.start));
+				break;
+			default:
+				memcpy (buf + (p-from),
+						io_buffer.buffer + (p - io_buffer.start), 
+						r);
+		}
 
 		c-=r;
 		p+=r;
@@ -831,6 +804,8 @@ void anysurrect_fromblock(struct any_sb_info *info)
 			exit(1);
 		}
 	}
+
+	struct frags_list *copy_file_template_frags_list = NULL;
 	
 	for (type=0; type<num_types; type++)
 	{
@@ -866,7 +841,14 @@ void anysurrect_fromblock(struct any_sb_info *info)
 			}
 		}
 
-		copy_frags_list (file_template_frags_list, &file_frags_list);
+		if (copy_file_template_frags_list)
+		{
+			file_frags_list = copy_file_template_frags_list;
+			copy_file_template_frags_list = NULL;
+		}
+		else
+			copy_frags_list (file_template_frags_list, &file_frags_list);
+
 		blocks_before_frag = 0;
 		cur_frag = file_frags_list;
 		fd_seek(0, SEEK_SET);
@@ -879,14 +861,18 @@ void anysurrect_fromblock(struct any_sb_info *info)
 				max_size = max_t(any_size_t, max_size, fd_seek(0, SEEK_CUR) );
 				anysurrect_file(info, dupmes, mode);
 				free(dupmes);
+				free_frags_list (file_frags_list);
 			}
 			else {	
 				SKIP_TO_BLOCK[type] = get_block() + 
 					(fd_seek(0, SEEK_CUR)+get_blocksize()-1)/get_blocksize();
+				copy_file_template_frags_list = file_frags_list;
 			}
 		}
-		free_frags_list (file_frags_list);
 	}
+
+	if (copy_file_template_frags_list)
+		free_frags_list (copy_file_template_frags_list);
 
 	if (!quiet)
 		fwrite( "\b\b\b\b\b\b\b\b"
@@ -1363,6 +1349,8 @@ _("Specified input inode table has %lu blocksize,\n"
 	if (r) exit(r);
 
 	if (fromfirst) clear_bit(0, block_bitmap);
+
+	anysurrect_malloc_clean();
 	
 	create_frags_list(block_bitmap, blocks, &frags_list);
 
