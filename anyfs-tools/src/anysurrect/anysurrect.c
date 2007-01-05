@@ -612,15 +612,22 @@ any_ssize_t fd_read(void *buf, any_size_t count)
 
 			io_buffer.size = read (fd, io_buffer.buffer, get_blocksize());
 			if (io_buffer.size<0) 
+			{
+				cur_offset = p;
 				return 0;
+			}
 			
 			if (io_buffer.size==0)
+			{
+				cur_offset = p;
 				return count - c;
+			}
 		}
 
 		r = min_t(any_size_t, c, io_buffer.size - (p - io_buffer.start) );
 		if (r==0) 
 		{
+			cur_offset = p;
 			return count - c;
 			printf ("%lld, %lld, %lld, %lld\n", c, io_buffer.size - (p - io_buffer.start),
 					p, io_buffer.start);
@@ -1372,6 +1379,7 @@ _("Specified input inode table has %lu blocksize,\n"
 	}
 
 	anysurrect_free_clean();
+	free(block_bitmap);
 
 	progress_close(&progress);
 
