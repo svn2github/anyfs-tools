@@ -175,6 +175,51 @@ int create_frags_list(unsigned long *block_bitmap,
 #define NEXT_FRAG(frag) NEXT_FRAG_OFS(frag, frag->offnext)
 #define NEXT_FRAG_WA(frag) NEXT_FRAG_WA_OFS(frag, frag->offnext)
 
+static void *	anysurrect_allocbuf = NULL;
+static size_t 	anysurrect_allocbuf_size = 0;
+static int 	anysurrect_allocbuf_busy = 0;
+
+void *anysurrect_malloc(size_t size)
+{
+	if (anysurrect_allocbuf_busy)
+		return malloc(size);
+
+	if (!anysurrect_allocbuf)
+	{
+		anysurrect_allocbuf = malloc(size);
+		anysurrect_allocbuf_size = size;
+	}
+
+	if (size > anysurrect_allocbuf_size)
+	{
+		anysurrect_allocbuf = realloc (anysurrect_allocbuf, size);
+		anysurrect_allocbuf_size = size;
+	}
+
+	anysurrect_allocbuf_busy = 1;
+
+	return anysurrect_allocbuf;
+}
+
+void anysurrect_free(void *ptr)
+{
+	if (ptr == anysurrect_allocbuf)
+		anysurrect_allocbuf_busy = 0;
+	else
+		free(ptr);
+}
+
+void anysurrect_free_clean()
+{
+	if (anysurrect_allocbuf)
+	{
+		free(anysurrect_allocbuf);
+		anysurrect_allocbuf = NULL;
+		anysurrect_allocbuf_size = 0;
+		anysurrect_allocbuf_busy = 0;
+	}
+}
+
 int copy_frags_list(struct frags_list *from, struct frags_list **pto)
 {
 	struct frags_list *new;
@@ -184,7 +229,7 @@ int copy_frags_list(struct frags_list *from, struct frags_list **pto)
 	if (from->whole!=-1)
 	{
 		struct frags_list *whole = 
-			malloc(sizeof(struct frags_list)*from->num_frags);
+			anysurrect_malloc(sizeof(struct frags_list)*from->num_frags);
 		if (!whole)
 		{
 			fprintf(stderr, _("Not enough memory\n"));
@@ -241,7 +286,7 @@ int free_frags_list(struct frags_list *frags_list)
 
 	if (frags_list->whole!=-1)
 	{
-		free(frags_list - frags_list->whole);
+		anysurrect_free(frags_list - frags_list->whole);
 		return 0;
 	}
 
@@ -788,11 +833,15 @@ void anysurrect_fromblock(struct any_sb_info *info)
 		int text = *texts[type];
 
 		if (!quiet) {
-			memset (typeline, ' ', 32);
 			typeline[32] = '\0';
-			int s = snprintf (typeline, 32, " [%s]", 
-					*indicators[type]);
-			if (s>=0 && s<=32) typeline[s]=' ';
+			typeline[0] = ' ';
+			typeline[1] = '[';
+			int typeline_length = strlen(*indicators[type]);
+			typeline_length = min_t(int, typeline_length, 29);
+			memcpy(typeline+2, *indicators[type], typeline_length);
+			typeline[2+typeline_length] = ']';
+			memset (typeline + (3+typeline_length), ' ', 
+					32 - (3+typeline_length) );
 
 			if (!type)
 				printf("%s", typeline);
@@ -843,8 +892,10 @@ void anysurrect_fromblock(struct any_sb_info *info)
 	}
 
 	if (!quiet)
-		for (i = 0; i < 32; i++)
-			fputc('\b', stdout);
+		printf("\b\b\b\b\b\b\b\b"
+		       "\b\b\b\b\b\b\b\b"
+		       "\b\b\b\b\b\b\b\b"
+		       "\b\b\b\b\b\b\b\b");
 
 	set_block( (max_size+get_blocksize()-1)/get_blocksize() );
 }
@@ -976,7 +1027,7 @@ void sigint_handler (int signal_number)
 void sigsegv_handler (int signal_number)
 {       
 	fflush(stdout);
-	fprintf (stderr, "Segmentation fault\n");
+	fprintf (stderr, "\nSegmentation fault\n");
 
 	abort();
 }
@@ -1319,6 +1370,8 @@ _("Specified input inode table has %lu blocksize,\n"
 				file_template_frags_list->frag.fr_start);
 		anysurrect_fromblock(info);
 	}
+
+	anysurrect_free_clean();
 
 	progress_close(&progress);
 
