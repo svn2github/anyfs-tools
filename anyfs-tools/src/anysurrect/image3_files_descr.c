@@ -215,9 +215,6 @@
 
 char *image_TIFF_surrect()
 {
-#define ERROR_VALUE	0
-	int res;
-
 	int big_endian;
 	
 	char endian_string[2];
@@ -236,5 +233,4 @@ char *image_TIFF_surrect()
 	fd_seek(size, SEEK_SET);
 	
 	return "image/TIFF";
-#undef	ERROR_VALUE
 }

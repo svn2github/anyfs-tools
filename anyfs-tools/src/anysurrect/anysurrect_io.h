@@ -11,8 +11,7 @@ extern any_off_t	cur_offset;
 
 any_size_t fd_size();
 
-static __inline __attribute__((always_inline)) 
-any_off_t fd_seek(any_off_t offset, int whence)
+static inline any_off_t fd_seek(any_off_t offset, int whence)
 {
 	if (whence==SEEK_CUR)
 		offset += cur_offset;
@@ -55,8 +54,7 @@ extern uint64_t nbitsblocksize64;
 
 any_off_t _fd_seek(any_off_t offset, int whence);
 
-static __inline __attribute__((always_inline)) 
-void set_blocksize(uint32_t s_blocksize)
+static inline void set_blocksize(uint32_t s_blocksize)
 {
 	blocksize = s_blocksize;
 	log2blocksize = 0;
@@ -73,57 +71,48 @@ void set_blocksize(uint32_t s_blocksize)
 	nbitsblocksize64 = ~bitsblocksize64;
 }
 
-static __inline __attribute__((always_inline)) 
-uint32_t get_blocksize()
+static inline uint32_t get_blocksize()
 {
 	return blocksize;
 }
 
-static __inline __attribute__((always_inline)) 
-uint64_t get_blocksize64()
+static inline uint64_t get_blocksize64()
 {
 	return blocksize64;
 }
 
-static __inline __attribute__((always_inline)) 
-int get_log2blocksize()
+static inline int get_log2blocksize()
 {
 	return log2blocksize;
 }
 
-static __inline __attribute__((always_inline)) 
-uint32_t get_bitsblocksize()
+static inline uint32_t get_bitsblocksize()
 {
 	return bitsblocksize;
 }
 
-static __inline __attribute__((always_inline)) 
-uint32_t get_nbitsblocksize()
+static inline uint32_t get_nbitsblocksize()
 {
 	return nbitsblocksize;
 }
 
-static __inline __attribute__((always_inline)) 
-uint64_t get_bitsblocksize64()
+static inline uint64_t get_bitsblocksize64()
 {
 	return bitsblocksize64;
 }
 
-static __inline __attribute__((always_inline)) 
-uint64_t get_nbitsblocksize64()
+static inline uint64_t get_nbitsblocksize64()
 {
 	return nbitsblocksize64;
 }
 
-static __inline __attribute__((always_inline)) 
-unsigned long get_block()
+static inline unsigned long get_block()
 {
 	return file_frags_list->frag.fr_start;
 }
 
 #if __WORDSIZE == 32 
-static __inline __attribute__((always_inline)) 
-any_ssize_t fd_read32(void *buf, uint32_t count)
+static inline any_ssize_t fd_read32(void *buf, uint32_t count)
 {
 	uint32_t c = count;
 	uint32_t p, r;
@@ -196,8 +185,7 @@ any_ssize_t fd_read32(void *buf, uint32_t count)
 }
 #endif
 
-static __inline __attribute__((always_inline)) 
-any_ssize_t fd_read(void *buf, any_size_t count)
+static inline any_ssize_t fd_read(void *buf, any_size_t count)
 {
 #if __WORDSIZE == 32 
 	if ( !(count>>31) )
@@ -269,8 +257,7 @@ any_ssize_t fd_read(void *buf, any_size_t count)
 	return count;
 }
 
-static __inline __attribute__((always_inline)) 
-int read_byte(uint8_t *value)
+static inline int read_byte(uint8_t *value)
 {
 	int res=0;
 	res=fd_read(value, 1);
@@ -279,8 +266,7 @@ int read_byte(uint8_t *value)
 	return 0;
 }
 
-static __inline __attribute__((always_inline)) 
-int read_beshort(uint16_t *value)
+static inline int read_beshort(uint16_t *value)
 {
 	int res=0;
 	res=fd_read(value, 2);
@@ -295,8 +281,7 @@ int read_beshort(uint16_t *value)
 	return 0;
 }
 
-static __inline __attribute__((always_inline)) 
-int read_belong(uint32_t *value)
+static inline int read_belong(uint32_t *value)
 {
 	int res=0;
 	res=fd_read(value, 4);
@@ -315,8 +300,7 @@ int read_belong(uint32_t *value)
 	return 0;
 }
 
-static __inline __attribute__((always_inline)) 
-int read_leshort(uint16_t *value)
+static inline int read_leshort(uint16_t *value)
 {
 	int res=0;
 	res=fd_read(value, 2);
@@ -331,8 +315,7 @@ int read_leshort(uint16_t *value)
 	return 0;
 }
 
-static __inline __attribute__((always_inline)) 
-int read_lelong(uint32_t *value)
+static inline int read_lelong(uint32_t *value)
 {
 	int res=0;
 	res=fd_read(value, 4);

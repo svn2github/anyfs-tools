@@ -18,6 +18,8 @@
 	return r;							\
 })
 
+#define ERROR_VALUE	0
+
 #define SKIP_STRING(name, len) 				\
 	if ( fd_seek(len, SEEK_CUR) > fd_size() )	\
 		RETURN (ERROR_VALUE)				
@@ -53,7 +55,7 @@
 
 #define COND_STRING(name, len, CONDITION) ({ 		\
 	char *val=ANYSURRECT_MALLOC(len+1, COND_STRING_MALLOC_BUFFER);\
-	res = fd_read(val, len);			\
+	int res = fd_read(val, len);			\
 	if (!res) {					\
 		anysurrect_free(val, COND_STRING_MALLOC_BUFFER);	\
 		RETURN (ERROR_VALUE);			\
@@ -73,7 +75,7 @@
 
 #define LIST_STRING(name, len, list_strings...) ({		\
 	char *val=ANYSURRECT_MALLOC(len+1, LIST_STRING_MALLOC_BUFFER);	\
-	res = fd_read(val, len);			\
+	int res = fd_read(val, len);			\
 	if (!res) {					\
 		anysurrect_free(val, LIST_STRING_MALLOC_BUFFER);\
 		RETURN (ERROR_VALUE);			\
@@ -96,14 +98,14 @@
 
 #define READ_BELONG(name) ({				\
 	uint32_t	val;					\
-	res = read_belong(&val);			\
+	int res = read_belong(&val);			\
 	if (res) RETURN (ERROR_VALUE);			\
 	val;						\
 })
 
 #define COND_BELONG(name, CONDITION) ({			\
 	uint32_t	val;					\
-	res = read_belong(&val);			\
+	int res = read_belong(&val);			\
 	if (res) RETURN (ERROR_VALUE);			\
 	if (!(CONDITION)) RETURN (ERROR_VALUE);		\
 	val;						\
@@ -114,14 +116,14 @@
 
 #define READ_BESHORT(name) ({				\
 	uint16_t	val;				\
-	res = read_beshort(&val);			\
+	int res = read_beshort(&val);			\
 	if (res) RETURN (ERROR_VALUE);			\
 	val;						\
 })
 
 #define COND_BESHORT(name, CONDITION) ({		\
 	uint16_t	val;					\
-	res = read_beshort(&val);			\
+	int res = read_beshort(&val);			\
 	if (res) RETURN (ERROR_VALUE);			\
 	if (!(CONDITION)) RETURN (ERROR_VALUE);		\
 	val;						\
@@ -132,14 +134,14 @@
 
 #define READ_LELONG(name) ({				\
 	uint32_t	val;					\
-	res = read_lelong(&val);			\
+	int res = read_lelong(&val);			\
 	if (res) RETURN (ERROR_VALUE);			\
 	val;						\
 })
 
 #define COND_LELONG(name, CONDITION) ({			\
 	uint32_t	val;					\
-	res = read_lelong(&val);			\
+	int res = read_lelong(&val);			\
 	if (res) RETURN (ERROR_VALUE);			\
 	if (!(CONDITION)) RETURN (ERROR_VALUE);		\
 	val;						\
@@ -150,14 +152,14 @@
 
 #define READ_LESHORT(name) ({				\
 	uint16_t	val;					\
-	res = read_leshort(&val);			\
+	int res = read_leshort(&val);			\
 	if (res) RETURN (ERROR_VALUE);			\
 	val;						\
 })
 
 #define COND_LESHORT(name, CONDITION) ({		\
 	uint16_t	val;				\
-	res = read_leshort(&val);			\
+	int res = read_leshort(&val);			\
 	if (res) RETURN (ERROR_VALUE);			\
 	if (!(CONDITION)) RETURN (ERROR_VALUE);		\
 	val;						\
@@ -168,14 +170,14 @@
 
 #define READ_BYTE(name) ({				\
 	uint8_t	val;					\
-	res = read_byte(&val);				\
+	int res = read_byte(&val);				\
 	if (res) RETURN (ERROR_VALUE);			\
 	val;						\
 })
 
 #define COND_BYTE(name, CONDITION) ({			\
 	uint8_t	val;					\
-	res = fd_read(&val, 1);				\
+	int res = fd_read(&val, 1);				\
 	if (!res) RETURN (ERROR_VALUE);			\
 	if (!(CONDITION)) RETURN (ERROR_VALUE);		\
 	val;						\
@@ -184,7 +186,6 @@
 #define EX_BYTE(name, value)				\
 	COND_BYTE(name, val==value)
 
-//	__inline __attribute__((always_inline))  
 #define FUNCOVER(name, operation)			\
 	int name() { operation; return !ERROR_VALUE; }	
 

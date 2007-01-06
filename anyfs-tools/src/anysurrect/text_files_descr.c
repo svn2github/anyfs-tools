@@ -79,37 +79,36 @@ static any_size_t max_offset;
 	while ( MAYBE( os##_delimiter() )!=ERROR_VALUE );	\
 })
 
+FUNCOVER(dos_new_line, dos_NEW_LINE);
+FUNCOVER(uniX_new_line, uniX_NEW_LINE);
+FUNCOVER(mac_new_line, mac_NEW_LINE);
+FUNCOVER(any_new_line, any_NEW_LINE);
+
+FUNCOVER(space, SPACE);
+FUNCOVER(tab, TAB);
+FUNCOVER(white, WHITE);
+
+FUNCOVER(dos_delimiter, DELIMITER(dos));
+FUNCOVER(uniX_delimiter, DELIMITER(uniX));
+FUNCOVER(mac_delimiter, DELIMITER(mac));
+FUNCOVER(any_delimiter, DELIMITER(any));
+
+FUNCOVER(ascii_symbol, ASCII_SYMBOL);
+FUNCOVER(ascii_word, ASCII_WORD);
+
+FUNCOVER(dos_ascii_line, ASCII_LINE(dos));
+FUNCOVER(uniX_ascii_line, ASCII_LINE(uniX));
+FUNCOVER(mac_ascii_line, ASCII_LINE(mac));
+FUNCOVER(any_ascii_line, ASCII_LINE(any));
+
+FUNCOVER(dos_ascii_text, ASCII_TEXT(dos));
+FUNCOVER(uniX_ascii_text, ASCII_TEXT(uniX));
+FUNCOVER(mac_ascii_text, ASCII_TEXT(mac));
+FUNCOVER(any_ascii_text, ASCII_TEXT(any));
+
 char *text_ASCII_surrect()
 {
-#define ERROR_VALUE	0
-	int res;
 	max_offset = 0;
-	FUNCOVER(dos_new_line, dos_NEW_LINE);
-	FUNCOVER(uniX_new_line, uniX_NEW_LINE);
-	FUNCOVER(mac_new_line, mac_NEW_LINE);
-	FUNCOVER(any_new_line, any_NEW_LINE);
-	
-	FUNCOVER(space, SPACE);
-	FUNCOVER(tab, TAB);
-	FUNCOVER(white, WHITE);
-	
-	FUNCOVER(dos_delimiter, DELIMITER(dos));
-	FUNCOVER(uniX_delimiter, DELIMITER(uniX));
-	FUNCOVER(mac_delimiter, DELIMITER(mac));
-	FUNCOVER(any_delimiter, DELIMITER(any));
-	
-	FUNCOVER(ascii_symbol, ASCII_SYMBOL);
-	FUNCOVER(ascii_word, ASCII_WORD);
-	
-	FUNCOVER(dos_ascii_line, ASCII_LINE(dos));
-	FUNCOVER(uniX_ascii_line, ASCII_LINE(uniX));
-	FUNCOVER(mac_ascii_line, ASCII_LINE(mac));
-	FUNCOVER(any_ascii_line, ASCII_LINE(any));
-	
-	FUNCOVER(dos_ascii_text, ASCII_TEXT(dos));
-	FUNCOVER(uniX_ascii_text, ASCII_TEXT(uniX));
-	FUNCOVER(mac_ascii_text, ASCII_TEXT(mac));
-	FUNCOVER(any_ascii_text, ASCII_TEXT(any));
 
 #ifdef ANYLINE
 	if ( MAYBE( any_ascii_text() )!=ERROR_VALUE )
@@ -136,7 +135,6 @@ char *text_ASCII_surrect()
 	fd_seek(max_offset, SEEK_SET);
 
 	return NULL;
-#undef	ERROR_VALUE
 }
 
 /*8-bit encoding*/
@@ -177,45 +175,22 @@ char *text_ASCII_surrect()
 	while ( MAYBE( os##_delimiter() )!=ERROR_VALUE );	\
 })
 
+FUNCOVER(eight_bit_symbol, EIGHT_BIT_SYMBOL);
+FUNCOVER(eight_bit_word, EIGHT_BIT_WORD);
+
+FUNCOVER(dos_eight_bit_line, EIGHT_BIT_LINE(dos));
+FUNCOVER(uniX_eight_bit_line, EIGHT_BIT_LINE(uniX));
+FUNCOVER(mac_eight_bit_line, EIGHT_BIT_LINE(mac));
+FUNCOVER(any_eight_bit_line, EIGHT_BIT_LINE(any));
+
+FUNCOVER(dos_eight_bit_text, EIGHT_BIT_TEXT(dos));
+FUNCOVER(uniX_eight_bit_text, EIGHT_BIT_TEXT(uniX));
+FUNCOVER(mac_eight_bit_text, EIGHT_BIT_TEXT(mac));
+FUNCOVER(any_eight_bit_text, EIGHT_BIT_TEXT(any));
+
 char *text_EIGHT_BIT_surrect()
 {
-#define ERROR_VALUE	0
-	int res;
 	max_offset = 0;
-	FUNCOVER(dos_new_line, dos_NEW_LINE);
-	FUNCOVER(uniX_new_line, uniX_NEW_LINE);
-	FUNCOVER(mac_new_line, mac_NEW_LINE);
-	FUNCOVER(any_new_line, any_NEW_LINE);
-	
-	FUNCOVER(space, SPACE);
-	FUNCOVER(tab, TAB);
-	FUNCOVER(white, WHITE);
-	
-	FUNCOVER(dos_delimiter, DELIMITER(dos));
-	FUNCOVER(uniX_delimiter, DELIMITER(uniX));
-	FUNCOVER(mac_delimiter, DELIMITER(mac));
-	FUNCOVER(any_delimiter, DELIMITER(any));
-	
-	FUNCOVER(eight_bit_symbol, EIGHT_BIT_SYMBOL);
-	FUNCOVER(eight_bit_word, EIGHT_BIT_WORD);
-	
-	FUNCOVER(ascii_symbol, ASCII_SYMBOL);
-	FUNCOVER(ascii_word, ASCII_WORD);
-	
-	FUNCOVER(dos_ascii_line, ASCII_LINE(dos));
-	FUNCOVER(uniX_ascii_line, ASCII_LINE(uniX));
-	FUNCOVER(mac_ascii_line, ASCII_LINE(mac));
-	FUNCOVER(any_ascii_line, ASCII_LINE(any));
-	
-	FUNCOVER(dos_eight_bit_line, EIGHT_BIT_LINE(dos));
-	FUNCOVER(uniX_eight_bit_line, EIGHT_BIT_LINE(uniX));
-	FUNCOVER(mac_eight_bit_line, EIGHT_BIT_LINE(mac));
-	FUNCOVER(any_eight_bit_line, EIGHT_BIT_LINE(any));
-	
-	FUNCOVER(dos_eight_bit_text, EIGHT_BIT_TEXT(dos));
-	FUNCOVER(uniX_eight_bit_text, EIGHT_BIT_TEXT(uniX));
-	FUNCOVER(mac_eight_bit_text, EIGHT_BIT_TEXT(mac));
-	FUNCOVER(any_eight_bit_text, EIGHT_BIT_TEXT(any));
 
 #ifdef ANYLINE
 	if ( MAYBE( any_eight_bit_text() )!=ERROR_VALUE )
@@ -242,7 +217,6 @@ char *text_EIGHT_BIT_surrect()
 	fd_seek(max_offset, SEEK_SET);
 
 	return NULL;
-#undef	ERROR_VALUE
 }
 
 /*UTF-8*/
@@ -336,51 +310,28 @@ char *text_EIGHT_BIT_surrect()
 	while ( MAYBE( os##_delimiter() )!=ERROR_VALUE );	\
 })
 
+FUNCOVER(utf8_2byte_symbol, UTF8_2BYTE_SYMBOL);
+FUNCOVER(utf8_3byte_symbol, UTF8_3BYTE_SYMBOL);
+FUNCOVER(utf8_4byte_symbol, UTF8_4BYTE_SYMBOL);
+FUNCOVER(utf8_5byte_symbol, UTF8_5BYTE_SYMBOL);
+FUNCOVER(utf8_6byte_symbol, UTF8_6BYTE_SYMBOL);
+
+FUNCOVER(utf8_symbol, UTF8_SYMBOL);
+FUNCOVER(utf8_word, UTF8_WORD);
+
+FUNCOVER(dos_utf8_line, UTF8_LINE(dos));
+FUNCOVER(uniX_utf8_line, UTF8_LINE(uniX));
+FUNCOVER(mac_utf8_line, UTF8_LINE(mac));
+FUNCOVER(any_utf8_line, UTF8_LINE(any));
+
+FUNCOVER(dos_utf8_text, UTF8_TEXT(dos));
+FUNCOVER(uniX_utf8_text, UTF8_TEXT(uniX));
+FUNCOVER(mac_utf8_text, UTF8_TEXT(mac));
+FUNCOVER(any_utf8_text, UTF8_TEXT(any));
+
 char *text_UTF8_surrect()
 {
-#define ERROR_VALUE	0
-	int res;
 	max_offset = 0;
-	FUNCOVER(dos_new_line, dos_NEW_LINE);
-	FUNCOVER(uniX_new_line, uniX_NEW_LINE);
-	FUNCOVER(mac_new_line, mac_NEW_LINE);
-	FUNCOVER(any_new_line, any_NEW_LINE);
-	
-	FUNCOVER(space, SPACE);
-	FUNCOVER(tab, TAB);
-	FUNCOVER(white, WHITE);
-	
-	FUNCOVER(dos_delimiter, DELIMITER(dos));
-	FUNCOVER(uniX_delimiter, DELIMITER(uniX));
-	FUNCOVER(mac_delimiter, DELIMITER(mac));
-	FUNCOVER(any_delimiter, DELIMITER(any));
-
-	FUNCOVER(ascii_symbol, ASCII_SYMBOL);
-	FUNCOVER(utf8_2byte_symbol, UTF8_2BYTE_SYMBOL);
-	FUNCOVER(utf8_3byte_symbol, UTF8_3BYTE_SYMBOL);
-	FUNCOVER(utf8_4byte_symbol, UTF8_4BYTE_SYMBOL);
-	FUNCOVER(utf8_5byte_symbol, UTF8_5BYTE_SYMBOL);
-	FUNCOVER(utf8_6byte_symbol, UTF8_6BYTE_SYMBOL);
-	
-	FUNCOVER(utf8_symbol, UTF8_SYMBOL);
-	FUNCOVER(utf8_word, UTF8_WORD);
-	
-	FUNCOVER(ascii_word, ASCII_WORD);
-	
-	FUNCOVER(dos_ascii_line, ASCII_LINE(dos));
-	FUNCOVER(uniX_ascii_line, ASCII_LINE(uniX));
-	FUNCOVER(mac_ascii_line, ASCII_LINE(mac));
-	FUNCOVER(any_ascii_line, ASCII_LINE(any));
-	
-	FUNCOVER(dos_utf8_line, UTF8_LINE(dos));
-	FUNCOVER(uniX_utf8_line, UTF8_LINE(uniX));
-	FUNCOVER(mac_utf8_line, UTF8_LINE(mac));
-	FUNCOVER(any_utf8_line, UTF8_LINE(any));
-	
-	FUNCOVER(dos_utf8_text, UTF8_TEXT(dos));
-	FUNCOVER(uniX_utf8_text, UTF8_TEXT(uniX));
-	FUNCOVER(mac_utf8_text, UTF8_TEXT(mac));
-	FUNCOVER(any_utf8_text, UTF8_TEXT(any));
 
 #ifdef ANYLINE
 	if ( MAYBE( any_utf8_text() )!=ERROR_VALUE )
@@ -407,7 +358,6 @@ char *text_UTF8_surrect()
 	fd_seek(max_offset, SEEK_SET);
 
 	return NULL;
-#undef	ERROR_VALUE
 }
 
 
@@ -471,38 +421,36 @@ char *text_UTF8_surrect()
 	while ( MAYBE( os##_utf16##endian##_delimiter() )!=ERROR_VALUE );\
 })
 
+FUNCOVER( dos_utf16BE_new_line, dos_UTF16_NEW_LINE(BE) );
+FUNCOVER( uniX_utf16BE_new_line, uniX_UTF16_NEW_LINE(BE) );
+FUNCOVER( mac_utf16BE_new_line, mac_UTF16_NEW_LINE(BE) );
+FUNCOVER( any_utf16BE_new_line, any_UTF16_NEW_LINE(BE) );
+
+FUNCOVER( utf16BE_space, UTF16_SPACE(BE) );
+FUNCOVER( utf16BE_tab, UTF16_TAB(BE) );
+FUNCOVER( utf16BE_white, UTF16_WHITE(BE) );
+
+FUNCOVER( dos_utf16BE_delimiter, UTF16_DELIMITER(BE, dos) );
+FUNCOVER( uniX_utf16BE_delimiter, UTF16_DELIMITER(BE, uniX) );
+FUNCOVER( mac_utf16BE_delimiter, UTF16_DELIMITER(BE, mac) );
+FUNCOVER( any_utf16BE_delimiter, UTF16_DELIMITER(BE, any) );
+
+FUNCOVER( utf16BE_symbol, UTF16_SYMBOL(BE) );
+FUNCOVER( utf16BE_word, UTF16_WORD(BE) );
+
+FUNCOVER(dos_utf16BE_line, UTF16_LINE(BE, dos));
+FUNCOVER(uniX_utf16BE_line, UTF16_LINE(BE, uniX));
+FUNCOVER(mac_utf16BE_line, UTF16_LINE(BE, mac));
+FUNCOVER(any_utf16BE_line, UTF16_LINE(BE, any));
+
+FUNCOVER(dos_utf16BE_text, UTF16_TEXT(BE, dos));
+FUNCOVER(uniX_utf16BE_text, UTF16_TEXT(BE, uniX));
+FUNCOVER(mac_utf16BE_text, UTF16_TEXT(BE, mac));
+FUNCOVER(any_utf16BE_text, UTF16_TEXT(BE, any));
+
 char *text_UTF16BE_surrect()
 {
-#define ERROR_VALUE	0
-	int res;
 	max_offset = 0;
-	FUNCOVER( dos_utf16BE_new_line, dos_UTF16_NEW_LINE(BE) );
-	FUNCOVER( uniX_utf16BE_new_line, uniX_UTF16_NEW_LINE(BE) );
-	FUNCOVER( mac_utf16BE_new_line, mac_UTF16_NEW_LINE(BE) );
-	FUNCOVER( any_utf16BE_new_line, any_UTF16_NEW_LINE(BE) );
-	
-	FUNCOVER( utf16BE_space, UTF16_SPACE(BE) );
-	FUNCOVER( utf16BE_tab, UTF16_TAB(BE) );
-	FUNCOVER( utf16BE_white, UTF16_WHITE(BE) );
-	
-	FUNCOVER( dos_utf16BE_delimiter, UTF16_DELIMITER(BE, dos) );
-	FUNCOVER( uniX_utf16BE_delimiter, UTF16_DELIMITER(BE, uniX) );
-	FUNCOVER( mac_utf16BE_delimiter, UTF16_DELIMITER(BE, mac) );
-	FUNCOVER( any_utf16BE_delimiter, UTF16_DELIMITER(BE, any) );
-	
-	FUNCOVER( utf16BE_symbol, UTF16_SYMBOL(BE) );
-	FUNCOVER( utf16BE_word, UTF16_WORD(BE) );
-	
-	FUNCOVER(dos_utf16BE_line, UTF16_LINE(BE, dos));
-	FUNCOVER(uniX_utf16BE_line, UTF16_LINE(BE, uniX));
-	FUNCOVER(mac_utf16BE_line, UTF16_LINE(BE, mac));
-	FUNCOVER(any_utf16BE_line, UTF16_LINE(BE, any));
-	
-	FUNCOVER(dos_utf16BE_text, UTF16_TEXT(BE, dos));
-	FUNCOVER(uniX_utf16BE_text, UTF16_TEXT(BE, uniX));
-	FUNCOVER(mac_utf16BE_text, UTF16_TEXT(BE, mac));
-	FUNCOVER(any_utf16BE_text, UTF16_TEXT(BE, any));
-
 #ifdef ANYLINE
 	if ( MAYBE( any_utf16BE_text() )!=ERROR_VALUE )
 		return "text/UTF16BE";
@@ -528,14 +476,8 @@ char *text_UTF16BE_surrect()
 	fd_seek(max_offset, SEEK_SET);
 
 	return NULL;
-#undef	ERROR_VALUE
 }
 
-char *text_UTF16LE_surrect()
-{
-#define ERROR_VALUE	0
-	int res;
-	max_offset = 0;
 	FUNCOVER( dos_utf16LE_new_line, dos_UTF16_NEW_LINE(LE) );
 	FUNCOVER( uniX_utf16LE_new_line, uniX_UTF16_NEW_LINE(LE) );
 	FUNCOVER( mac_utf16LE_new_line, mac_UTF16_NEW_LINE(LE) );
@@ -563,6 +505,10 @@ char *text_UTF16LE_surrect()
 	FUNCOVER(mac_utf16LE_text, UTF16_TEXT(LE, mac));
 	FUNCOVER(any_utf16LE_text, UTF16_TEXT(LE, any));
 
+char *text_UTF16LE_surrect()
+{
+	max_offset = 0;
+
 #ifdef ANYLINE
 	if ( MAYBE( any_utf16LE_text() )!=ERROR_VALUE )
 		return "text/UTF16LE";
@@ -588,5 +534,4 @@ char *text_UTF16LE_surrect()
 	fd_seek(max_offset, SEEK_SET);
 
 	return NULL;
-#undef	ERROR_VALUE
 }

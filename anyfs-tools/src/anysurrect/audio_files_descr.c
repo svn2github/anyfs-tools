@@ -23,8 +23,6 @@
 
 char *audio_MIDI_surrect()
 {
-#define ERROR_VALUE	NULL
-	int res;
 	unsigned short number_tracks;
 	EX_STRING("header", "MThd");
 	EX_BELONG("magic_number", 0x00000006);
@@ -42,7 +40,6 @@ char *audio_MIDI_surrect()
 	}
 
 	return "audio/MIDI";
-#undef	ERROR_VALUE
 }
 
 /*RIFF*/
@@ -62,8 +59,6 @@ char *audio_MIDI_surrect()
 
 char *audio_WAV_surrect()
 {
-#define ERROR_VALUE	NULL
-	int res;
 	unsigned long size;
 	any_off_t	offset;
 	size=RIFF_header;
@@ -76,7 +71,6 @@ char *audio_WAV_surrect()
 				NULL });
 	} while ( (fd_seek(0, SEEK_CUR)-offset)<size );
 	return "audio/WAV";
-#undef	ERROR_VALUE
 }
 
 /*Mpeg3*/
@@ -358,9 +352,11 @@ union ID3V2_tag_size_or_uint32_t {
 	SKIP_BYTE("genre");					\
 })
 
+
+FUNCOVER(ID3V1_func, ID3V1);
+
 #define ID3V1_in_frame ({					\
 	int FrameSize = MP3_frame_header;			\
-	FUNCOVER(ID3V1_func, ID3V1);				\
 	for(int i=0; i<(FrameSize-4-255); i++)			\
 	{							\
 		if ( MAYBE( ID3V1_func() )!=ERROR_VALUE )	\
@@ -369,16 +365,14 @@ union ID3V2_tag_size_or_uint32_t {
 	}							\
 })
 
+FUNCOVER(ID3V2_func, 		ID3V2);
+FUNCOVER(MP3_frame_func, 	MP3_frame);
+FUNCOVER(ID3V1_in_frame_func, 	ID3V1_in_frame);
+
 char *audio_MP3_surrect()
 {
-#define ERROR_VALUE	0
-	int res;
 	int last_res;
 	any_off_t last_offset=0;
-	FUNCOVER(ID3V2_func, 		ID3V2);
-	FUNCOVER(MP3_frame_func, 	MP3_frame);
-	FUNCOVER(ID3V1_func, 		ID3V1);
-	FUNCOVER(ID3V1_in_frame_func, 	ID3V1_in_frame);
 	
 	MAYBE( ID3V2_func() );
 	for (int i=0; i<5; i++)
@@ -406,5 +400,4 @@ char *audio_MP3_surrect()
 	fd_seek(offset, SEEK_SET);
 	
 	return "audio/MPEG3";
-#undef ERROR_VALUE
 }

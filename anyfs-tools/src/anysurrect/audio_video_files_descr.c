@@ -45,18 +45,16 @@
 	SKIP_STRING("page_body", page_body_size);		\
 })
 
+FUNCOVER(ogg_page, OGG_PAGE);
+FUNCOVER(id3v1, ID3V1);
+
 char *audio_video_OGG_surrect()
 {
-#define ERROR_VALUE	0
-	int res;
-	FUNCOVER(ogg_page, OGG_PAGE);
-	FUNCOVER(id3v1, ID3V1);
 	OGG_PAGE;
 	while ( MAYBE( ogg_page() )!=ERROR_VALUE );
 	MAYBE( id3v1() );
 
 	return "audio_video/OGG";
-#undef	ERROR_VALUE
 }
 
 
@@ -78,6 +76,8 @@ char *audio_video_OGG_surrect()
 	SKIP_STRING("chunk_data", chunk_size);		\
 })
 
+FUNCOVER(is_null, EX_BYTE("null", 0));
+
 #define LIST_strl ({						\
 	EX_STRING("magic", "LIST");                     	\
 	uint32_t list_strl_size = READ_LELONG("size");		\
@@ -90,8 +90,7 @@ char *audio_video_OGG_surrect()
 		CKID_LIST( { "strh", "strf", "strd", "strn",	\
 				"indx", "vprp",			\
 				"JUNK", NULL } );		\
-		FUNCOVER(null, EX_BYTE("null", 0));		\
-		MAYBE(null());					\
+		MAYBE(is_null());				\
 	}							\
 								\
 	if ( (fd_seek(0, SEEK_CUR) - list_strl_offset) !=	\
@@ -110,18 +109,18 @@ char *audio_video_OGG_surrect()
 	  	list_odml_size ) return ERROR_VALUE;		\
 })
 
+FUNCOVER(vedt, CKID("vedt"));
+FUNCOVER(junk, CKID("JUNK"));
+
+FUNCOVER(list_strl, LIST_strl);
+FUNCOVER(list_odml, LIST_odml);
+
 #define LIST_hdrl ({						\
 	EX_STRING("magic", "LIST");                     	\
 	uint32_t list_hdrl_size = READ_LELONG("size");		\
 	any_off_t list_hdrl_offset = fd_seek(0, SEEK_CUR);		\
 	EX_STRING("LIST_TYPE", "hdrl");				\
 	CKID("avih");						\
-								\
-	FUNCOVER(vedt, CKID("vedt"));				\
-	FUNCOVER(junk, CKID("JUNK"));				\
-								\
-	FUNCOVER(list_strl, LIST_strl);				\
-	FUNCOVER(list_odml, LIST_odml);				\
 								\
 	while ( MAYBE( list_strl() )!=ERROR_VALUE );		\
 	MAYBE(vedt());						\
@@ -148,16 +147,16 @@ char *audio_video_OGG_surrect()
 	COND_BYTE("digit2", val>='0' && val<='9');		\
 })
 
+FUNCOVER(nnck, NNCK);
+FUNCOVER(ixnn, IXNN);
+
 #define MOVI_CHUNK ({						\
-	FUNCOVER(nnck, NNCK);					\
-	FUNCOVER(ixnn, IXNN);					\
 	if ( MAYBE(nnck())==ERROR_VALUE &&			\
 	  	MAYBE(ixnn())==ERROR_VALUE )			\
 		return ERROR_VALUE;				\
 	uint32_t chunk_size = READ_LELONG("size");		\
 	SKIP_STRING("chunk_data", chunk_size);			\
-	FUNCOVER(null, EX_BYTE("null", 0));			\
-	MAYBE(null());						\
+	MAYBE(is_null());					\
 })
 
 #define AVI_TAG ({						\
@@ -173,13 +172,14 @@ char *audio_video_OGG_surrect()
 	SKIP_STRING("chunk_data", chunk_size);			\
 })
 
+FUNCOVER(null, EX_BYTE("null", 0));
+
 #define LIST_INFO ({						\
 	EX_STRING("LIST", "LIST");				\
 	uint32_t list_info_size = READ_LELONG("size");		\
 	any_off_t list_info_offset = fd_seek(0, SEEK_CUR);		\
 	EX_STRING("LIST_TYPE", "INFO");				\
 	CKID("ISFT");						\
-	FUNCOVER(null, EX_BYTE("null", 0));			\
 	MAYBE(null());						\
 	while ( (fd_seek(0, SEEK_CUR) - list_info_offset) < 	\
 		list_info_size )				\
@@ -217,13 +217,14 @@ char *audio_video_OGG_surrect()
 	SKIP_STRING("chunk_data", chunk_size-4);	\
 })
 
+FUNCOVER(list_rec, LIST_rec);
+
 #define LIST_movi ({						\
 	EX_STRING("magic", "LIST");                     	\
 	uint32_t list_movi_size = READ_LELONG("size");		\
 	any_off_t list_movi_offset = fd_seek(0, SEEK_CUR);		\
 	EX_STRING("LIST_TYPE", "movi");				\
 								\
-	FUNCOVER(list_rec, LIST_rec);				\
 	while ( MAYBE( list_rec() )!=ERROR_VALUE );		\
 								\
 	while ( (fd_seek(0, SEEK_CUR) - list_movi_offset) <	\
@@ -235,20 +236,17 @@ char *audio_video_OGG_surrect()
 	  	list_movi_size ) return ERROR_VALUE;		\
 })
 
+FUNCOVER(list_info, LIST_INFO);
+FUNCOVER(ckid_junk, CKID("JUNK"));
+FUNCOVER(idx1, CKID("idx1"));
+FUNCOVER(fxtc, CKID("FXTC"));
+
 char *audio_video_AVI_surrect()
 {
-#define ERROR_VALUE	0
-	int res;
-	
 	uint32_t riff_size = RIFF_header;
 	any_off_t riff_offset = fd_seek(0, SEEK_CUR);
 
 	EX_STRING("RIFF_TYPE", "AVI ");
-	
-	FUNCOVER(list_info, LIST_INFO);
-	FUNCOVER(ckid_junk, CKID("JUNK"));
-	FUNCOVER(idx1, CKID("idx1"));
-	FUNCOVER(fxtc, CKID("FXTC"));
 
 	LIST_hdrl;
 	MAYBE(list_info());
@@ -264,6 +262,5 @@ char *audio_video_AVI_surrect()
 		return ERROR_VALUE;
 
 	return "audio_video/AVI";
-#undef	ERROR_VALUE
 }
 

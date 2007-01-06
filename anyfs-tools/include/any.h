@@ -50,6 +50,8 @@ typedef uint64_t  any_size_t;
 typedef int64_t any_ssize_t;
 typedef int64_t any_off_t;
 
+#define inline inline __attribute__((always_inline))
+
 /*min_t, max_t Macroses from Linux kernel*/
 #define min_t(type,x,y) \
 	        ({ type __x = (x); type __y = (y); __x < __y ? __x: __y; })

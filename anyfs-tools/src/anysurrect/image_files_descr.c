@@ -40,18 +40,16 @@
 		return ERROR_VALUE;					\
 })
 
+FUNCOVER( jpeg_ff, EX_BYTE("magic", 0xFF) );
+FUNCOVER( jpeg_segment, JPEG_SEGMENT );
+
+FUNCOVER( jpeg_databyte, COND_BYTE("data_byte", val!=0xFF) );
+FUNCOVER( jpeg_segment_in_data, JPEG_SEGMENT_IN_DATA );
+
+FUNCOVER( jpeg_data, JPEG_DATA);
+
 char *image_JPEG_surrect()
 {
-#define ERROR_VALUE	0
-	int res;
-	FUNCOVER( jpeg_ff, EX_BYTE("magic", 0xFF) );
-	FUNCOVER( jpeg_segment, JPEG_SEGMENT );
-	
-	FUNCOVER( jpeg_databyte, COND_BYTE("data_byte", val!=0xFF) );
-	FUNCOVER( jpeg_segment_in_data, JPEG_SEGMENT_IN_DATA );
-
-	FUNCOVER( jpeg_data, JPEG_DATA);
-	
 	EX_BYTE("magic", 0xFF);
 	EX_BYTE("jpeg_magic", 0xD8);
 	
@@ -69,7 +67,6 @@ char *image_JPEG_surrect()
 	EX_BYTE("jpeg_magic_end", 0xD9);
 
 	return "image/JPEG";
-#undef	ERROR_VALUE
 }
 
 /*PNG*/
@@ -80,30 +77,25 @@ char *image_JPEG_surrect()
 	SKIP_BELONG("crc");				\
 })
 
+FUNCOVER( png_chunk, PNG_CHUNK({"PLTE", "IDAT", "bKGD", "cHRM",
+			"gAMA", "hIST", "pHYs", "sBIT",
+			"tEXt", "tIME", "tRNS", "zTXt", 
+			NULL}) );
+
 char *image_PNG_surrect()
 {
-#define ERROR_VALUE	0
-	int res;
-	FUNCOVER( png_chunk, PNG_CHUNK({"PLTE", "IDAT", "bKGD", "cHRM",
-				"gAMA", "hIST", "pHYs", "sBIT",
-				"tEXt", "tIME", "tRNS", "zTXt", 
-				NULL}) );
-	
 	EX_BELONG("signature_part_1", 0x89504e47);
 	EX_BELONG("signature_part_2", 0x0d0a1a0a);
 	PNG_CHUNK( {"IHDR", NULL} );
 	while ( MAYBE( png_chunk() ) != ERROR_VALUE );
 	PNG_CHUNK( {"IEND", NULL} );
 	return "image/PNG";
-#undef	ERROR_VALUE
 }
 
 /*BMP*/
 
 char *image_BMP_surrect()
 {
-#define ERROR_VALUE	0
-	int res;
 	EX_STRING("magic", "BM");
 	uint32_t size=READ_LELONG("size");
 	EX_LESHORT("magic_1", 0);
@@ -111,5 +103,4 @@ char *image_BMP_surrect()
 	SKIP_LELONG("bitmap_offset");
 	SKIP_STRING("data", size-14);
 	return "image/BMP";
-#undef	ERROR_VALUE
 }

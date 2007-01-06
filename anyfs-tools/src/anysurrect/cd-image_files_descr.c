@@ -89,8 +89,6 @@ inline int a_character(char a) {
 
 char *cd_image_ISO_surrect()
 {
-#define ERROR_VALUE	0
-	int res;
 	int i;
 
 	any_size_t image_size = 32768 + 2048;
@@ -199,6 +197,5 @@ char *cd_image_ISO_surrect()
 	fd_seek(image_size, SEEK_SET);
 	
 	return "cd-image/ISO9660";
-#undef	ERROR_VALUE
 }
 

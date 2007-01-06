@@ -55,7 +55,6 @@
 	READ_TO_COND (buffer, bufsize, IS_WHITESPACE(val) )
 
 #define SKIP_COMMENTS ({					\
-	FUNCOVER(comment, COMMENT_STRING);			\
 	while ( MAYBE(comment())!=ERROR_VALUE );		\
 })
 
@@ -63,27 +62,31 @@
 #define UNIX_EOL	EX_BYTE("unix_eol", '\n')
 #define MAC_EOL		EX_BYTE("mac_eol", '\r')
 
+FUNCOVER(dos_eol, DOS_EOL);
+FUNCOVER(unix_eol, UNIX_EOL);
+FUNCOVER(mac_eol, MAC_EOL);
+
 #define EOL ({						\
-	FUNCOVER(dos_eol, DOS_EOL);			\
-	FUNCOVER(unix_eol, UNIX_EOL);			\
-	FUNCOVER(mac_eol, MAC_EOL);			\
 	if ( MAYBE(dos_eol())==ERROR_VALUE &&		\
 		MAYBE(unix_eol())==ERROR_VALUE &&	\
 		MAYBE(mac_eol())==ERROR_VALUE )		\
 		return ERROR_VALUE;			\
 })
 
+FUNCOVER(comment, COMMENT_STRING);
+
+FUNCOVER(space, COND_BYTE("space", val==' ' || val=='\t'));
+FUNCOVER(eol, EOL);
+
 #define WHITE_SPACE ({							\
-	FUNCOVER(space, COND_BYTE("space", val==' ' || val=='\t'));	\
-	FUNCOVER(eol, EOL);						\
-									\
 	if ( MAYBE(space())==ERROR_VALUE && MAYBE(eol())==ERROR_VALUE )	\
 		return ERROR_VALUE;					\
 })
+
+FUNCOVER(whitespace, COND_BYTE("WhiteSpace",
+			IS_WHITESPACE(val) ));
 		
 #define SKIP_WHITESPACES ({					\
-	FUNCOVER(whitespace, COND_BYTE("WhiteSpace",		\
-			IS_WHITESPACE(val) ));			\
 	while ( MAYBE(whitespace())!=ERROR_VALUE );		\
 })
 
@@ -92,9 +95,10 @@
 #define FALSE_OBJECT	EX_STRING("false", "false")
 #define NULL_OBJECT	EX_STRING("null", "null")
 
+FUNCOVER(true_object, TRUE_OBJECT);
+FUNCOVER(false_object, FALSE_OBJECT);
+
 #define BOOLEAN	({						\
-	FUNCOVER(true_object, TRUE_OBJECT);			\
-	FUNCOVER(false_object, FALSE_OBJECT);			\
 	if ( MAYBE(true_object())==ERROR_VALUE &&		\
 		 MAYBE(false_object())==ERROR_VALUE )		\
 		return ERROR_VALUE;				\
@@ -104,9 +108,10 @@
 #define DIGIT	COND_BYTE("digit", val>='0' && val<='9')
 #define POINT	EX_BYTE("point", '.')
 
+FUNCOVER(sign, SIGN);
+FUNCOVER(digit, DIGIT);
+
 #define FLOAT ({						\
-	FUNCOVER(sign, SIGN);					\
-	FUNCOVER(digit, DIGIT);					\
 	MAYBE( sign() );					\
 	while (MAYBE( digit() )!=ERROR_VALUE);			\
 	POINT;							\
@@ -115,16 +120,15 @@
 })
 
 #define INTEGER ({						\
-	FUNCOVER(sign, SIGN);					\
-	FUNCOVER(digit, DIGIT);					\
 	MAYBE( sign() );					\
 	DIGIT;							\
 	while (MAYBE( digit() )!=ERROR_VALUE);			\
 })
 
+FUNCOVER(float_object, FLOAT);
+FUNCOVER(integer_object, INTEGER);
+
 #define NUMBER ({						\
-	FUNCOVER(float_object, FLOAT);				\
-	FUNCOVER(integer_object, INTEGER);			\
 	if ( MAYBE(float_object())==ERROR_VALUE &&		\
 		 MAYBE(integer_object())==ERROR_VALUE )		\
 		return ERROR_VALUE;				\
@@ -141,24 +145,21 @@
 	COND_BYTE("symbol", val>=0x20 && val<=0x7F);		\
 })
 
+FUNCOVER(nbs_symbol, NBS_SYMBOL);
+FUNCOVER(backslash_eol, BACKSLASH_EOL);	
+FUNCOVER(backslash_symbol, BACKSLASH_SYMBOL);
+
 #define STRING_SYMBOL ({					\
-	FUNCOVER(nbs_symbol, NBS_SYMBOL);			\
-	FUNCOVER(backslash_eol, BACKSLASH_EOL);			\
-	FUNCOVER(backslash_symbol, BACKSLASH_SYMBOL);		\
-								\
 	if ( MAYBE( nbs_symbol() )==ERROR_VALUE && 		\
 		MAYBE( backslash_eol() )==ERROR_VALUE &&	\
 		MAYBE( backslash_symbol() )==ERROR_VALUE )	\
 		return ERROR_VALUE;				\
 })
 
+FUNCOVER(string_symbol, STRING_SYMBOL);
+
 int text_string()
 {
-#define ERROR_VALUE	0
-	int res;
-	
-	FUNCOVER(string_symbol, STRING_SYMBOL);
-
 	EX_BYTE("begin string", '(');
 	while ( MAYBE( string_symbol() )!=ERROR_VALUE
 	     || MAYBE( text_string() )!=ERROR_VALUE );
@@ -166,7 +167,6 @@ int text_string()
 	EX_BYTE("end string", ')');
 	
 	return !ERROR_VALUE;
-#undef	ERROR_VALUE
 }
 
 #define TEXT_STRING 							\
@@ -178,17 +178,17 @@ int text_string()
 		(val>='A' && val<='F') ||			\
 		IS_WHITESPACE(val) )
 
+FUNCOVER(hex_symbol, HEX_SYMBOL);
+
 #define HEX_STRING ({						\
-	FUNCOVER(hex_symbol, HEX_SYMBOL);			\
-								\
 	EX_BYTE("begin string", '<');				\
 	while ( MAYBE( hex_symbol() )!=ERROR_VALUE );		\
 	EX_BYTE("end string", '>');				\
 })
 
+FUNCOVER(hex_string, HEX_STRING);
+
 #define STRING ({						\
-	FUNCOVER(hex_string, HEX_STRING);			\
-								\
 	if ( MAYBE(text_string())==ERROR_VALUE &&		\
 		MAYBE(hex_string())==ERROR_VALUE )		\
 		return ERROR_VALUE;				\
@@ -201,19 +201,20 @@ int text_string()
 			val!=']' && val!='{' && val!='}' &&	\
 			val!='/')
 
+FUNCOVER(name_symbol, NAME_SYMBOL);
+
 #define NAME ({							\
-	FUNCOVER(name_symbol, NAME_SYMBOL);			\
 	EX_BYTE("begin", '/');					\
 	while ( MAYBE( name_symbol() )!=ERROR_VALUE );		\
 })
 
+FUNCOVER(boolean, BOOLEAN);
+FUNCOVER(number, NUMBER);
+FUNCOVER(string, STRING);
+FUNCOVER(name, NAME);
+FUNCOVER(null, NULL_OBJECT);
+
 #define SIMPLE_OBJECT ({					\
-	FUNCOVER(boolean, BOOLEAN);				\
-	FUNCOVER(number, NUMBER);				\
-	FUNCOVER(string, STRING);				\
-	FUNCOVER(name, NAME);					\
-	FUNCOVER(null, NULL_OBJECT);				\
-								\
 	if ( MAYBE(boolean())==ERROR_VALUE &&			\
 	  	MAYBE(number())==ERROR_VALUE &&			\
 	  	MAYBE(string())==ERROR_VALUE &&			\
@@ -235,8 +236,9 @@ int stream();
 #define STREAM 							\
 	if (MAYBE(stream())==ERROR_VALUE) return ERROR_VALUE
 
+FUNCOVER(simple_object, SIMPLE_OBJECT);
+
 #define OBJECT ({						\
-	FUNCOVER(simple_object, SIMPLE_OBJECT);			\
 	if ( MAYBE(simple_object())==ERROR_VALUE &&		\
 		MAYBE(array())==ERROR_VALUE &&			\
 		MAYBE(stream())==ERROR_VALUE &&			\
@@ -258,21 +260,19 @@ int stream();
 	EX_BYTE("R", 'R');					\
 })	
 
+FUNCOVER(reference, INDIRECT_REFERENCE);
+FUNCOVER(object, OBJECT);
+
 #define OBJECT_OR_REFERENCE ({					\
-	FUNCOVER(reference, INDIRECT_REFERENCE);		\
-	FUNCOVER(object, OBJECT);				\
 	if ( MAYBE(reference())==ERROR_VALUE &&			\
 	  	MAYBE(object())==ERROR_VALUE )		\
 		return ERROR_VALUE;				\
 })
+	
+FUNCOVER(end_array, EX_STRING("end", "]"));
 
 int array()
 {
-#define ERROR_VALUE	0
-	int res;
-	
-	FUNCOVER(end_array, EX_STRING("end", "]"));
-	
 	EX_STRING("begin", "[");
 	SKIP_WHITESPACES;
 	
@@ -283,16 +283,12 @@ int array()
 	}
 	
 	return !ERROR_VALUE;
-#undef	ERROR_VALUE
 }
 
+FUNCOVER(end_dict, EX_STRING("end", ">>"));
+	
 int dictionary()
 {
-#define ERROR_VALUE	0
-	int res;
-
-	FUNCOVER(end_dict, EX_STRING("end", ">>"));
-	
 	EX_STRING("begin", "<<");
 	SKIP_WHITESPACES;
 	
@@ -314,20 +310,14 @@ int dictionary()
 	}
 	
 	return !ERROR_VALUE;
-#undef	ERROR_VALUE
 }
+
+FUNCOVER(length_name, ({ EX_STRING("length_name", "/Length"); 
+			WHITE_SPACE; }) );
+FUNCOVER(end_stream, EX_STRING("end stream", "endstream"));
 	
 int stream()
 {
-#define ERROR_VALUE	0
-	int res;
-
-	FUNCOVER(end_dict, EX_STRING("end", ">>"));
-	FUNCOVER(length_name, ({ EX_STRING("length_name", "/Length"); 
-				WHITE_SPACE; }) );
-	FUNCOVER(reference, INDIRECT_REFERENCE);		\
-	FUNCOVER(end_stream, EX_STRING("end stream", "endstream"));
-	
 	EX_STRING("begin", "<<");
 	SKIP_WHITESPACES;
 
@@ -398,7 +388,6 @@ int stream()
 #endif
 	
 	return !ERROR_VALUE;
-#undef	ERROR_VALUE
 }
 
 #define HEADER ({						\
@@ -410,8 +399,9 @@ int stream()
 	EOL;							\
 })
 
+FUNCOVER(indirect_object, INDIRECT_OBJECT);
+
 #define BODY ({							\
-	FUNCOVER(indirect_object, INDIRECT_OBJECT);		\
 	SKIP_COMMENTS;						\
 	SKIP_WHITESPACES;					\
 	while (MAYBE(indirect_object())!=ERROR_VALUE)		\
@@ -448,8 +438,9 @@ int stream()
 	}							\
 })
 
+FUNCOVER (crs, CROSS_REFERENCE_SUBSECTION);
+
 #define CROSS_REFERENCE_TABLE ({				\
-	FUNCOVER (crs, CROSS_REFERENCE_SUBSECTION);		\
 	EX_STRING("xref", "xref");				\
 	SKIP_WHITESPACES;					\
 	CROSS_REFERENCE_SUBSECTION;				\
@@ -476,20 +467,17 @@ int stream()
 	TRAILER_TAIL;						\
 })
 
+FUNCOVER(crt_th, ({ CROSS_REFERENCE_TABLE; TRAILER_HEAD; }) );
+FUNCOVER(update, UPDATE);
+
 char *document_PDF_surrect()
 {
-#define ERROR_VALUE	0
-	int res;
-	FUNCOVER(crt_th, ({ CROSS_REFERENCE_TABLE; TRAILER_HEAD; }) );
-
 	HEADER;				SKIP_WHITESPACES;
 	BODY;				SKIP_WHITESPACES;
 	MAYBE( crt_th() );
 	TRAILER_TAIL;
 
-	FUNCOVER(update, UPDATE);
 	while ( MAYBE(update())!=ERROR_VALUE );
 	
 	return "documents/PDF";
-#undef	ERROR_VALUE
 }

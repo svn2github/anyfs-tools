@@ -30,9 +30,6 @@ extern int gzip ();
 
 char *archieve_GZIP_surrect()
 {
-#define ERROR_VALUE     0
-	int res;
-
 	LIST_STRING("magic", 2, {"\037\213", "\037\236", NULL});
 	fd_seek(0, SEEK_SET);
 
@@ -120,5 +117,4 @@ char *archieve_GZIP_surrect()
 	}
 
 	return ERROR_VALUE;
-#undef  ERROR_VALUE
 }

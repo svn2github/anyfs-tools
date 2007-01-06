@@ -173,9 +173,6 @@ errhandler_io:
 
 char *archieve_BZIP2_surrect()
 {
-#define ERROR_VALUE     0
-	int res;
-
 	EX_STRING("magic", "BZh");
 	fd_seek(0, SEEK_SET);
 
@@ -279,5 +276,4 @@ char *archieve_BZIP2_surrect()
 	}
 
 	return ERROR_VALUE;
-#undef  ERROR_VALUE
 }

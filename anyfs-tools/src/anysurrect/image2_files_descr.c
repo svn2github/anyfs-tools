@@ -48,21 +48,20 @@
 #define READ_TO_WHITESPACE(buffer, bufsize) 	\
 	READ_TO_COND (buffer, bufsize, IS_WHITESPACE(val) )
 
+FUNCOVER(whitespace, COND_BYTE("WhiteSpace", IS_WHITESPACE(val) ));
+
 #define SKIP_WHITESPACES ({					\
-	FUNCOVER(whitespace, COND_BYTE("WhiteSpace",		\
-			IS_WHITESPACE(val) ));			\
 	while ( MAYBE(whitespace())!=ERROR_VALUE );		\
 })
 
+FUNCOVER(comment, COMMENT_STRING);
+
 #define SKIP_COMMENTS ({					\
-	FUNCOVER(comment, COMMENT_STRING);			\
 	while ( MAYBE(comment())!=ERROR_VALUE );		\
 })
 
 char *image_PNM_surrect()
 {
-#define ERROR_VALUE	0
-	int res;
 	EX_BYTE("P", 'P');
 	uint8_t type = COND_BYTE("TYPE", val>='1' && val<='7');
 	EX_BYTE("eol", '\n');
@@ -409,5 +408,4 @@ char *image_PNM_surrect()
 	}
 
 	return ret;
-#undef	ERROR_VALUE
 }

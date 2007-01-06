@@ -25,9 +25,6 @@
 
 char *audio_video_MPEG12PM_surrect()
 {
-#define ERROR_VALUE	0
-	int res;
-	
 	COND_BELONG("magic", (val&0xFFFFFF00)==0x00000100);
 	fd_seek(0, SEEK_SET);
 
@@ -37,5 +34,4 @@ char *audio_video_MPEG12PM_surrect()
 	fd_seek(size, SEEK_SET);
 
 	return "audio_video/MPEG1-2_stream_program_multiplex";
-#undef	ERROR_VALUE
 }

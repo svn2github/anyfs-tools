@@ -44,7 +44,7 @@ struct tar_header_block
 
 #define TAR_BLOCK ({						\
 	struct tar_header_block header;				\
-	res = fd_read(&header, 512);				\
+	int res = fd_read(&header, 512);				\
 	if (!res) return ERROR_VALUE;				\
 	header.magic[5] = '\0';					\
 	if (strcmp(header.magic, "ustar")!=0)			\
@@ -55,32 +55,26 @@ struct tar_header_block
 	SKIP_STRING("data", (size+511)/512*512);		\
 })
 
+FUNCOVER(tar_block, TAR_BLOCK);
+
 char *archieve_TAR_surrect()
 {
-#define ERROR_VALUE	0
-	int res;
-	FUNCOVER(tar_block, TAR_BLOCK);
-	
 	TAR_BLOCK;
 	while ( MAYBE( tar_block() )!=ERROR_VALUE );
 
 	return "archieve/TAR";
-#undef	ERROR_VALUE
 }
 
 
 /*ZIP*/
 int zip_local_file_tail( uint32_t size )
 {
-#define ERROR_VALUE	0
-	int res;
 	EX_BELONG("magic", 0x504b0708);
 	SKIP_LELONG("crc");
 	EX_LELONG("size", size);
 	SKIP_LELONG("usize");
 
 	return !ERROR_VALUE;
-#undef	ERROR_VALUE
 }
 
 #define ZIP_LOCAL_FILE ({						\
@@ -147,12 +141,10 @@ int zip_local_file_tail( uint32_t size )
 	SKIP_STRING("comment", commentlen);				\
 })
 
+FUNCOVER(zip_local_file, ZIP_LOCAL_FILE);
+
 char *archieve_ZIP_surrect()
 {
-#define ERROR_VALUE	0
-	int res;
-	FUNCOVER(zip_local_file, ZIP_LOCAL_FILE);
-
 	long num_files=0;
 	while( MAYBE( zip_local_file() )!=ERROR_VALUE ) num_files++;
 	for (; num_files; num_files--)
@@ -161,7 +153,6 @@ char *archieve_ZIP_surrect()
 	ZIP_CD_END_RECORD;
 	
 	return "archieve/ZIP";
-#undef	ERROR_VALUE
 }
 
 /*RAR*/
@@ -176,12 +167,10 @@ char *archieve_ZIP_surrect()
 	SKIP_STRING("data", add_size + size - 7);			\
 })
 
+FUNCOVER(rar_block, RAR_BLOCK);
+
 char *archieve_RAR_surrect()
 {
-#define ERROR_VALUE	0
-	int res;
-	FUNCOVER(rar_block, RAR_BLOCK);
-
 	EX_LESHORT("crc", 0x6152);
 	EX_BYTE("type", 0x72);
 	EX_LESHORT("flags", 0x1a21);
@@ -190,5 +179,4 @@ char *archieve_RAR_surrect()
 	while( MAYBE( rar_block() )!=ERROR_VALUE );
 	
 	return "archieve/RAR";
-#undef	ERROR_VALUE
 }

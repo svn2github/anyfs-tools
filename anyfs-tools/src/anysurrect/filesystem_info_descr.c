@@ -27,9 +27,6 @@ extern any_size_t device_blocks;
 
 char *filesystem_info_ext2fs_direct_blocks_links_surrect()
 {
-#define ERROR_VALUE	0
-	int res;
-	
 	any_size_t to_offset = get_blocksize();
 	uint32_t last_block = READ_LELONG("block_link");
 	uint32_t frags = 1;
@@ -66,14 +63,10 @@ char *filesystem_info_ext2fs_direct_blocks_links_surrect()
 	if ( frags>(non_zero_blocks/4) ) return NULL;
 
 	return "filesystem_info/ext2fs/direct_blocks_links";
-#undef	ERROR_VALUE
 }
 
 char *filesystem_info_ext2fs_direct_blocks_links_surrect_dr()
 {
-#define ERROR_VALUE	0
-	int res;
-	
 	any_size_t to_offset = get_blocksize();
 	uint32_t last_block = READ_LELONG_DR("block_link");
 	uint32_t frags = 1;
@@ -110,7 +103,6 @@ char *filesystem_info_ext2fs_direct_blocks_links_surrect_dr()
 	if ( frags>(non_zero_blocks/4) ) return NULL;
 
 	return "filesystem_info/ext2fs/direct_blocks_links";
-#undef	ERROR_VALUE
 }
 
 int test_direct_links(uint32_t block)
@@ -132,9 +124,6 @@ int test_direct_links(uint32_t block)
 
 char *filesystem_info_ext2fs_indirect_blocks_links_surrect()
 {
-#define ERROR_VALUE	0
-	int res;
-	
 	any_size_t to_offset = get_blocksize();
 	int only_zero_blocks = 0;
 	int first = 1;
@@ -163,14 +152,10 @@ char *filesystem_info_ext2fs_indirect_blocks_links_surrect()
 	}
 
 	return "filesystem_info/ext2fs/indirect_blocks_links";
-#undef	ERROR_VALUE
 }
 
 char *filesystem_info_ext2fs_indirect_blocks_links_surrect_dr()
 {
-#define ERROR_VALUE	0
-	int res;
-	
 	any_size_t to_offset = get_blocksize();
 	int only_zero_blocks = 0;
 	int first = 1;
@@ -199,7 +184,6 @@ char *filesystem_info_ext2fs_indirect_blocks_links_surrect_dr()
 	}
 
 	return "filesystem_info/ext2fs/indirect_blocks_links";
-#undef	ERROR_VALUE
 }
 
 int test_indirect_links(uint32_t block)
@@ -221,9 +205,6 @@ int test_indirect_links(uint32_t block)
 
 char *filesystem_info_ext2fs_double_indirect_blocks_links_surrect()
 {
-#define ERROR_VALUE	0
-	int res;
-	
 	any_size_t to_offset = get_blocksize();
 	int only_zero_blocks = 0;
 	int first = 1;
@@ -252,5 +233,4 @@ char *filesystem_info_ext2fs_double_indirect_blocks_links_surrect()
 	}
 
 	return "filesystem_info/ext2fs/double_indirect_blocks_links";
-#undef	ERROR_VALUE
 }

@@ -23,8 +23,6 @@
 
 char *executable_ELF32_surrect()
 {
-#define ERROR_VALUE	NULL
-	int res;
 	EX_STRING("magic", "\x7f""ELF");
 	SKIP_STRING("rest_ident", 12);
 	SKIP_LESHORT("type");
@@ -101,5 +99,4 @@ char *executable_ELF32_surrect()
 	}
 
 	return "executable/ELF32";
-#undef	ERROR_VALUE
 }

@@ -28,7 +28,7 @@
 
 #define COND_STRING_DR(name, len, CONDITION) ({ 		\
 	char *val=MALLOC(len+1);			\
-	res = fd_read_dr(val, len);			\
+	int res = fd_read_dr(val, len);			\
 	if (!res) {					\
 		free(val);				\
 		RETURN (ERROR_VALUE);			\
@@ -48,7 +48,7 @@
 
 #define LIST_STRING_DR(name, len, list_strings...) ({	\
 	char *val=MALLOC(len+1);			\
-	res = fd_read_dr(val, len);			\
+	int res = fd_read_dr(val, len);			\
 	if (!res) {					\
 		free(val);				\
 		RETURN (ERROR_VALUE);			\
@@ -89,14 +89,14 @@
 
 #define READ_BESHORT_DR(name) ({			\
 	uint16_t	val;				\
-	res = read_beshort_dr(&val);			\
+	int res = read_beshort_dr(&val);			\
 	if (res) RETURN (ERROR_VALUE);			\
 	val;						\
 })
 
 #define COND_BESHORT_DR(name, CONDITION) ({		\
 	uint16_t	val;				\
-	res = read_beshort_dr(&val);			\
+	int res = read_beshort_dr(&val);			\
 	if (res) RETURN (ERROR_VALUE);			\
 	if (!(CONDITION)) RETURN (ERROR_VALUE);		\
 	val;						\
@@ -107,14 +107,14 @@
 
 #define READ_LELONG_DR(name) ({				\
 	uint32_t	val;					\
-	res = read_lelong_dr(&val);			\
+	int res = read_lelong_dr(&val);			\
 	if (res) RETURN (ERROR_VALUE);			\
 	val;						\
 })
 
 #define COND_LELONG_DR(name, CONDITION) ({			\
 	uint32_t	val;					\
-	res = read_lelong_dr(&val);			\
+	int res = read_lelong_dr(&val);			\
 	if (res) RETURN (ERROR_VALUE);			\
 	if (!(CONDITION)) RETURN (ERROR_VALUE);		\
 	val;						\
@@ -125,14 +125,14 @@
 
 #define READ_LESHORT_DR(name) ({				\
 	uint16_t	val;					\
-	res = read_leshort_dr(&val);			\
+	int res = read_leshort_dr(&val);			\
 	if (res) RETURN (ERROR_VALUE);			\
 	val;						\
 })
 
 #define COND_LESHORT_DR(name, CONDITION) ({		\
 	uint16_t	val;				\
-	res = read_leshort_dr(&val);			\
+	int res = read_leshort_dr(&val);			\
 	if (res) RETURN (ERROR_VALUE);			\
 	if (!(CONDITION)) RETURN (ERROR_VALUE);		\
 	val;						\
@@ -143,14 +143,14 @@
 
 #define READ_BYTE_DR(name) ({				\
 	uint8_t	val;					\
-	res = read_byte_dr(&val);				\
+	int res = read_byte_dr(&val);				\
 	if (res) RETURN (ERROR_VALUE);			\
 	val;						\
 })
 
 #define COND_BYTE_DR(name, CONDITION) ({			\
 	uint8_t	val;					\
-	res = fd_read_dr(&val, 1);				\
+	int res = fd_read_dr(&val, 1);				\
 	if (!res) RETURN (ERROR_VALUE);			\
 	if (!(CONDITION)) RETURN (ERROR_VALUE);		\
 	val;						\
