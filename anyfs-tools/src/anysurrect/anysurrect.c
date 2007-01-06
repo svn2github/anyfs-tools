@@ -466,7 +466,7 @@ uint64_t nbitsblocksize64;
 
 struct io_buffer io_buffer = {NULL, -1, 0};
 
-int set_block(any_ssize_t s_block)
+inline int set_block(any_ssize_t s_block)
 {
 	cut_frags(&file_template_frags_list, 0, s_block);
 	io_buffer.size = 0;
@@ -669,7 +669,7 @@ void anysurrect_fromblock(struct any_sb_info *info)
 
 	set_block( ( (max_size-1) >> get_log2blocksize() ) + 1 );
 
-	if (!quiet && if_progress_update(&progress,
+	if (!quiet && file_template_frags_list && if_progress_update(&progress,
 				file_template_frags_list->frag.fr_start))
 		fwrite( "\b\b\b\b\b\b\b\b"
 			"\b\b\b\b\b\b\b\b"
