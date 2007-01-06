@@ -68,7 +68,7 @@ void set_blocksize(uint32_t s_blocksize)
 	bitsblocksize = (1UL<<log2blocksize) - 1;
 	nbitsblocksize = ~bitsblocksize;
 
-	bitsblocksize64 = blocksize;
+	blocksize64 = blocksize;
 	bitsblocksize64 = (1ULL<<log2blocksize) - 1;
 	nbitsblocksize64 = ~bitsblocksize64;
 }
@@ -138,7 +138,7 @@ any_ssize_t fd_read32(void *buf, uint32_t count)
 		if ( p>(bfstart + io_buffer.size - 1) ||
 		  p<bfstart || io_buffer.size==0 )
 		{
-			uint32_t bp = p & get_nbitsblocksize64();
+			uint32_t bp = p & get_nbitsblocksize();
 			_fd_seek(cur_offset_high + bp, SEEK_SET);
 
 			bfstart = bp;

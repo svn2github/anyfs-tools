@@ -184,6 +184,7 @@
 #define EX_BYTE(name, value)				\
 	COND_BYTE(name, val==value)
 
+//	__inline __attribute__((always_inline))  
 #define FUNCOVER(name, operation)			\
 	int name() { operation; return !ERROR_VALUE; }	
 

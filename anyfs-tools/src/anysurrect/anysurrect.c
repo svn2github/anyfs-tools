@@ -520,7 +520,7 @@ any_off_t _fd_seek(any_off_t offset, int whence)
 		}
 	}
 
-	lseek64(fd, (any_size_t) ( (cur_frag->frag.fr_start - blocks_before_frag) << 
+	lseek64(fd, ( ((any_size_t) cur_frag->frag.fr_start - blocks_before_frag) << 
 				get_log2blocksize()) + offset, 
 			SEEK_SET);
 
@@ -584,7 +584,7 @@ void anysurrect_file(struct any_sb_info *info, char *dirn, mode_t mode)
 	inode->i_size = fd_seek(0, SEEK_CUR);
 	
 	pick_frags(&file_frags_list, 0,
-			( (inode->i_size-1) >> get_log2blocksize()) ) + 1;
+			( (inode->i_size-1) >> get_log2blocksize()) + 1 );
 
 /*	printf ("%d, %d\n", file_frags_list->frag.fr_start,
 			file_frags_list->frag.fr_length);
@@ -1142,7 +1142,7 @@ _("Specified input inode table has %lu blocksize,\n"
 		set_blocksize(info->si_blocksize);
 	}
 	
-	any_size_t blocks = ((st.st_size-1) >> get_log2blocksize()) + 2;
+	any_size_t blocks = ((st.st_size-1) >> get_log2blocksize()) + 1;
 	device_blocks = blocks;
 
 	if (!blocks)
