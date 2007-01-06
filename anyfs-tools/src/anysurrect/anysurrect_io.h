@@ -55,7 +55,8 @@ extern uint64_t nbitsblocksize64;
 
 any_off_t _fd_seek(any_off_t offset, int whence);
 
-static inline void set_blocksize(uint32_t s_blocksize)
+static __inline __attribute__((always_inline)) 
+void set_blocksize(uint32_t s_blocksize)
 {
 	blocksize = s_blocksize;
 	log2blocksize = 0;
@@ -72,42 +73,50 @@ static inline void set_blocksize(uint32_t s_blocksize)
 	nbitsblocksize64 = ~bitsblocksize64;
 }
 
-static inline uint32_t get_blocksize()
+static __inline __attribute__((always_inline)) 
+uint32_t get_blocksize()
 {
 	return blocksize;
 }
 
-static inline uint64_t get_blocksize64()
+static __inline __attribute__((always_inline)) 
+uint64_t get_blocksize64()
 {
 	return blocksize64;
 }
 
-static inline int get_log2blocksize()
+static __inline __attribute__((always_inline)) 
+int get_log2blocksize()
 {
 	return log2blocksize;
 }
 
-static inline uint32_t get_bitsblocksize()
+static __inline __attribute__((always_inline)) 
+uint32_t get_bitsblocksize()
 {
 	return bitsblocksize;
 }
 
-static inline uint32_t get_nbitsblocksize()
+static __inline __attribute__((always_inline)) 
+uint32_t get_nbitsblocksize()
 {
 	return nbitsblocksize;
 }
 
-static inline uint64_t get_bitsblocksize64()
+static __inline __attribute__((always_inline)) 
+uint64_t get_bitsblocksize64()
 {
 	return bitsblocksize64;
 }
 
-static inline uint64_t get_nbitsblocksize64()
+static __inline __attribute__((always_inline)) 
+uint64_t get_nbitsblocksize64()
 {
 	return nbitsblocksize64;
 }
 
-static inline unsigned long get_block()
+static __inline __attribute__((always_inline)) 
+unsigned long get_block()
 {
 	return file_frags_list->frag.fr_start;
 }
@@ -260,7 +269,8 @@ any_ssize_t fd_read(void *buf, any_size_t count)
 	return count;
 }
 
-static __inline int read_byte(uint8_t *value)
+static __inline __attribute__((always_inline)) 
+int read_byte(uint8_t *value)
 {
 	int res=0;
 	res=fd_read(value, 1);
@@ -269,7 +279,8 @@ static __inline int read_byte(uint8_t *value)
 	return 0;
 }
 
-static __inline int read_beshort(uint16_t *value)
+static __inline __attribute__((always_inline)) 
+int read_beshort(uint16_t *value)
 {
 	int res=0;
 	res=fd_read(value, 2);
@@ -284,7 +295,8 @@ static __inline int read_beshort(uint16_t *value)
 	return 0;
 }
 
-static __inline int read_belong(uint32_t *value)
+static __inline __attribute__((always_inline)) 
+int read_belong(uint32_t *value)
 {
 	int res=0;
 	res=fd_read(value, 4);
@@ -303,7 +315,8 @@ static __inline int read_belong(uint32_t *value)
 	return 0;
 }
 
-static __inline int read_leshort(uint16_t *value)
+static __inline __attribute__((always_inline)) 
+int read_leshort(uint16_t *value)
 {
 	int res=0;
 	res=fd_read(value, 2);
@@ -318,7 +331,8 @@ static __inline int read_leshort(uint16_t *value)
 	return 0;
 }
 
-static __inline int read_lelong(uint32_t *value)
+static __inline __attribute__((always_inline)) 
+int read_lelong(uint32_t *value)
 {
 	int res=0;
 	res=fd_read(value, 4);
