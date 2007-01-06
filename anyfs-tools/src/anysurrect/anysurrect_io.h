@@ -11,7 +11,8 @@ extern any_off_t	cur_offset;
 
 any_size_t fd_size();
 
-static inline any_off_t fd_seek(any_off_t offset, int whence)
+static __inline __attribute__((always_inline)) 
+any_off_t fd_seek(any_off_t offset, int whence)
 {
 	if (whence==SEEK_CUR)
 		offset += cur_offset;
@@ -112,7 +113,8 @@ static inline unsigned long get_block()
 }
 
 #if __WORDSIZE == 32 
-static __inline any_ssize_t fd_read32(void *buf, uint32_t count)
+static __inline __attribute__((always_inline)) 
+any_ssize_t fd_read32(void *buf, uint32_t count)
 {
 	uint32_t c = count;
 	uint32_t p, r;
@@ -185,7 +187,8 @@ static __inline any_ssize_t fd_read32(void *buf, uint32_t count)
 }
 #endif
 
-static __inline any_ssize_t fd_read(void *buf, any_size_t count)
+static __inline __attribute__((always_inline)) 
+any_ssize_t fd_read(void *buf, any_size_t count)
 {
 #if __WORDSIZE == 32 
 	if ( !(count>>31) )
