@@ -617,19 +617,18 @@ void anysurrect_fromblock(struct any_sb_info *info)
 	}
 
 	struct frags_list *copy_file_template_frags_list = NULL;
+
+	if (!quiet && if_progress_updated(&progress,
+				file_template_frags_list->frag.fr_start))
+	{
+		fwrite( typelines[0], 32, 1, stdout);
+		fflush(stdout);
+	}
 	
 	for (type=0; type<num_types; type++)
 	{
 		ind_type = type;
 		int text = *texts[type];
-
-		if (!quiet && !type &&
-				if_progress_updated(&progress,
-					file_template_frags_list->frag.fr_start))
-		{
-			fwrite( typelines[type], 32, 1, stdout);
-			fflush(stdout);
-		}
 
 		if (copy_file_template_frags_list)
 		{
