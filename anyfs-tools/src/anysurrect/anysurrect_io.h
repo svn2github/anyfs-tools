@@ -111,6 +111,7 @@ static inline unsigned long get_block()
 	return file_frags_list->frag.fr_start;
 }
 
+#if __WORDSIZE == 32 
 static __inline any_ssize_t fd_read32(void *buf, uint32_t count)
 {
 	uint32_t c = count;
@@ -182,11 +183,14 @@ static __inline any_ssize_t fd_read32(void *buf, uint32_t count)
 	cur_offset = cur_offset_high + p;
 	return count;
 }
+#endif
 
 static __inline any_ssize_t fd_read(void *buf, any_size_t count)
 {
+#if __WORDSIZE == 32 
 	if ( !(count>>31) )
 		return fd_read32(buf, count & ((1ULL<<31)-1));
+#endif
 
 	any_size_t c = count;
 	any_size_t p, r;
