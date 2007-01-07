@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <byteswap.h>
 
 extern any_off_t	cur_offset;
 
@@ -273,10 +274,7 @@ static inline int read_beshort(uint16_t *value)
 	if (!res) return 1;
 		
 #if	BYTE_ORDER==LITTLE_ENDIAN
-	char *s = (char*) value;
-	char b = s[0];
-	s[0] = s[1];
-	s[1] = b;
+	*value = bswap_16(*value);
 #endif
 	return 0;
 }
@@ -288,14 +286,7 @@ static inline int read_belong(uint32_t *value)
 	if (!res) return 1;
 		
 #if	BYTE_ORDER==LITTLE_ENDIAN
-	char *s = (char*) value;
-	char b = s[0];
-	s[0] = s[3];
-	s[3] = b;
-
-	b = s[1];
-	s[1] = s[2];
-	s[2] = b;
+	*value = bswap_32(*value);
 #endif
 	return 0;
 }
@@ -307,10 +298,7 @@ static inline int read_leshort(uint16_t *value)
 	if (!res) return 1;
 		
 #if	BYTE_ORDER==BIG_ENDIAN
-	char *s = (char*) value;
-	char b = s[0];
-	s[0] = s[1];
-	s[1] = b;
+	*value = bswap_16(*value);
 #endif
 	return 0;
 }
@@ -322,14 +310,7 @@ static inline int read_lelong(uint32_t *value)
 	if (!res) return 1;
 		
 #if	BYTE_ORDER==BIG_ENDIAN
-	char *s = (char*) value;
-	char b = s[0];
-	s[0] = s[3];
-	s[3] = b;
-
-	b = s[1];
-	s[1] = s[2];
-	s[2] = b;
+	*value = bswap_32(*value);
 #endif
 	return 0;
 }
