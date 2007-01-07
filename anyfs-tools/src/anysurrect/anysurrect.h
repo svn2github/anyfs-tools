@@ -187,7 +187,7 @@
 	COND_BYTE(name, val==value)
 
 #define FUNCOVER(name, operation)			\
-	static inline int name() { operation; return !ERROR_VALUE; }	
+	static int name() { operation; return !ERROR_VALUE; }	
 
 #define MAYBE(operation) ({				\
 	off_t	offset = fd_seek(0, SEEK_CUR);		\
