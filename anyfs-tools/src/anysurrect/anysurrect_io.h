@@ -115,15 +115,14 @@ static inline unsigned long get_block()
 #if __WORDSIZE == 32 
 static inline any_ssize_t fd_read32(void *buf, uint32_t count)
 {
-	uint32_t c = count;
+	uint32_t c;
 	uint32_t p, r;
 	
 	uint32_t from = cur_offset & ((1ULL<<31)-1);
 	uint32_t bfstart = io_buffer.start & ((1ULL<<31)-1);
 	uint64_t cur_offset_high = cur_offset & ~((1ULL<<31)-1);
 
-	p = from;
-	while (c)
+	for (c=count, p=from; c; c-=r, p+=r)
 	{
 		if ( p>(bfstart + io_buffer.size - 1) ||
 		  p<bfstart || io_buffer.size==0 )
@@ -149,16 +148,6 @@ static inline any_ssize_t fd_read32(void *buf, uint32_t count)
 
 		switch(r)
 		{
-			case 0:
-				cur_offset = cur_offset_high + p;
-				return count - c;
-				printf ("%lu, %lu, %lu, %lu\n", (unsigned long) c, 
-						(unsigned long) io_buffer.size - (p - bfstart),
-						(unsigned long) p, 
-						(unsigned long) bfstart);
-				exit (1);
-				break;
-
 			case 1:
 				*(char*)(buf + (p-from)) = 
 					*(char*)(io_buffer.buffer + (p - bfstart));
@@ -175,10 +164,17 @@ static inline any_ssize_t fd_read32(void *buf, uint32_t count)
 				memcpy (buf + (p-from),
 						io_buffer.buffer + (p - bfstart), 
 						r);
+				break;
+			case 0:
+				cur_offset = cur_offset_high + p;
+				return count - c;
+				printf ("%lu, %lu, %lu, %lu\n", (unsigned long) c, 
+						(unsigned long) io_buffer.size - (p - bfstart),
+						(unsigned long) p, 
+						(unsigned long) bfstart);
+				exit (1);
+				break;
 		}
-
-		c-=r;
-		p+=r;
 	}
 
 	cur_offset = cur_offset_high + p;
@@ -193,13 +189,12 @@ static inline any_ssize_t fd_read(void *buf, any_size_t count)
 		return fd_read32(buf, count & ((1ULL<<31)-1));
 #endif
 
-	any_size_t c = count;
+	any_size_t c;
 	any_size_t p, r;
 	
 	any_off_t from = cur_offset;
 
-	p = from;
-	while (c)
+	for (c=count, p=from; c; c-=r, p+=r)
 	{
 		if ( p>(io_buffer.start + io_buffer.size - 1) ||
 		  p<io_buffer.start || io_buffer.size==0 )
@@ -224,14 +219,6 @@ static inline any_ssize_t fd_read(void *buf, any_size_t count)
 
 		switch(r)
 		{
-			case 0:
-				cur_offset = p;
-				return count - c;
-				printf ("%lld, %lld, %lld, %lld\n", c, io_buffer.size - (p - io_buffer.start),
-						p, io_buffer.start);
-				exit (1);
-				break;
-
 			case 1:
 				*(char*)(buf + (p-from)) = 
 					*(char*)(io_buffer.buffer + (p - io_buffer.start));
@@ -248,10 +235,15 @@ static inline any_ssize_t fd_read(void *buf, any_size_t count)
 				memcpy (buf + (p-from),
 						io_buffer.buffer + (p - io_buffer.start), 
 						r);
+				break;
+			case 0:
+				cur_offset = p;
+				return count - c;
+				printf ("%lld, %lld, %lld, %lld\n", c, io_buffer.size - (p - io_buffer.start),
+						p, io_buffer.start);
+				exit (1);
+				break;
 		}
-
-		c-=r;
-		p+=r;
 	}
 
 	cur_offset = p;

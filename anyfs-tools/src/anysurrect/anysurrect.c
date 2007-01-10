@@ -625,10 +625,9 @@ void anysurrect_fromblock(struct any_sb_info *info)
 		fflush(stdout);
 	}
 	
-	for (type=0; type<num_types; type++)
+	for (ind_type=0; ind_type<num_types; ind_type++)
 	{
-		ind_type = type;
-		int text = *texts[type];
+		int text = *texts[ind_type];
 
 		if (copy_file_template_frags_list)
 		{
@@ -641,10 +640,10 @@ void anysurrect_fromblock(struct any_sb_info *info)
 		blocks_before_frag = 0;
 		cur_frag = file_frags_list;
 		fd_seek(0, SEEK_SET);
-		if (!text || (get_block()>=SKIP_TO_BLOCK[type]) ) {
-			mes = surrects[type](); 
+		if (!text || (get_block()>=SKIP_TO_BLOCK[ind_type]) ) {
+			mes = surrects[ind_type](); 
 			if (mes) { 
-				mode_t mode = *modes[type];
+				mode_t mode = *modes[ind_type];
 				char* dupmes = strdup(mes);
 				if (verbose) printf("file %s, block=%ld, size=%llx\n",
 						mes, get_block(), fd_seek(0, SEEK_CUR));
@@ -655,7 +654,7 @@ void anysurrect_fromblock(struct any_sb_info *info)
 			}
 			else {	
 				any_size_t pos = fd_seek(0, SEEK_CUR);
-				if (text) SKIP_TO_BLOCK[type] = get_block() + 
+				if (text) SKIP_TO_BLOCK[ind_type] = get_block() + 
 					((pos-1) >> get_log2blocksize()) + 1;
 				copy_file_template_frags_list = file_frags_list;
 			}
@@ -790,7 +789,7 @@ _("Illegal mode for directory umask. It must be 3 octal digits.\n"));
 
 void sigusr1_handler (int signal_number)
 {       
-	if (ind_type >= 0)
+	if (ind_type >= 0 && ind_type < num_types)
 	{
 		fwrite( "\b\b\b\b\b\b\b\b"
 			"\b\b\b\b\b\b\b\b"
@@ -803,7 +802,7 @@ void sigusr1_handler (int signal_number)
 
 void sigint_handler (int signal_number)
 {       
-	if (ind_type >= 0)
+	if (ind_type >= 0 && ind_type < num_types)
 	{
 		fwrite( "\b\b\b\b\b\b\b\b"
 			"\b\b\b\b\b\b\b\b"
@@ -819,7 +818,7 @@ void sigint_handler (int signal_number)
 
 void sigsegv_handler (int signal_number)
 {       
-	if (ind_type >= 0)
+	if (ind_type >= 0 && ind_type < num_types)
 	{
 		fwrite( "\b\b\b\b\b\b\b\b"
 			"\b\b\b\b\b\b\b\b"
