@@ -365,7 +365,7 @@ FUNCOVER(ID3V1_func, ID3V1);
 	}							\
 })
 
-inline FUNCOVER(ID3V2_func, 		ID3V2);
+FUNCOVER(ID3V2_func, 		ID3V2);
 FUNCOVER(MP3_frame_func, 	MP3_frame);
 FUNCOVER(ID3V1_in_frame_func, 	ID3V1_in_frame);
 
