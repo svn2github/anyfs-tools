@@ -10,7 +10,23 @@
 
 extern any_off_t	cur_offset;
 
-any_size_t fd_size();
+struct frags_list {
+	struct any_file_fragment frag;
+	signed long	offnext;
+	long whole;
+	unsigned long	num_frags;
+	any_size_t	size;
+};
+
+extern unsigned long *block_bitmap;
+extern struct frags_list *frags_list;
+extern struct frags_list *file_template_frags_list;
+extern struct frags_list *file_frags_list;
+
+static inline any_size_t fd_size()
+{
+	return file_frags_list->size;
+}
 
 static inline any_off_t fd_seek(any_off_t offset, int whence)
 {
@@ -24,18 +40,6 @@ static inline any_off_t fd_seek(any_off_t offset, int whence)
 
 	return cur_offset;
 }
-
-struct frags_list {
-	struct any_file_fragment frag;
-	signed long	offnext;
-	long whole;
-	unsigned long	num_frags;
-};
-
-extern unsigned long *block_bitmap;
-extern struct frags_list *frags_list;
-extern struct frags_list *file_template_frags_list;
-extern struct frags_list *file_frags_list;
 
 struct io_buffer {
 	char	*buffer;
