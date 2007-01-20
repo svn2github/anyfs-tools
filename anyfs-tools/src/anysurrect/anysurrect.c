@@ -268,7 +268,7 @@ int cut_frags(struct frags_list **pfrags_list, unsigned long from,
 	unsigned long fr_length;
 	unsigned long fr_start;
 	any_size_t    old_size = 0;
-	if (*pfrags_list) (*pfrags_list)->size;
+	if (*pfrags_list) old_size = (*pfrags_list)->size;
 
 	struct frags_list *frags_list = *pfrags_list;
 
@@ -359,9 +359,11 @@ int cut_frags(struct frags_list **pfrags_list, unsigned long from,
 	{
 		struct frags_list *next = NEXT_FRAG_WA( (*pfrags_list) );
 		if ((*pfrags_list)->whole==-1)
-			free(*pfrags_list);
+			anysurrect_free(*pfrags_list,
+					COPY_FRAGS_MALLOC_BUFFER);
 		else if (!next)
-			free( (*pfrags_list) - (*pfrags_list)->whole );
+			anysurrect_free( (*pfrags_list) - (*pfrags_list)->whole,
+				      COPY_FRAGS_MALLOC_BUFFER );
 		(*pfrags_list) = next;
 	}
 
@@ -517,9 +519,13 @@ uint64_t nbitsblocksize64;
 
 struct io_buffer io_buffer = {NULL, -1, 0};
 
+struct frags_list *copy_file_template_frags_list = NULL;
+
 inline int set_block(any_ssize_t s_block)
 {
 	cut_frags(&file_template_frags_list, 0, s_block);
+	if (copy_file_template_frags_list)
+		cut_frags(&copy_file_template_frags_list, 0, s_block);
 	io_buffer.size = 0;
 
 	/*
@@ -656,8 +662,6 @@ void anysurrect_fromblock(struct any_sb_info *info)
 		}
 	}
 
-	struct frags_list *copy_file_template_frags_list = NULL;
-
 	if (!quiet && if_progress_updated(&progress,
 				file_template_frags_list->frag.fr_start))
 	{
@@ -701,9 +705,6 @@ void anysurrect_fromblock(struct any_sb_info *info)
 			}
 		}
 	}
-
-	if (copy_file_template_frags_list)
-		free_frags_list (copy_file_template_frags_list);
 
 	ind_type = -1;
 

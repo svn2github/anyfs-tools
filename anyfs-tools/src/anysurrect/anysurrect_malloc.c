@@ -22,7 +22,7 @@ void anysurrect_malloc_clean()
 
 void anysurrect_free_clean()
 {
-	int num = 0;
+	int num;
 	for (num=0; num<NUM_MALLOC_BUFFERS; num++)
 	{
 		if (anysurrect_allocbuf[num])

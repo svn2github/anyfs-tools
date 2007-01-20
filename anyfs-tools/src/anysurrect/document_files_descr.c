@@ -380,7 +380,7 @@ int stream()
 		{
 			SKIP_BYTE("data");
 			s++;
-			if (s>MAX_PDF_STREAM_SIZE) {printf("\n"); break;}
+			if (s>MAX_PDF_STREAM_SIZE) {/*printf("\n");*/ break;}
 		}
 	}
 #ifdef DEBUG
