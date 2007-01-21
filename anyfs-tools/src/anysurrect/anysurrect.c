@@ -704,6 +704,7 @@ void anysurrect_fromblock(struct any_sb_info *info)
 				copy_file_template_frags_list = file_frags_list;
 			}
 		}
+		else copy_file_template_frags_list = file_frags_list;
 	}
 
 	ind_type = -1;
