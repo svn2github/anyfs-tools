@@ -200,6 +200,13 @@ char *archieve_BZIP2_surrect()
 
 	if ( !( child_pid=fork() ) )
 	{
+		struct sigaction sa;
+		memset (&sa, 0, sizeof (sa));
+		sa.sa_handler = SIG_DFL;
+		sigaction (SIGINT, &sa, NULL);
+		sigaction (SIGSEGV, &sa, NULL);
+		sigaction (SIGUSR1, &sa, NULL);
+
 		dup2(stdindes[0], fileno(stdin));
 		dup2(stderrdes[1], fileno(stdout));
 		setvbuf (stdin, NULL, _IONBF, 0);
