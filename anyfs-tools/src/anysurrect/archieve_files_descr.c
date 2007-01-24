@@ -163,7 +163,12 @@ char *archieve_ZIP_surrect()
 	uint16_t size = READ_LESHORT("size");				\
 	uint32_t add_size=0;						\
 	if (flags&0x8000)						\
-	{ add_size=READ_LELONG("add_size")-4; }				\
+	{ 								\
+		add_size=READ_LELONG("add_size"); 			\
+	  	if (add_size < 4) return ERROR_VALUE;			\
+	  	else add_size -= 4; 					\
+	}								\
+	if (add_size + size < 7) return ERROR_VALUE;			\
 	SKIP_STRING("data", add_size + size - 7);			\
 })
 
