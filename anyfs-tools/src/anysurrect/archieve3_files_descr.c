@@ -36,13 +36,6 @@ char *archieve_GZIP_surrect()
 	char buf[BUFFER_SIZE];
 	int n;
 
-	fd_set rfds;
-	struct timeval tv;
-	int retval;
-
-	tv.tv_sec = 0;
-	tv.tv_usec = 100;
-
 	pid_t child_pid;
 	int zombie_pid;
 
@@ -69,32 +62,31 @@ char *archieve_GZIP_surrect()
 		exit ( gzip() );
 	}
 
+	fcntl(stdindes[1], F_SETFL, O_NONBLOCK);
+
 	int eofd = 0;
 
 	for (;;) {
 		zombie_pid = waitpid(child_pid, &status, WNOHANG);
 		if (zombie_pid==child_pid) break;
 
-		FD_ZERO(&rfds);
-		FD_SET(stdindes[0], &rfds);
-
-		do retval = select(stdindes[0]+1, &rfds, NULL, NULL, &tv);
-		while ( retval < 0 && errno == EINTR );
-
-		if (!retval)
+		n = fd_read(buf, BUFFER_SIZE);
+		if (!n && !eofd)
 		{
-			n = fd_read(buf, BUFFER_SIZE);
-			if (!n && !eofd)
-			{
-				eofd = 1;
-				memset (buf, 255, BUFFER_SIZE);
-			}
-
-			if (eofd) n=BUFFER_SIZE;
-
-			write(stdindes[1], buf, n);
+			eofd = 1;
+			memset (buf, 255, BUFFER_SIZE);
 		}
-		else usleep(100);
+
+		if (eofd) n=BUFFER_SIZE;
+
+		any_ssize_t w = write(stdindes[1], buf, n);
+		if (w<0 && errno==EAGAIN)
+		{
+			w=0;
+			usleep(100);
+		}
+
+		fd_seek(w-n, SEEK_CUR);
 	}
 
 	any_ssize_t size = 0;
