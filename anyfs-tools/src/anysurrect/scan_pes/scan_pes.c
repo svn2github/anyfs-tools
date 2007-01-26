@@ -476,7 +476,9 @@ any_size_t scan_pes(int verbose)
 	      
 	      for (tmp1 = buf + 6; *tmp1 == 0xff; tmp1++)
 		if (tmp1 == buf + 6 + 16) {
+#ifdef DEBUG
 		  fprintf (stderr, "too much stuffing\n");
+#endif
 		  buf = tmp2;
 		  break;
 		}

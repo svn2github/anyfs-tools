@@ -158,17 +158,12 @@ char *archieve_ZIP_surrect()
 /*RAR*/
 #define RAR_BLOCK ({							\
 	SKIP_LESHORT("crc");						\
-	COND_BYTE("type", val>=0x72 && val<=0x7F);			\
+	uint8_t type = COND_BYTE("type", val>=0x72 && val<=0x7F);	\
 	uint16_t flags = READ_LESHORT("flags");				\
 	uint16_t size = READ_LESHORT("size");				\
 	uint32_t add_size=0;						\
-	if (flags&0x8000)						\
-	{ 								\
-		add_size=READ_LELONG("add_size"); 			\
-	  	if (add_size < 4) return ERROR_VALUE;			\
-	  	else add_size -= 4; 					\
-	}								\
-	if (add_size + size < 7) return ERROR_VALUE;			\
+	if (flags & 0x8000 && type != 0x76)				\
+		add_size = READ_LELONG("add_size") - 4;			\
 	SKIP_STRING("data", add_size + size - 7);			\
 })
 

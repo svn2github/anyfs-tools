@@ -20,9 +20,9 @@
 
 #define ERROR_VALUE	0
 
-#define SKIP_STRING(name, len) 				\
+#define SKIP_STRING(name, len)				\
 	if ( fd_seek(len, SEEK_CUR) > fd_size() )	\
-		RETURN (ERROR_VALUE)				
+		RETURN (ERROR_VALUE)
 
 #define SKIP_BYTE(name) \
 	SKIP_STRING(name, 1)
