@@ -1,273 +1,283 @@
 /*
  *      archieve2_files_descr.c
  *      CopyRight (C) 2006, Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
- *	
- *	From bzip2.c (part of bzip2):
- *	Copyright (C) 1996-2005 Julian R Seward.
+ *      
+ *      From bzip2recover.c (part of bzip2):
+ *      Copyright (C) 1996-2005 Julian R Seward.
  */
 
-#define _LARGEFILE64_SOURCE
+/*--
+  This program is bzip2recover, a program to attempt data 
+  salvage from damaged files created by the accompanying
+  bzip2-1.0.3 program.
 
-#include <sys/types.h>
-#include <unistd.h>
+  Copyright (C) 1996-2005 Julian R Seward.  All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
+
+  1. Redistributions of source code must retain the above copyright
+     notice, this list of conditions and the following disclaimer.
+
+  2. The origin of this software must not be misrepresented; you must 
+     not claim that you wrote the original software.  If you use this 
+     software in a product, an acknowledgment in the product 
+     documentation would be appreciated but is not required.
+
+  3. Altered source versions must be plainly marked as such, and must
+     not be misrepresented as being the original software.
+
+  4. The name of the author may not be used to endorse or promote 
+     products derived from this software without specific prior written 
+     permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+  OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+  GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+  Julian Seward, Cambridge, UK.
+  jseward@bzip.org
+  bzip2/libbzip2 version 1.0.3 of 15 February 2005
+--*/
+
+/*--
+  This program is a complete hack and should be rewritten
+  properly.  It isn't very complicated.
+--*/
 
 #include <stdio.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include <endian.h>
 
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include "anysurrect.h"
 #include "archieve2_files_descr.h"
 
-#include <sys/wait.h>
-#include <signal.h>
-#include <errno.h>
-#include <ctype.h>
-#include "bzlib.h"
+/* This program records bit locations in the file to be recovered.
+   That means that if 64-bit ints are not supported, we will not
+   be able to recover .bz2 files over 512MB (2^32 bits) long.
+   On GNU supported platforms, we take advantage of the 64-bit
+   int support to circumvent this problem.  Ditto MSVC.
 
-#include <stdint.h>
+   This change occurred in version 1.0.2; all prior versions have
+   the 512MB limitation.
+*/
+#ifdef __GNUC__
+   typedef  unsigned long long int  MaybeUInt64;
+#  define MaybeUInt64_FMT "%Lu"
+#else
+#ifdef _MSC_VER
+   typedef  unsigned __int64  MaybeUInt64;
+#  define MaybeUInt64_FMT "%I64u"
+#else
+   typedef  unsigned int   MaybeUInt64;
+#  define MaybeUInt64_FMT "%u"
+#endif
+#endif
 
-typedef unsigned char   Bool;
-typedef unsigned char   UChar;
-typedef int		Int32;
+typedef  unsigned int   UInt32;
+typedef  int            Int32;
+typedef  unsigned char  UChar;
+typedef  char           Char;
+typedef  unsigned char  Bool;
+#define True    ((Bool)1)
+#define False   ((Bool)0)
 
-#define True  ((Bool)1)
-#define False ((Bool)0)
+
+#define BZ_MAX_FILENAME 2000
+
+Char inFileName[BZ_MAX_FILENAME];
+Char outFileName[BZ_MAX_FILENAME];
+Char progName[]="anysurrect";
+
+MaybeUInt64 bytesOut = 0;
+MaybeUInt64 bytesIn  = 0;
+
+
+/*---------------------------------------------------*/
+/*--- Header bytes                                ---*/
+/*---------------------------------------------------*/
+
+#define BZ_HDR_B 0x42                         /* 'B' */
+#define BZ_HDR_Z 0x5a                         /* 'Z' */
+#define BZ_HDR_h 0x68                         /* 'h' */
+#define BZ_HDR_0 0x30                         /* '0' */
+ 
+/*---------------------------------------------*/
+void mallocFail ( Int32 n )
+{
+   fprintf ( stderr,
+             "%s: malloc failed on request for %d bytes.\n",
+            progName, n );
+   fprintf ( stderr, "%s: warning: output file(s) may be incomplete.\n",
+             progName );
+   exit ( 1 );
+}
+
+/*---------------------------------------------------*/
+/*--- Bit stream I/O                              ---*/
+/*---------------------------------------------------*/
+
+typedef
+   struct {
+      Int32  buffer;
+      Int32  buffLive;
+   }
+   BitStream;
+
 
 /*---------------------------------------------*/
-
-int verbosity = 0;
-int smallMode = 0;
-int noisy = 0;
-const char* progName = "bzip2test";
-char *inName = "stdin";
-
-static void panic( char* s )
-{ 
-	fprintf ( stderr,
-		"\n panic while testing bzip2 archieve:\n"
-		"%s\n", s );
-	exit(1);
-}
-
-static void configError()
-{ 
-	fprintf ( stderr,
-		"\n bzip2 is not configured correctly for this platform!\n" );
-	exit(1);
-}
-
-static void ioError ()
+BitStream* bsOpenReadStream ( )
 {
-	fprintf ( stderr,
-		"\n i/o Error while testing bzip2 archieve\n" );
-	exit(1);
-}
-
-static void outOfMemory()
-{
-	fprintf ( stderr,
-		"\n couldn't allocate enough memory\n" );
-	exit(1);
-}
-
-/*---------------------------------------------*/
-static Bool myfeof ( FILE* f )
-{
-	Int32 c = fgetc ( f );
-	if (c == EOF) return True;
-	ungetc ( c, f );
-	return False;
-}
-
-/*---------------------------------------------*/
-static int testStream ( FILE *zStream )
-{
-	BZFILE* bzf = NULL;
-	Int32   bzerr, bzerr_dummy, ret, nread, streamNo, i;
-	UChar   obuf[5000];
-	UChar   unused[BZ_MAX_UNUSED];
-	Int32   nUnused;
-	void*   unusedTmpV;
-	UChar*  unusedTmp;
-
-	nUnused = 0;
-	streamNo = 0;
-
-	if (ferror(zStream)) goto errhandler_io;
-
-	while (True) {
-
-		bzf = BZ2_bzReadOpen ( 
-				&bzerr, zStream, verbosity, 
-				(int)smallMode, unused, nUnused
-				);
-		if (bzf == NULL || bzerr != BZ_OK) goto errhandler;
-		streamNo++;
-
-		while (bzerr == BZ_OK) {
-			nread = BZ2_bzRead ( &bzerr, bzf, obuf, 5000 );
-			if (bzerr == BZ_DATA_ERROR_MAGIC) goto errhandler;
-		}
-		if (bzerr != BZ_STREAM_END) goto errhandler;
-
-		BZ2_bzReadGetUnused ( &bzerr, bzf, &unusedTmpV, &nUnused );
-		if (bzerr != BZ_OK) panic ( "test:bzReadGetUnused" );
-
-		unusedTmp = (UChar*)unusedTmpV;
-		for (i = 0; i < nUnused; i++) unused[i] = unusedTmp[i];
-
-		BZ2_bzReadClose ( &bzerr, bzf );
-		if (bzerr != BZ_OK) panic ( "test:bzReadGetUnused" );
-		if (nUnused == 0 && myfeof(zStream)) break;
-
-	}
-
-	if (ferror(zStream)) goto errhandler_io;
-	ret = fclose ( zStream );
-	if (ret == EOF) goto errhandler_io;
-
-	printf ("0\n");
-
-	return True;
-
-errhandler:
-
-	BZ2_bzReadClose ( &bzerr_dummy, bzf );
-
-	switch (bzerr) {
-		case BZ_CONFIG_ERROR:
-			configError(); break;
-		case BZ_IO_ERROR:
-errhandler_io:
-			ioError(); break;
-		case BZ_DATA_ERROR:
-
-			return False;
-		case BZ_MEM_ERROR:
-			outOfMemory();
-		case BZ_UNEXPECTED_EOF:
-			return False;
-		case BZ_DATA_ERROR_MAGIC:
-			if (zStream != stdin) fclose(zStream);
-			if (streamNo == 1) {
-				return False;
-			} else {
-				fgetc(zStream);
-				printf ("%d\n", nUnused+1);
-				return True;       
-			}
-		default:
-			panic ( "test:unexpected error" );
-	}
-
-	panic ( "test:end" );
-	return True; /*notreached*/
+   BitStream *bs = malloc ( sizeof(BitStream) );
+   if (bs == NULL) mallocFail ( sizeof(BitStream) );
+   bs->buffer = 0;
+   bs->buffLive = 0;
+   return bs;
 }
 
 /*---------------------------------------------*/
-#define BUFFER_SIZE	BZ_MAX_UNUSED
-
-char *archieve_BZIP2_surrect()
+/*--
+   Returns 0 or 1, or 2 to indicate EOF.
+--*/
+Int32 bsGetBit ( BitStream* bs )
 {
-	EX_STRING("magic", "BZh");
-	fd_seek(0, SEEK_SET);
-
-	char buf[BUFFER_SIZE];
-	int n;
-	long writes=0;
-
-	pid_t child_pid;
-	int zombie_pid;
-
-	int status = 0;
-
-	int stdindes[2];
-	int stderrdes[2];
-
-	pipe (stdindes);
-	pipe (stderrdes);
-
-	if ( !( child_pid=fork() ) )
-	{
-		struct sigaction sa;
-		memset (&sa, 0, sizeof (sa));
-		sa.sa_handler = SIG_DFL;
-		sigaction (SIGINT, &sa, NULL);
-		sigaction (SIGSEGV, &sa, NULL);
-		sigaction (SIGUSR1, &sa, NULL);
-
-		dup2(stdindes[0], fileno(stdin));
-		dup2(stderrdes[1], fileno(stdout));
-		setvbuf (stdin, NULL, _IONBF, 0);
-
-		exit ( testStream(stdin) );
-	}
-
-	fcntl(stdindes[1], F_SETFL, O_NONBLOCK);
-
-	int eofd = 0;
-
-	for (;;) {
-		zombie_pid = waitpid(child_pid, &status, WNOHANG);
-		if (zombie_pid==child_pid) break;
-
-		n = fd_read(buf, BUFFER_SIZE);
-		if (!n && !eofd)
-		{
-			eofd = 1;
-			memset (buf, 0, BUFFER_SIZE);
-		}
-
-		if (eofd) n=BUFFER_SIZE;
-
-		any_ssize_t w = write(stdindes[1], buf, n);
-
-		if (w<0 && errno==EAGAIN)
-		{
-			w=0;
-			usleep(100);
-		}
-		else writes+=w;
-
-		fd_seek(w-n, SEEK_CUR);
-	}
-
-	fcntl(stdindes[0], F_SETFL, O_NONBLOCK);
-
-	while (1)
-	{
-		n = read(stdindes[0], buf, BUFFER_SIZE);
-		if (n<0 && errno==EAGAIN)
-			break;
-		else writes -= n;
-	}
-
-	any_ssize_t size = 0;
-
-	close (stdindes[0]);
-	close (stdindes[1]);
-
-	if (WEXITSTATUS(status))
-	{
-		read(stderrdes[0], buf, BUFFER_SIZE);
-		size = writes - strtol(buf, NULL, 10);
-
-		fd_seek (size, SEEK_SET);
-
-		close (stderrdes[0]);
-		close (stderrdes[1]);
-		return "archieve/BZIP2";
-	}
-	else 
-	{
-		close (stderrdes[0]);
-		close (stderrdes[1]);
-		return ERROR_VALUE;
-	}
-
-	return ERROR_VALUE;
+   if (bs->buffLive > 0) {
+      bs->buffLive --;
+      return ( ((bs->buffer) >> (bs->buffLive)) & 0x1 );
+   } else {
+      Int32 retVal = READ_INTCHAR ( "byte" );
+      if ( retVal == EOF )
+         return 2;
+      bs->buffLive = 7;
+      bs->buffer = retVal;
+      return ( ((bs->buffer) >> 7) & 0x1 );
+   }
 }
+
+
+/*---------------------------------------------*/
+void bsClose ( BitStream* bs )
+{
+   free ( bs );
+}
+
+
+/*---------------------------------------------------*/
+/*---                                             ---*/
+/*---------------------------------------------------*/
+
+/* This logic isn't really right when it comes to Cygwin. */
+#ifdef _WIN32
+#  define  BZ_SPLIT_SYM  '\\'  /* path splitter on Windows platform */
+#else
+#  define  BZ_SPLIT_SYM  '/'   /* path splitter on Unix platform */
+#endif
+
+#define BLOCK_HEADER_HI  0x00003141UL
+#define BLOCK_HEADER_LO  0x59265359UL
+
+#define BLOCK_ENDMARK_HI 0x00001772UL
+#define BLOCK_ENDMARK_LO 0x45385090UL
+
+/* Increase if necessary.  However, a .bz2 file with > 50000 blocks
+   would have an uncompressed size of at least 40GB, so the chances
+   are low you'll need to up this.
+*/
+#define BZ_MAX_HANDLED_BLOCKS 50000
+
+MaybeUInt64 bStart [BZ_MAX_HANDLED_BLOCKS];
+MaybeUInt64 bEnd   [BZ_MAX_HANDLED_BLOCKS];
+MaybeUInt64 rbStart[BZ_MAX_HANDLED_BLOCKS];
+MaybeUInt64 rbEnd  [BZ_MAX_HANDLED_BLOCKS];
+
+char * archieve_BZIP2_surrect()
+{
+   BitStream*  bsIn;
+   Int32       b, currBlock, rbCtr;
+   MaybeUInt64 bitsRead;
+
+   UInt32      buffHi, buffLo;
+
+   EX_STRING("magic", "BZh");
+   fd_seek(0, SEEK_SET);
+
+   bsIn = bsOpenReadStream ( );
+
+   bitsRead = 0;
+   buffHi = buffLo = 0;
+   currBlock = 0;
+   bStart[currBlock] = 0;
+
+   rbCtr = 0;
+
+   while (True) {
+      b = bsGetBit ( bsIn );
+      bitsRead++;
+      if ( (bitsRead - bStart[currBlock]) > 1000*1024*8 )
+      {
+	      bitsRead = bStart[currBlock];
+	      break;
+      }
+      if (b == 2) {
+         if (bitsRead >= bStart[currBlock] &&
+            (bitsRead - bStart[currBlock]) >= 40) {
+            bEnd[currBlock] = bitsRead-1;
+            if (currBlock > 0)
+	    {
+	       bitsRead = bStart[currBlock];
+	       currBlock--;
+	    }
+         } else
+		 currBlock--;
+         break;
+      }
+      buffHi = (buffHi << 1) | (buffLo >> 31);
+      buffLo = (buffLo << 1) | (b & 1);
+      if ( ( (buffHi & 0x0000ffff) == BLOCK_HEADER_HI 
+             && buffLo == BLOCK_HEADER_LO)
+           || 
+           ( (buffHi & 0x0000ffff) == BLOCK_ENDMARK_HI 
+             && buffLo == BLOCK_ENDMARK_LO)
+         ) {
+         if (bitsRead > 49) {
+            bEnd[currBlock] = bitsRead-49;
+         } else {
+            bEnd[currBlock] = 0;
+         }
+         if (currBlock > 0 &&
+	     (bEnd[currBlock] - bStart[currBlock]) >= 130) {
+	    rbStart[rbCtr] = bStart[currBlock];
+            rbEnd[rbCtr] = bEnd[currBlock];
+            rbCtr++;
+         }
+         if (currBlock >= BZ_MAX_HANDLED_BLOCKS)
+            return ERROR_VALUE;
+         currBlock++;
+
+         bStart[currBlock] = bitsRead;
+      }
+   }
+
+   bsClose ( bsIn );
+
+   if (currBlock>0)
+   {
+	   any_size_t size = (bEnd[currBlock]+40+49-1)/8;
+	   fd_seek(size, SEEK_SET);
+	   return "archieve/BZIP2";
+   }
+   
+   return ERROR_VALUE;
+}
+

@@ -175,6 +175,16 @@
 	val;						\
 })
 
+#define READ_INTCHAR(name) ({				\
+	uint8_t	val;					\
+	int	ival;					\
+							\
+	int res = read_byte(&val);			\
+	if (res) ival = EOF;				\
+	else ival = val;				\
+	ival;						\
+})
+
 #define COND_BYTE(name, CONDITION) ({			\
 	uint8_t	val;					\
 	int res = fd_read(&val, 1);				\
