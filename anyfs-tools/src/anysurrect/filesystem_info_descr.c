@@ -25,6 +25,13 @@
 extern uint32_t get_blocksize();
 extern any_size_t device_blocks;
 
+extern int anysurrect_frags_list_flag;
+
+struct frags_list **addblock_to_frags_list(struct frags_list **pfrags_list_begin,
+		struct frags_list **pfrags_list, unsigned long block);
+void anysurrect_frags_list(struct frags_list *file_frags_list,
+		                any_size_t size, const char *mes);
+
 char *filesystem_info_ext2fs_direct_blocks_links_surrect()
 {
 	any_size_t to_offset = get_blocksize();
@@ -61,6 +68,28 @@ char *filesystem_info_ext2fs_direct_blocks_links_surrect()
 	if (zeroes_at_end==blocks) return NULL;
 	if ( frags > (blocks/10) ) return NULL;
 	if ( frags>(non_zero_blocks/4) ) return NULL;
+
+	struct frags_list *frags_list = NULL;
+	struct frags_list **cur_frag = &frags_list;
+	fd_seek(0, SEEK_SET);
+
+	uint32_t block = READ_LELONG("block_link");
+	int i;
+	int r = 12;
+	if ( (block - 1) == get_block() ) r++;
+	for (i=0; i<12; i++)
+		cur_frag = addblock_to_frags_list(&frags_list, cur_frag, block - r + i);
+	cur_frag = addblock_to_frags_list(&frags_list, cur_frag, block);
+
+	while ( fd_seek(0, SEEK_CUR) < to_offset )
+	{
+		uint32_t block = READ_LELONG("block_link");
+		cur_frag = addblock_to_frags_list(&frags_list, cur_frag, block);
+	}
+
+	anysurrect_frags_list(frags_list, 0, "filesystem_files/ext2fs/direct_blocks_links");
+
+	fd_seek(to_offset, SEEK_SET);
 
 	return "filesystem_info/ext2fs/direct_blocks_links";
 }

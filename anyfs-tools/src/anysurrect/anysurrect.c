@@ -50,6 +50,7 @@ const char* ext2fs_info_list_types =
 ;
 
 char* list_types = NULL;
+char* list_types2 = NULL;
 
 const char * program_name = "anysurrect";
 
@@ -88,6 +89,10 @@ const char ***indicators;
 char **typelines;
 static int ind_type=-1;
 int num_types = 0; 
+
+int num_types2 = 0; 
+surrect_function_t** surrects2;
+const mode_t **modes2;
 
 static void usage(void)
 {
@@ -166,6 +171,45 @@ int create_frags_list(unsigned long *block_bitmap,
 	(*pfrags_list_begin)->size = blocks_in_list << get_log2blocksize();
 
 	return 0;
+}
+
+struct frags_list **addblock_to_frags_list(struct frags_list **pfrags_list_begin,
+		struct frags_list **pfrags_list, unsigned long block)
+{
+	struct frags_list *new;
+	struct frags_list *prev = *pfrags_list;
+	signed long *offnext =
+		(*pfrags_list) ? &(*pfrags_list)->offnext : (void*) pfrags_list;
+	
+	if (!(*pfrags_list) || ( (*pfrags_list)->frag.fr_start +
+	  (*pfrags_list)->frag.fr_length ) != block )
+	{
+		new = malloc(sizeof(struct frags_list));
+		if ( !new )
+		{
+			fprintf(stderr, _("Not enough memory\n"));
+			exit(1);
+		}
+		(*offnext) = (void*)((char*)new - (char*)prev);
+		prev = new;
+
+		new->frag.fr_start  = block;
+		new->frag.fr_length = 1;
+		new->offnext = 0;
+		new->whole = -1;
+		new->size = 0;
+
+		pfrags_list = (void*)&new;
+		offnext	= (void*)&new->offnext;
+	}
+	else
+	{
+		(*pfrags_list)->frag.fr_length++;
+	}
+
+	(*pfrags_list_begin)->size += get_blocksize();
+
+	return pfrags_list;
 }
 
 #define NEXT_FRAG_WA_OFS(frag, offnext) 		\
@@ -643,12 +687,106 @@ void anysurrect_file(struct any_sb_info *info, char *dirn, mode_t mode)
 			*/
 }
 
+struct any_sb_info *info_for_anysurrect_frags_list;
+
+void anysurrect_frags_list(struct frags_list *l_file_frags_list,
+		any_size_t size, const char *dmes)
+{
+	const char *mes;
+	int type;
+	struct frags_list *old_copy_file_template_frags_list =
+		copy_file_template_frags_list;
+	struct frags_list *old_file_template_frags_list =
+		file_template_frags_list;
+	struct frags_list *old_file_frags_list =
+		file_frags_list;
+	file_template_frags_list = l_file_frags_list;
+	copy_file_template_frags_list = NULL;
+
+	struct any_sb_info *info = info_for_anysurrect_frags_list;
+	int goodsize = 0;
+
+	io_buffer.size = 0;
+
+	char *old_pathprefix = pathprefix;
+	pathprefix = concat_strings(3, pathprefix, dmes, "/");
+
+	for (type=0; type<num_types2; type++)
+	{
+		if (copy_file_template_frags_list)
+		{
+			file_frags_list = copy_file_template_frags_list;
+			copy_file_template_frags_list = NULL;
+		}
+		else
+			copy_frags_list (file_template_frags_list, &file_frags_list);
+
+		blocks_before_frag = 0;
+		cur_frag = file_frags_list;
+		fd_seek(0, SEEK_SET);
+		{
+			mes = surrects2[type](); 
+			if (mes) { 
+				mode_t mode = *modes2[type];
+				char* dupmes = strdup(mes);
+				if (verbose) printf("file %s, block=%ld, size=%llx\n",
+						mes, get_block(), fd_seek(0, SEEK_CUR));
+				if ( fd_seek(0, SEEK_CUR) == size ) goodsize = 1;
+				anysurrect_file(info, dupmes, mode);
+				free(dupmes);
+				free_frags_list (file_frags_list);
+			}
+			else {	
+				copy_file_template_frags_list = file_frags_list;
+			}
+		}
+	}
+
+	if (size && !goodsize)
+	{
+		if (copy_file_template_frags_list)
+		{
+			file_frags_list = copy_file_template_frags_list;
+			copy_file_template_frags_list = NULL;
+		}
+		else
+			copy_frags_list (file_template_frags_list, &file_frags_list);
+
+		blocks_before_frag = 0;
+		cur_frag = file_frags_list;
+		fd_seek(size, SEEK_SET);
+
+		mode_t mode = *modes2[ind_type];
+		char* dupmes = strdup("UNKNOWN");
+		if (verbose) printf("file %s, block=%ld, size=%llx\n",
+				mes, get_block(), fd_seek(0, SEEK_CUR));
+		if ( fd_seek(0, SEEK_CUR) == size ) goodsize = 1;
+		anysurrect_file(info, dupmes, mode);
+		free(dupmes);
+		free_frags_list (file_frags_list);
+	}
+
+	if (copy_file_template_frags_list)
+		free_frags_list(copy_file_template_frags_list);
+
+	file_frags_list = old_file_frags_list;
+	file_template_frags_list = old_file_template_frags_list;
+	copy_file_template_frags_list = old_copy_file_template_frags_list;
+
+	free(pathprefix);
+	pathprefix = old_pathprefix;
+
+	io_buffer.size = 0;
+}
+
 void anysurrect_fromblock(struct any_sb_info *info)
 {
 	char *mes;
 	any_size_t max_size=1;
 
 	int type;
+
+	info_for_anysurrect_frags_list = info;
 
 	static unsigned long *SKIP_TO_BLOCK = NULL;
 	if (!SKIP_TO_BLOCK) 
@@ -726,6 +864,7 @@ static void PRS(int argc, const char *argv[])
 	char *          tmp;
 
 	list_types = (char*) default_list_types;
+	list_types2 = (char*) default_list_types;
 
 	while ((c = getopt (argc, (char**)argv,
 		     "b:i:p:u:U:qvVfg:et:l")) != EOF) {
@@ -827,6 +966,7 @@ _("Illegal mode for directory umask. It must be 3 octal digits.\n"));
 	}
 
 	list_types = strdup(list_types);
+	list_types2 = strdup(list_types2);
 	libs = strdup(libs);
 }
 
@@ -1078,6 +1218,69 @@ int main (int argc, const char *argv[])
 		indicators[type] = dlsym(handle, buf);
 		if (!indicators[type])
 			indicators[type] = &default_indicator;
+
+		end[0] = old;
+		type++;
+
+		begin = end;
+		while ( begin[0] == ' ' ) begin++;
+	}
+
+	begin = list_types2;
+	while ( begin[0] == ' ' ) begin++;
+	while ( (end = strchr(begin, ' ')) || ( begin[0] && 
+				(end = begin+strlen(begin)) ) )
+	{
+		num_types2++;
+		begin = end;
+		while ( begin[0] == ' ' ) begin++;
+	}
+	
+	surrects2 = (surrect_function_t**) 
+		MALLOC( sizeof(surrect_function_t*) * num_types2 );
+	modes2 = (const mode_t**)
+		MALLOC( sizeof(mode_t*) * num_types2 );
+
+	type = 0;
+	begin = list_types2;
+	while ( begin[0] == ' ' ) begin++;
+	while ( (end = strchr(begin, ' ')) || ( begin[0] && 
+				(end = begin+strlen(begin)) ) )
+	{
+		void *handle = NULL;
+		int n;
+		char buf[1024];
+
+		char old = end[0];
+		end[0] = '\0';
+
+		n=snprintf(buf, 1024, "%s_surrect", begin);
+		if (n<0) exit(1);
+
+		for (lib=0; lib<num_libs; lib++)
+		{
+			surrects2[type] = dlsym(libs_handles[lib], buf);
+			if (surrects2[type])
+			{
+				handle = libs_handles[lib];
+				break;
+			}
+		}
+
+		if (!handle)
+		{
+			fprintf (stderr,
+					_("can't find %s surrecter function\n"),
+					begin);
+			exit(1);
+		}
+
+		n=snprintf(buf, 1024, "%s_mode", begin);
+		if (n<0) exit(1);
+
+		modes2[type] = dlsym(handle, buf);
+		if (!modes2[type])
+			modes2[type] = &default_mode;
 
 		end[0] = old;
 		type++;
