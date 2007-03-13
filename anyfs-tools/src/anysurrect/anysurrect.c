@@ -47,6 +47,7 @@ const char* ext2fs_info_list_types =
 "filesystem_info_ext2fs_direct_blocks_links "
 "filesystem_info_ext2fs_indirect_blocks_links "
 "filesystem_info_ext2fs_double_indirect_blocks_links "
+"filesystem_info_ext2fs_inode_table "
 ;
 
 char* list_types = NULL;
@@ -99,7 +100,7 @@ static void usage(void)
 	fprintf(stderr, _(
 "Usage: %s [-b blocksize] [-i input_inode_table] [-p path_prefix]\n"
 "\t[-u file_umask] [-U dir_umask] [-fqvV] [-g plug-ins]\n"
-"\t[-e] [-t list_of_types] [-l] device inode_table\n"),
+"\t[-e] [-t list_of_types] [-T list_of_types] [-l] device inode_table\n"),
 			program_name);
 	exit(1);
 }
@@ -173,16 +174,19 @@ int create_frags_list(unsigned long *block_bitmap,
 	return 0;
 }
 
-struct frags_list **addblock_to_frags_list(struct frags_list **pfrags_list_begin,
-		struct frags_list **pfrags_list, unsigned long block)
+struct frags_list *addblock_to_frags_list(struct frags_list **pfrags_list_begin,
+		struct frags_list *pfrags_list, unsigned long block)
 {
 	struct frags_list *new;
-	struct frags_list *prev = *pfrags_list;
+	struct frags_list *prev = pfrags_list;
 	signed long *offnext =
-		(*pfrags_list) ? &(*pfrags_list)->offnext : (void*) pfrags_list;
+		pfrags_list ? &pfrags_list->offnext : 
+		(void*) pfrags_list_begin;
 	
-	if (!(*pfrags_list) || ( (*pfrags_list)->frag.fr_start +
-	  (*pfrags_list)->frag.fr_length ) != block )
+	if (!pfrags_list || ( pfrags_list->frag.fr_start ?
+				( pfrags_list->frag.fr_start +
+				  pfrags_list->frag.fr_length ) != block : 
+				block ) )
 	{
 		new = malloc(sizeof(struct frags_list));
 		if ( !new )
@@ -199,13 +203,11 @@ struct frags_list **addblock_to_frags_list(struct frags_list **pfrags_list_begin
 		new->whole = -1;
 		new->size = 0;
 
-		pfrags_list = (void*)&new;
+		pfrags_list = (void*)new;
 		offnext	= (void*)&new->offnext;
 	}
 	else
-	{
-		(*pfrags_list)->frag.fr_length++;
-	}
+		pfrags_list->frag.fr_length++;
 
 	(*pfrags_list_begin)->size += get_blocksize();
 
@@ -703,6 +705,9 @@ void anysurrect_frags_list(struct frags_list *l_file_frags_list,
 	file_template_frags_list = l_file_frags_list;
 	copy_file_template_frags_list = NULL;
 
+	unsigned long old_blocks_before_frag = blocks_before_frag;
+	struct frags_list *old_cur_frag = cur_frag;
+
 	struct any_sb_info *info = info_for_anysurrect_frags_list;
 	int goodsize = 0;
 
@@ -768,6 +773,11 @@ void anysurrect_frags_list(struct frags_list *l_file_frags_list,
 
 	if (copy_file_template_frags_list)
 		free_frags_list(copy_file_template_frags_list);
+
+	free_frags_list(l_file_frags_list);
+
+	blocks_before_frag = old_blocks_before_frag;
+	cur_frag = old_cur_frag;
 
 	file_frags_list = old_file_frags_list;
 	file_template_frags_list = old_file_template_frags_list;
@@ -867,7 +877,7 @@ static void PRS(int argc, const char *argv[])
 	list_types2 = (char*) default_list_types;
 
 	while ((c = getopt (argc, (char**)argv,
-		     "b:i:p:u:U:qvVfg:et:l")) != EOF) {
+		     "b:i:p:u:U:qvVfg:et:T:l")) != EOF) {
 		switch (c) {
 		case 'b':
 			input_blocksize = strtol(optarg, &tmp, 10);
@@ -937,6 +947,10 @@ _("Illegal mode for directory umask. It must be 3 octal digits.\n"));
 
 		case 't':
 			list_types = optarg;
+			break;
+
+		case 'T':
+			list_types2 = optarg;
 			break;
 
 		case 'l':

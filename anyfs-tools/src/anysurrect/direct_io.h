@@ -173,3 +173,15 @@ any_off_t fd_get_direct_start();
 any_off_t fd_seek_dr(any_off_t offset, int whence);
 any_size_t fd_size_dr();
 any_ssize_t fd_read_dr(void *buf, any_size_t count);
+
+extern uint32_t get_blocksize();
+extern any_size_t device_blocks;
+
+extern int anysurrect_frags_list_flag;
+
+struct frags_list *addblock_to_frags_list(struct frags_list **pfrags_list_begin,
+		struct frags_list *pfrags_list, unsigned long block);
+void anysurrect_frags_list(struct frags_list *file_frags_list,
+		any_size_t size, const char *mes);
+
+
