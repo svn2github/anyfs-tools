@@ -1,4 +1,4 @@
-.TH anysurrect 8 "05 Aug 2006" "Version 0.84.5"
+.TH anysurrect 8 "13 Mar 2007" "Version 0.84.6"
 .SH "NAME"
 anysurrect \- search files on device and saves obtained information
 to external inode table file.
@@ -6,7 +6,8 @@ to external inode table file.
 .nf
 .BI "anysurrect [\-b " blocksize "] [\-i " input_inode_table "]"
 .BI "	[\-p " path_prefix "] [\-u " file_umask "] [\-U " dir_umask "] [\-fqvV] "
-.BI "	[\-g " plug-ins "] [\-e] [\-t" " list_of_types" "] [\-l] " "device inode_table"
+.BI "	[\-g " plug-ins "] [\-e] [\-t" " list_of_types" "] [\-T" " list_of_types" "] "
+.BI "	[\-l] " "device inode_table"
 .fi
 
 .SH "DESCRIPTION"
@@ -53,7 +54,8 @@ For better recovering
 may to recognize system block of the next filesystems:
 
 .br
-.BR "EXT2FS/EXT3FS:" " DIRECT, INDIRECT and DOUBLE INDIRECT blocks links (see -e option description)."
+.BR "EXT2FS/EXT3FS:" " DIRECT, INDIRECT and DOUBLE INDIRECT blocks links,
+inode table blocks (see -e option description)."
 
 But text searching is expensive (in sense of processor time) operation.
 Because by default recognized only
@@ -95,10 +97,8 @@ files.
 (with \-i option it does such searching).
 But in general the rate of fragmented file on partition is NOT so high
 for serious disturbs.
-Recovering of fragmented files probably may be with more success realized
-by searching by filesystem system information, but it is subject of
-other program
-(and if I will do it, then sure include it to this package).
+Recovering of fragmented files may be with more success realized
+by searching by filesystem system information (see \-e, \-T options description).
 	
 .SH "OPTIONS"
 .TP
@@ -160,8 +160,14 @@ option.
 .B \-e
 The same as
 .br
-.BI \-t " ""filesystem_info_ext2fs_direct_blocks_links filesystem_info_ext2fs_double_indirect_blocks_links filesystem_info_ext2fs_indirect_blocks_links"""
+.BI \-t " ""filesystem_info_ext2fs_direct_blocks_links filesystem_info_ext2fs_double_indirect_blocks_links filesystem_info_ext2fs_indirect_blocks_links filesystem_info_ext2fs_inode_table"""
 .br
+So anysurrect tries use information from founded system blocks,
+and calls surrecters from \-T list to find other files.
+Recognized this way files will moved to /filesystem_files directory.
+If file has known size (one maybe accessed in inode table), but 
+any surrecters doesn't define the type of the file, then
+the file moves to /filesystem_file/UNKNOWN directory.
 For the best result of recovering from EXT2FS/EXT3FS
 use recovering with 2 stages:
 .br
@@ -178,6 +184,12 @@ simple enumerate it with space delimiter to the option.
 For supported types list use
 .IR \-l
 option.
+.TP
+.BI \-T " list_of_types"
+The option was appeared in 0.84.6 version. 
+The one defines secondary list of surrecters, and maybe
+used with \-e option to set types of files for recover
+with using founded FS system information.
 .TP
 .B \-l
 Print the full list of knowing file types for recovering.
