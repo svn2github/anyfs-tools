@@ -309,7 +309,6 @@ int free_frags_list(struct frags_list *frags_list)
 int cut_frags(struct frags_list **pfrags_list, unsigned long from,
 		unsigned long blocks)
 {
-	unsigned long cut_blocks = 0;
 	unsigned long block = 0;
 	unsigned long fr_length;
 	unsigned long fr_start;
@@ -354,7 +353,6 @@ int cut_frags(struct frags_list **pfrags_list, unsigned long from,
 		}
 		
 		block += fr_length;
-		cut_blocks += fr_length;
 	}
 
 	assert(frag_begin_cut);
@@ -384,9 +382,6 @@ int cut_frags(struct frags_list **pfrags_list, unsigned long from,
 
 		frag_begin_cut->offnext = (char*)frag_end_cut - 
 			(char*)frag_begin_cut;
-
-		cut_blocks -= old_fbc_length - new_fbc_length;
-		cut_blocks += new_fec_start - old_fec_start;
 	}
 	else
 	{
@@ -397,8 +392,6 @@ int cut_frags(struct frags_list **pfrags_list, unsigned long from,
 			fprintf(stderr, "%lu != %lu\n", old_fbc_length, new_fbc_length);
 			exit(1);
 		}
-
-		cut_blocks = old_fec_start + new_fbc_length - new_fec_start;
 	}
 
 	while ( (*pfrags_list) && !(*pfrags_list)->frag.fr_length )
@@ -414,8 +407,10 @@ int cut_frags(struct frags_list **pfrags_list, unsigned long from,
 	}
 
 	if (*pfrags_list)
+	{
 		(*pfrags_list)->size = old_size - 
-			( cut_blocks << get_log2blocksize() );
+			( blocks << get_log2blocksize() );
+	}
 	return 0;
 }
 

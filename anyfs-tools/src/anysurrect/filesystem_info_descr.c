@@ -62,6 +62,12 @@ char *filesystem_info_ext2fs_direct_blocks_links_surrect()
 	if ( frags > (blocks/10) ) return NULL;
 	if ( frags>(non_zero_blocks/4) ) return NULL;
 
+	if ( frags == 1 )
+	{
+		fd_seek(to_offset, SEEK_SET);
+		return "filesystem_info/ext2fs/direct_blocks_links";
+	}
+
 	struct frags_list *frags_list = NULL;
 	struct frags_list *cur_frag = NULL;
 	fd_seek(0, SEEK_SET);
@@ -229,8 +235,32 @@ char *filesystem_info_ext2fs_indirect_blocks_links_surrect()
 		cur_frag = direct_links_to_frags_list(&frags_list, cur_frag, block);
 	}
 
+	{
+#define NEXT_FRAG_WA_OFS(frag, offnext)                 \
+		        (void*)( (offnext) ? (char*)frag + offnext : 0 )
+
+#define NEXT_FRAG_OFS(frag, offnext)            \
+		        ( frag = NEXT_FRAG_WA_OFS(frag, offnext) )
+
+#define NEXT_FRAG(frag) NEXT_FRAG_OFS(frag, frag->offnext)
+#define NEXT_FRAG_WA(frag) NEXT_FRAG_WA_OFS(frag, frag->offnext)
+
+		struct frags_list *p = frags_list;
+		if (!p) goto out;
+		NEXT_FRAG(p);
+		if (!p) goto out;
+		if ( (block - 1) == get_block() ) 
+		{
+			NEXT_FRAG(p);
+			if (!p) goto out;
+			NEXT_FRAG(p);
+			if (!p) goto out;
+		}
+	}
+
 	anysurrect_frags_list(frags_list, 0, "filesystem_files/ext2fs/indirect_blocks_links");
 
+out:
 	fd_seek(to_offset, SEEK_SET);
 
 	return "filesystem_info/ext2fs/indirect_blocks_links";

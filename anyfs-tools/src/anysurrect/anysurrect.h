@@ -186,7 +186,7 @@
 })
 
 #define COND_BYTE(name, CONDITION) ({			\
-	uint8_t	val;					\
+	uint8_t	val=0;					\
 	int res = fd_read(&val, 1);				\
 	if (!res) RETURN (ERROR_VALUE);			\
 	if (!(CONDITION)) RETURN (ERROR_VALUE);		\
