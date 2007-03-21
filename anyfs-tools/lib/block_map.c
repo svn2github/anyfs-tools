@@ -13,6 +13,8 @@
 #include "any.h"
 #include "super.h"
 
+extern int verbose;
+
 int search_intersect_inodes(struct any_sb_info *info, unsigned long *block_bitmap,
 		any_blk_t dev_size, unsigned long mpos, unsigned long frag,
 		unsigned long blk, unsigned long len)
@@ -30,16 +32,22 @@ int search_intersect_inodes(struct any_sb_info *info, unsigned long *block_bitma
 			mpos, frag, fr_start, fr_start+fr_length-1,
 			fr_start+blk, fr_start+blk+len-1);
 
+	if (verbose<2) 
+	{
+		fprintf (stderr, _("verbose < 2.. Skip list..\n\n") );
+		return 0;
+	}
+
 	unsigned long mpos2;
 	unsigned long frag2;
 
 	for (mpos2=0; mpos2 < mpos; mpos2++) {
 		if ( !info->si_inode_table[mpos2].i_links_count ) continue;
 
-		unsigned long fr_nfrags2 = info->si_inode_table[mpos2].i_info.
-			file_frags->fr_nfrags;
-
 		if ( S_ISREG(info->si_inode_table[mpos2].i_mode) ) {
+			unsigned long fr_nfrags2 = info->si_inode_table[mpos2].i_info.
+				file_frags->fr_nfrags;
+
 			for ( frag2=0; frag2 < fr_nfrags2; frag2++ )
 		       	{
 				unsigned long fr_start2 =
@@ -73,7 +81,7 @@ int search_intersect_inodes(struct any_sb_info *info, unsigned long *block_bitma
 }
 
 int fill_block_bitmap (struct any_sb_info *info, unsigned long *block_bitmap, 
-		any_blk_t dev_size) 
+		any_blk_t dev_size, int check_intersects) 
 {
 	unsigned long mpos;
 	unsigned long frag;
@@ -103,8 +111,11 @@ int fill_block_bitmap (struct any_sb_info *info, unsigned long *block_bitmap,
 				if ( fr_start )
 					for (blk = 0; blk < fr_length; blk++ )
 					{
-						if ( test_and_set_bit ( fr_start + blk, block_bitmap ) )
+						if ( fr_start + blk < dev_size &&
+								test_and_set_bit ( fr_start + blk, block_bitmap ) )
 						{
+							if (!check_intersects) continue;
+
 							unsigned long blk0 = blk;
 							unsigned long len = 0;
 

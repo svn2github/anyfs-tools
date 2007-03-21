@@ -565,7 +565,7 @@ int main(int argc, const char *argv[])
 	memset(blocks_info.block_bitmap, 0, bitmap_l*sizeof(unsigned long));
 
 	r = fill_block_bitmap (info, blocks_info.block_bitmap, 
-			blocks_info.blocks_count);
+			blocks_info.blocks_count, 1);
 	if (r<0) goto free_bm1;
 
 	set_bit(0, blocks_info.block_bitmap);

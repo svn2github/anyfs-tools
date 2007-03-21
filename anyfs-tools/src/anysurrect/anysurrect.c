@@ -1417,7 +1417,7 @@ _("Specified input inode table has %lu blocksize,\n"
 		exit(1); 
 	}
 
-	r = fill_block_bitmap (info, block_bitmap, blocks);
+	r = fill_block_bitmap (info, block_bitmap, blocks, 0);
 	if (r) exit(r);
 
 	if (fromfirst) clear_bit(0, block_bitmap);

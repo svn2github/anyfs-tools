@@ -2847,7 +2847,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 
 		memset(block_bitmap, 0, bitmap_l*sizeof(unsigned long));
 
-		retval = fill_block_bitmap (info, block_bitmap, dblocks);
+		retval = fill_block_bitmap (info, block_bitmap, dblocks, 1);
 		if (retval) exit(-retval);
 
 		/*allocate memory for block bitmap for system information*/

@@ -1517,7 +1517,7 @@ int main (int argc, char *argv[])
 	{ retval = -ENOMEM; exit(retval); }
 	memset(block_bitmap, 0, bitmap_l*sizeof(unsigned long));
 
-	retval = fill_block_bitmap (info, block_bitmap, param.s_blocks_count);
+	retval = fill_block_bitmap (info, block_bitmap, param.s_blocks_count, 1);
 	if (retval) exit(retval);
 
 	/*

@@ -9,6 +9,6 @@
 #include "any.h"
 
 int fill_block_bitmap (struct any_sb_info *info, unsigned long *block_bitmap, 
-		any_blk_t dev_size);
+		any_blk_t dev_size, int check_intersects);
 
 #endif /*_ANY_BLOCK_MAP_H*/
