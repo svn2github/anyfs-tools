@@ -22,17 +22,6 @@ PKG_CHECK_MODULES(FUSE, fuse >= 2.5, \
 		ANYFUSE_MODULE="anyfuse_module"; ANYFUSE="anyfuse", \
 		ANYFUSE_MODULE=""; ANYFUSE="" )
 
-if test $ANYFUSE_MODULE; then
-	echo -n "checking for fuse kernel module... "
-	if grep -q fuse /lib/modules/`uname -r`/modules.dep; then
-		echo "yes"
-	else
-		echo "no"
-		ANYFUSE_MODULE=""
-		ANYFUSE=""
-	fi
-fi
-
 echo -n "checking for kernel sources... "
 if test -f /lib/modules/`uname -r`/build/Makefile; then
 	echo "yes"
