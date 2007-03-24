@@ -1,5 +1,6 @@
 /*
  * build_xfs.c - Build a XFS filesystem using external anyfs inode table
+ * Copyright (C) 2007 Kirill A. Korinskiy <catap@catap.ru>
  * Copyright (C) 2006 Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
  *
  * BASED ON mkfs.xfs from xfsprogs,
@@ -1438,7 +1439,7 @@ main(
 	liflag = laflag = lsflag = ldflag = lvflag = 0;
 	loginternal = 1;
 	logversion = 1;
-	logagno = logblocks = rtblocks = 0;
+	logagno = logblocks = rtblocks = rtextblocks = 0;
 	Nflag = nlflag = nsflag = nvflag = 0;
 	dirblocklog = dirblocksize = dirversion = 0;
 	qflag = 0;
@@ -2317,11 +2318,13 @@ _("You try to use blocksize %d, although inode table given for %lu blocksize\n"
 			if (XFS_MIN_RTEXTSIZE <= rtextbytes &&
 			    (rtextbytes <= XFS_MAX_RTEXTSIZE)) {
 				rtextblocks = rswidth;
-			} else {
-				rtextblocks = XFS_DFL_RTEXTSIZE >> blocklog;
 			}
-		} else
-			rtextblocks = XFS_DFL_RTEXTSIZE >> blocklog;
+		}
+		//fix to xfsprog >= 2.8.18
+		if (!rtextblocks) {
+		  rtextblocks = (blocksize < XFS_MIN_RTEXTSIZE) ? XFS_MIN_RTEXTSIZE >> blocklog : 1;
+		}
+		ASSERT(rtextblocks);
 	}
 
 	/*
@@ -2847,7 +2850,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 
 		memset(block_bitmap, 0, bitmap_l*sizeof(unsigned long));
 
-		retval = fill_block_bitmap (info, block_bitmap, dblocks, 1);
+		retval = fill_block_bitmap (info, block_bitmap, dblocks);
 		if (retval) exit(-retval);
 
 		/*allocate memory for block bitmap for system information*/
