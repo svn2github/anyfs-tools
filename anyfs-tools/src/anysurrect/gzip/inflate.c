@@ -1,6 +1,10 @@
 /* inflate.c -- Not copyrighted 1992 by Mark Adler
    version c10p1, 10 January 1993 */
 
+/* (30.03.2006) Modified by Nikolaj (unDEFER) Krivchenkov for 
+   anyfs-tools project 
+*/
+
 /* You can do whatever you like with this source file, though I would
    prefer that if you modify it and redistribute it that you include
    comments to that effect with your name and the date.  Thank you.
@@ -506,12 +510,14 @@ int bl, bd;             /* number of bits decoded by tl[] and td[] */
   b = bb;                       /* initialize bit buffer */
   k = bk;
   w = wp;                       /* initialize window position */
+  int blocksize = 0;
 
   /* inflate the coded data */
   ml = mask_bits[bl];           /* precompute masks for speed */
   md = mask_bits[bd];
-  for (;;)                      /* do until end of block */
+  for (; blocksize < 8*100*1024 ;) /* do until end of block */
   {
+    blocksize += bl;
     NEEDBITS((unsigned)bl)
     if ((e = (t = tl + ((unsigned)b & ml))->e) > 16)
       do {
@@ -519,6 +525,7 @@ int bl, bd;             /* number of bits decoded by tl[] and td[] */
           return 1;
         DUMPBITS(t->b)
         e -= 16;
+	blocksize += e;
         NEEDBITS(e)
       } while ((e = (t = t->v.t + ((unsigned)b & mask_bits[e]))->e) > 16);
     DUMPBITS(t->b)
@@ -539,11 +546,13 @@ int bl, bd;             /* number of bits decoded by tl[] and td[] */
         break;
 
       /* get length of block to copy */
+      blocksize += e;
       NEEDBITS(e)
       n = t->v.n + ((unsigned)b & mask_bits[e]);
       DUMPBITS(e);
 
       /* decode distance of block to copy */
+      blocksize += bd;
       NEEDBITS((unsigned)bd)
       if ((e = (t = td + ((unsigned)b & md))->e) > 16)
         do {
@@ -551,9 +560,11 @@ int bl, bd;             /* number of bits decoded by tl[] and td[] */
             return 1;
           DUMPBITS(t->b)
           e -= 16;
+	  blocksize += e;
           NEEDBITS(e)
         } while ((e = (t = t->v.t + ((unsigned)b & mask_bits[e]))->e) > 16);
       DUMPBITS(t->b)
+      blocksize += e;
       NEEDBITS(e)
       d = w - t->v.n - ((unsigned)b & mask_bits[e]);
       DUMPBITS(e)
@@ -583,7 +594,6 @@ int bl, bd;             /* number of bits decoded by tl[] and td[] */
       } while (n);
     }
   }
-
 
   /* restore the globals from the locals */
   wp = w;                       /* restore global window pointer */
@@ -929,7 +939,9 @@ int inflate()
   do {
     hufts = 0;
     if ((r = inflate_block(&e)) != 0)
+    {
       return r;
+    }
     if (hufts > h)
       h = hufts;
   } while (!e);
