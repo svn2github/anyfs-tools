@@ -229,14 +229,6 @@ if it was unsuccessful, or was failed a condition. Then the function
 returns 
 .BR ERROR_VALUE 
 value.
-So in the beginning file processor function you need to add
-then next preprocessor instruction:
-.br
-.BI "#define ERROR_VALUE " "0"
-.br
-And at the end:
-.br
-.BI "#undef ERROR_VALUE"
 .br
 .TP
 .BI "const char *" "name"
@@ -361,7 +353,6 @@ const char* audio_MIDI_indicator="MIDI";
 
 char *audio_MIDI_surrect()
 {
-#define ERROR_VALUE	NULL
 	int res;
 	unsigned short number_tracks;
 	EX_STRING("header", "MThd");
@@ -380,7 +371,6 @@ char *audio_MIDI_surrect()
 	}
 
 	return "audio/MIDI";
-#undef	ERROR_VALUE
 }
 .fi
 .br
@@ -400,11 +390,11 @@ const char* archieve_RAR_indicator="RAR";
 	SKIP_STRING("data", add_size + size - 7);                       \\
 })
 
+FUNCOVER(rar_block, RAR_BLOCK);
+
 char *archieve_RAR_surrect()
 {
-#define ERROR_VALUE	0
 	int res;
-	FUNCOVER(rar_block, RAR_BLOCK);
 
 	EX_LESHORT("crc", 0x6152);
 	EX_BYTE("type", 0x72);
@@ -414,7 +404,6 @@ char *archieve_RAR_surrect()
 	while( MAYBE( rar_block() )!=ERROR_VALUE );
 	
 	return "archieve/RAR";
-#undef	ERROR_VALUE
 }
 .fi
 

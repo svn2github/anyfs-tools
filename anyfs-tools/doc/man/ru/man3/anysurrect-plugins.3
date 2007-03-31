@@ -235,15 +235,6 @@ anysurrect-plugins \- плагины для anysurrect позволяют рас
 функции в связи с неудачей, невыполнением указанного условия. При этом \
 этом функция возвратит значение
 .BR ERROR_VALUE .
-В связи с этим в начале функции обработчика файла следует добавлять \
-инструкцию препроцессора:
-.br
-.BI "#define ERROR_VALUE " "0"
-.br
-А в конце:
-.br
-.BI "#undef ERROR_VALUE"
-.br
 .TP
 .BI "const char *" "name"
 Аргумент
@@ -326,6 +317,7 @@ anysurrect-plugins \- плагины для anysurrect позволяют рас
 .B "!ERROR_VALUE"
 А в случае не успеха:
 .B "ERROR_VALUE"
+.br
 .TP
 .BI "MAYBE(" "operation" ");"
 Используя макрос
@@ -369,7 +361,6 @@ const char* audio_MIDI_indicator="MIDI";
 
 char *audio_MIDI_surrect()
 {
-#define ERROR_VALUE	NULL
 	int res;
 	unsigned short number_tracks;
 	EX_STRING("header", "MThd");
@@ -388,7 +379,6 @@ char *audio_MIDI_surrect()
 	}
 
 	return "audio/MIDI";
-#undef	ERROR_VALUE
 }
 .fi
 .br
@@ -408,11 +398,11 @@ const char* archieve_RAR_indicator="RAR";
 	SKIP_STRING("data", add_size + size - 7);                       \\
 })
 
+FUNCOVER(rar_block, RAR_BLOCK);
+
 char *archieve_RAR_surrect()
 {
-#define ERROR_VALUE	0
 	int res;
-	FUNCOVER(rar_block, RAR_BLOCK);
 
 	EX_LESHORT("crc", 0x6152);
 	EX_BYTE("type", 0x72);
@@ -422,7 +412,6 @@ char *archieve_RAR_surrect()
 	while( MAYBE( rar_block() )!=ERROR_VALUE );
 	
 	return "archieve/RAR";
-#undef	ERROR_VALUE
 }
 .fi
 
