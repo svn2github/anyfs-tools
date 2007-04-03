@@ -593,3 +593,74 @@ char *filesystem_info_ext2fs_inode_table_surrect()
 	return "filesystem_info/ext2fs/inode_table_blocks";
 }
 
+char *filesystem_info_ext2fs_group_info_surrect()
+{
+	static int done = 0;
+	if (done) return NULL;
+
+	uint32_t inodes_count = READ_LELONG("inodes_count");
+	uint32_t blocks_count = READ_LELONG("blocks_count");
+	uint32_t r_blocks_count = READ_LELONG("r_blocks_count");
+	uint32_t free_blocks_count = READ_LELONG("free_blocks_count");
+	uint32_t free_inodes_count = READ_LELONG("free_inodes_count");
+	uint32_t first_data_block = READ_LELONG("first_data_block");
+	uint32_t log_block_size = READ_LELONG("log_block_size");
+	uint32_t log_frag_size = READ_LELONG("log_frag_size");
+	uint32_t blocks_per_group = READ_LELONG("blocks_per_group");
+	uint32_t frags_per_group = READ_LELONG("frags_per_group");
+	uint32_t inodes_per_group = READ_LELONG("inodes_per_group");
+	uint32_t mtime = READ_LELONG("mtime");
+	uint32_t wtime = READ_LELONG("wtime");
+	uint16_t mnt_count = READ_LESHORT("mnt_count");
+	uint16_t max_mnt_count = READ_LESHORT("max_mnt_count");
+	uint16_t magic = READ_LESHORT("magic");
+	uint16_t state = READ_LESHORT("state");
+	uint16_t errors = READ_LESHORT("errors");
+	uint16_t minor_rev_level = READ_LESHORT("minor_rev_level");
+	uint32_t lastcheck = READ_LELONG("lastcheck");
+	uint32_t checkinterval = READ_LELONG("checkinterval");
+	uint32_t creator_os = READ_LELONG("creator_os");
+	uint32_t rev_level = READ_LELONG("rev_level");
+	uint16_t def_resuid = READ_LESHORT("def_resuid");
+	uint16_t def_resgid = READ_LESHORT("def_resgid");
+
+#define EXT2_SUPER_MAGIC      0xEF53
+	if ( magic != EXT2_SUPER_MAGIC ) return NULL;
+
+	if ( !inodes_count || !blocks_count ) return NULL;
+	if ( inodes_count < free_inodes_count || 
+	  	blocks_count < free_blocks_count ) return NULL;
+
+	if ( first_data_block > 10 ) return NULL;
+
+	if ( log_block_size > 12 ) return NULL;
+	if ( blocks_per_group < 10 ) return NULL;
+
+	if ( (get_block() - first_data_block)%blocks_per_group ) return NULL;
+
+	int group_info_size = 2;
+	int inodes_per_block = get_blocksize()/128;
+	group_info_size += (inodes_per_group + inodes_per_block - 1)/inodes_per_block;
+	group_info_size += ( (blocks_per_group + 7)/8 + get_blocksize() - 1)/get_blocksize();
+	group_info_size += ( (inodes_per_group + 7)/8 + get_blocksize() - 1)/get_blocksize();
+
+	struct frags_list *frags_list = NULL;
+	struct frags_list *cur_frag = NULL;
+	int i=0, j=0;
+	for (i=first_data_block + blocks_per_group; 
+			i < device_blocks; i+=blocks_per_group)
+	{
+		for (j=0; j < group_info_size; j++)
+			cur_frag = addblock_to_frags_list(&frags_list, cur_frag, i+j);
+	}
+
+	anysurrect_frags_list(frags_list, device_blocks/blocks_per_group * j * get_blocksize(), 
+			"filesystem_files/ext2fs/group_info");
+
+	fd_seek( get_blocksize(), SEEK_SET );
+
+	done = 1;
+
+	return NULL;
+}
+ 

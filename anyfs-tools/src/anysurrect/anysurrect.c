@@ -48,6 +48,7 @@ const char* ext2fs_info_list_types =
 "filesystem_info_ext2fs_indirect_blocks_links "
 "filesystem_info_ext2fs_double_indirect_blocks_links "
 "filesystem_info_ext2fs_inode_table "
+"filesystem_info_ext2fs_group_info "
 ;
 
 char* list_types = NULL;
