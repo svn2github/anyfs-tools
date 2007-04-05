@@ -644,18 +644,19 @@ char *filesystem_info_ext2fs_group_info_surrect()
 	group_info_size += ( (blocks_per_group + 7)/8 + get_blocksize() - 1)/get_blocksize();
 	group_info_size += ( (inodes_per_group + 7)/8 + get_blocksize() - 1)/get_blocksize();
 
-	struct frags_list *frags_list = NULL;
-	struct frags_list *cur_frag = NULL;
-	int i=0, j=0;
+	int i, j;
 	for (i=first_data_block + blocks_per_group; 
 			i < device_blocks; i+=blocks_per_group)
 	{
+		struct frags_list *frags_list = NULL;
+		struct frags_list *cur_frag = NULL;
+
 		for (j=0; j < group_info_size; j++)
 			cur_frag = addblock_to_frags_list(&frags_list, cur_frag, i+j);
-	}
 
-	anysurrect_frags_list(frags_list, device_blocks/blocks_per_group * j * get_blocksize(), 
-			"filesystem_files/ext2fs/group_info");
+		anysurrect_frags_list(frags_list, j * get_blocksize(), 
+				"filesystem_files/ext2fs/group_info");
+	}
 
 	fd_seek( get_blocksize(), SEEK_SET );
 
