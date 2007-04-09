@@ -13,6 +13,10 @@ Mounts /dev/hda1 to /mnt/hda1 using inode.table:
 .br
 $ anyfuse inode.table /dev/hda1 /mnt/hda1
 
+By default it will mounted with full access like if you mount it as root.
+Please use default_permissions FUSE option to get right rights:
+$ anyfuse inode.table /dev/hda1 /mnt/hda1 -o default_permissions
+
 After changes on filesystem don't forgot umount it:
 .br
 $ fusermount -u /mnt/hda1

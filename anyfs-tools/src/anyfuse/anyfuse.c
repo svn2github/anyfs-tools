@@ -15,6 +15,7 @@
 /* For pread()/pwrite() */
 #define _XOPEN_SOURCE 500
 #endif
+#define _GNU_SOURCE
 
 #define _LARGEFILE64_SOURCE
 
@@ -74,12 +75,6 @@ static int anyfusegetattr(const char *path, struct stat *stbuf)
 
 static int anyfuseaccess(const char *path, int mask)
 {
-    int res;
-
-    res = access(path, mask);
-    if (res == -1)
-        return -errno;
-
     return 0;
 }
 

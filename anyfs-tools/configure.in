@@ -13,7 +13,7 @@ AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 
 # Checks for packages.
-PKG_CONFIG_PATH="$PKG_CONFIG_PATH:/lib/pkgconfig"
+PKG_CONFIG_PATH="$PKG_CONFIG_PATH:/lib/pkgconfig:/usr/local/lib/pkgconfig"
 export PKG_CONFIG_PATH
 EXT2FS_REQUIRED=1.38
 PKG_CHECK_MODULES(EXT2FS, ext2fs >= $EXT2FS_REQUIRED )
@@ -153,7 +153,7 @@ if test -z "$MPEG2_LIBS" || test -z "$BZ2LIB" || test -z "$BUILD_XFS" || test -z
 	test -z "$ANYFS_MODULE" &&
 		echo "* Building anyfs kernel module (depends on kernel sources)"
 	test -z "$ANYFUSE_MODULE" &&
-		echo "* Building anyfuse FUSE module (depends on fuse library >= 2.5.0, and fuse kernel module)"
+		echo "* Building anyfuse FUSE module (depends on fuse library >= 2.5.0)"
 	test -z "$MPEG2_LIBS" &&
 		echo "* Mpeg2 recovering with anysurrect (depends on libmpeg2)"
 	test -z "$BZ2LIB" &&

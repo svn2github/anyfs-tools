@@ -31,7 +31,7 @@ anyfs-tools/src/anysurrect/config.h
 
 You also need one in two (or both):
 1) Kernel sources (kernel-source package) for anyfs kernel module building.
-2) FUSE >= 2.5.0 and fuse kernel module for anyfuse module building.
+2) FUSE >= 2.5.0 for anyfuse module building.
 
 anyfs kernel module building was tested on kernels 2.6.9-2.6.19.
 The module installs to file

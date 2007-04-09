@@ -330,14 +330,24 @@ int read_it(struct any_sb_info ** it, char itfilename[])
 		return -ENOMEM;
 	memset(info, 0, sizeof(*info));
 
-	info->si_itfilename = (typeof(info->si_itfilename))
-		malloc(strlen(itfilename)+1);
-	if (!info->si_itfilename) {
-		ret = -ENOMEM;
-		goto info_fail;
-	}
+	if (itfilename[0]=='/')
+	{
+		info->si_itfilename = (typeof(info->si_itfilename))
+			malloc(strlen(itfilename)+1);
+		if (!info->si_itfilename) {
+			ret = -ENOMEM;
+			goto info_fail;
+		}
 		
-	strcpy (info->si_itfilename, itfilename);
+		strcpy (info->si_itfilename, itfilename);
+	}
+	else
+	{
+		char *wd = get_current_dir_name();
+		asprintf (&info->si_itfilename, "%s/%s", wd, itfilename);
+		free(wd);
+	}
+
 
 	/*open inode table file for read only*/
 	file = open(itfilename, O_RDONLY, 0);
