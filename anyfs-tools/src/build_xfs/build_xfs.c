@@ -1,7 +1,7 @@
 /*
  * build_xfs.c - Build a XFS filesystem using external anyfs inode table
+ * Copyright (C) 2006-2007 Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
  * Copyright (C) 2007 Kirill A. Korinskiy <catap@catap.ru>
- * Copyright (C) 2006 Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
  *
  * BASED ON mkfs.xfs from xfsprogs,
  * Copyright (c) 2000-2005 Silicon Graphics, Inc.
@@ -2319,13 +2319,13 @@ _("You try to use blocksize %d, although inode table given for %lu blocksize\n"
 			    (rtextbytes <= XFS_MAX_RTEXTSIZE)) {
 				rtextblocks = rswidth;
 			}
-		}
-		//fix to xfsprog >= 2.8.18
-		if (!rtextblocks) {
-		  rtextblocks = (blocksize < XFS_MIN_RTEXTSIZE) ? XFS_MIN_RTEXTSIZE >> blocklog : 1;
+			if (!rtextblocks) {
+				rtextblocks = (blocksize < XFS_MIN_RTEXTSIZE) ?
+					XFS_MIN_RTEXTSIZE >> blocklog : 1;
+			}
 		}
 		ASSERT(rtextblocks);
-	}
+
 
 	/*
 	 * Check some argument sizes against mins, maxes.
@@ -2850,7 +2850,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 
 		memset(block_bitmap, 0, bitmap_l*sizeof(unsigned long));
 
-		retval = fill_block_bitmap (info, block_bitmap, dblocks);
+		retval = fill_block_bitmap (info, block_bitmap, dblocks, 1);
 		if (retval) exit(-retval);
 
 		/*allocate memory for block bitmap for system information*/
