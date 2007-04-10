@@ -1,6 +1,9 @@
 /*
  *	filesystem_info_descr.c
  *      CopyRight (C) 2006, Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+ *
+ *      Some code from e2fsprogs
+ *      Copyright (C) 1994, 1995, 1996 Theodore Ts'o
  */
 
 #define _LARGEFILE64_SOURCE
@@ -593,65 +596,239 @@ char *filesystem_info_ext2fs_inode_table_surrect()
 	return "filesystem_info/ext2fs/inode_table_blocks";
 }
 
+#include <ext2fs/ext2fs.h>
+
+struct ext2fs_super_block
+{
+	uint32_t inodes_count;
+	uint32_t blocks_count;
+	uint32_t r_blocks_count;
+	uint32_t free_blocks_count;
+	uint32_t free_inodes_count;
+	uint32_t first_data_block;
+	uint32_t log_block_size;
+	uint32_t log_frag_size;
+	uint32_t blocks_per_group;
+	uint32_t frags_per_group;
+	uint32_t inodes_per_group;
+	uint32_t mtime;
+	uint32_t wtime;
+	uint16_t mnt_count;
+	uint16_t max_mnt_count;
+	uint16_t magic;
+	uint16_t state;
+	uint16_t errors;
+	uint16_t minor_rev_level;
+	uint32_t lastcheck;
+	uint32_t checkinterval;
+	uint32_t creator_os;
+	uint32_t rev_level;
+	uint16_t def_resuid;
+	uint16_t def_resgid;
+
+	uint32_t first_ino;
+	uint16_t inode_size;
+	uint16_t block_group_nr;
+	uint32_t feature_compat;
+	uint32_t feature_incompat;
+	uint32_t feature_ro_compat;
+
+	uint16_t reserved_gdt_blocks;
+
+	uint32_t first_meta_bg;
+};
+
+struct ext2fs_fs
+{
+	unsigned int 	blocksize;
+	dgrp_t 		group_desc_count;
+	unsigned long 	desc_blocks;
+	int 		inode_blocks_per_group;
+};
+
+static int test_root(int a, int b)
+{
+	if (a == 0)
+		return 1;
+	while (1) {
+		if (a == 1)
+			return 1;
+		if (a % b)
+			return 0;
+		a = a / b;
+	}
+}
+
+int as_ext2fs_bg_has_super(struct ext2fs_super_block *sb, int group_block)
+{
+	if (!(sb->feature_ro_compat &
+				EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER))
+		return 1;
+
+	if (test_root(group_block, 3) || (test_root(group_block, 5)) ||
+			test_root(group_block, 7))
+		return 1;
+
+	return 0;
+}
+
+int ext2fs_super_and_bgd_size(dgrp_t group, struct ext2fs_super_block *sb, 
+		struct ext2fs_fs *fs)
+{
+	blk_t	group_block, old_desc_blk = 0, new_desc_blk = 0;
+	unsigned int meta_bg, meta_bg_size;
+	int	numblocks = 0, has_super;
+	int	old_desc_blocks;
+
+	group_block = sb->first_data_block +
+		(group * sb->blocks_per_group);
+
+	if (sb->feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
+		old_desc_blocks = sb->first_meta_bg;
+	else
+		old_desc_blocks = 
+			fs->desc_blocks + sb->reserved_gdt_blocks;
+
+	has_super = as_ext2fs_bg_has_super(sb, group);
+
+	if (has_super) numblocks++;
+	meta_bg_size = (fs->blocksize / sizeof (struct ext2_group_desc));
+	meta_bg = group / meta_bg_size;
+
+	if (!(sb->feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) ||
+	    (meta_bg < sb->first_meta_bg)) {
+		if (has_super) {
+			old_desc_blk = group_block + 1;
+			numblocks += old_desc_blocks;
+		}
+	} else {
+		if (((group % meta_bg_size) == 0) ||
+		    ((group % meta_bg_size) == 1) ||
+		    ((group % meta_bg_size) == (meta_bg_size-1))) {
+			if (has_super)
+				has_super = 1;
+			new_desc_blk = group_block + has_super;
+			numblocks++;
+		}
+	}
+		
+	numblocks += 2 + fs->inode_blocks_per_group;
+
+	return (numblocks);
+}
+
+
 char *filesystem_info_ext2fs_group_info_surrect()
 {
 	static int done = 0;
 	if (done) return NULL;
 
-	uint32_t inodes_count = READ_LELONG("inodes_count");
-	uint32_t blocks_count = READ_LELONG("blocks_count");
-	uint32_t r_blocks_count = READ_LELONG("r_blocks_count");
-	uint32_t free_blocks_count = READ_LELONG("free_blocks_count");
-	uint32_t free_inodes_count = READ_LELONG("free_inodes_count");
-	uint32_t first_data_block = READ_LELONG("first_data_block");
-	uint32_t log_block_size = READ_LELONG("log_block_size");
-	uint32_t log_frag_size = READ_LELONG("log_frag_size");
-	uint32_t blocks_per_group = READ_LELONG("blocks_per_group");
-	uint32_t frags_per_group = READ_LELONG("frags_per_group");
-	uint32_t inodes_per_group = READ_LELONG("inodes_per_group");
-	uint32_t mtime = READ_LELONG("mtime");
-	uint32_t wtime = READ_LELONG("wtime");
-	uint16_t mnt_count = READ_LESHORT("mnt_count");
-	uint16_t max_mnt_count = READ_LESHORT("max_mnt_count");
-	uint16_t magic = READ_LESHORT("magic");
-	uint16_t state = READ_LESHORT("state");
-	uint16_t errors = READ_LESHORT("errors");
-	uint16_t minor_rev_level = READ_LESHORT("minor_rev_level");
-	uint32_t lastcheck = READ_LELONG("lastcheck");
-	uint32_t checkinterval = READ_LELONG("checkinterval");
-	uint32_t creator_os = READ_LELONG("creator_os");
-	uint32_t rev_level = READ_LELONG("rev_level");
-	uint16_t def_resuid = READ_LESHORT("def_resuid");
-	uint16_t def_resgid = READ_LESHORT("def_resgid");
+	struct ext2fs_super_block 	sb;
+	struct ext2fs_fs		fs;
+
+	sb.inodes_count = READ_LELONG("inodes_count");
+	sb.blocks_count = READ_LELONG("blocks_count");
+	sb.r_blocks_count = READ_LELONG("r_blocks_count");
+	sb.free_blocks_count = READ_LELONG("free_blocks_count");
+	sb.free_inodes_count = READ_LELONG("free_inodes_count");
+	sb.first_data_block = READ_LELONG("first_data_block");
+	sb.log_block_size = READ_LELONG("log_block_size");
+	sb.log_frag_size = READ_LELONG("log_frag_size");
+	sb.blocks_per_group = READ_LELONG("blocks_per_group");
+	sb.frags_per_group = READ_LELONG("frags_per_group");
+	sb.inodes_per_group = READ_LELONG("inodes_per_group");
+	sb.mtime = READ_LELONG("mtime");
+	sb.wtime = READ_LELONG("wtime");
+	sb.mnt_count = READ_LESHORT("mnt_count");
+	sb.max_mnt_count = READ_LESHORT("max_mnt_count");
+	sb.magic = READ_LESHORT("magic");
+	sb.state = READ_LESHORT("state");
+	sb.errors = READ_LESHORT("errors");
+	sb.minor_rev_level = READ_LESHORT("minor_rev_level");
+	sb.lastcheck = READ_LELONG("lastcheck");
+	sb.checkinterval = READ_LELONG("checkinterval");
+	sb.creator_os = READ_LELONG("creator_os");
+	sb.rev_level = READ_LELONG("rev_level");
+	sb.def_resuid = READ_LESHORT("def_resuid");
+	sb.def_resgid = READ_LESHORT("def_resgid");
+
+	sb.first_ino = READ_LELONG("first_ino");
+	sb.inode_size = READ_LESHORT("inode_size");
+	sb.block_group_nr = READ_LESHORT("block_group_nr");
+	sb.feature_compat = READ_LELONG("feature_compat");
+	sb.feature_incompat = READ_LELONG("feature_incompat");
+	sb.feature_ro_compat = READ_LELONG("feature_ro_compat");
+
+	SKIP_STRING("uuid", 16);
+	SKIP_STRING("volume_name", 16);
+	SKIP_STRING("last_mounted", 64);
+	SKIP_STRING("algorithm_usage_bitmap", 4);
+
+	SKIP_STRING("prealloc_blocks", 1);
+	SKIP_STRING("prealloc_dir_blocks", 1);
+	sb.reserved_gdt_blocks = READ_LESHORT("reserved_gdt_blocks");
+
+	SKIP_STRING("journal_uuid", 16);
+	SKIP_STRING("journal_inum", 4);
+	SKIP_STRING("journal_dev", 4);
+	SKIP_STRING("last_orphan", 4);
+	SKIP_STRING("hash_seed", 4*4);
+	SKIP_STRING("def_hash_version", 1);
+	SKIP_STRING("reserved_char_pad", 1);
+	SKIP_STRING("reserved_word_pad", 2);
+	SKIP_STRING("default_mount_opts", 4);
+	sb.first_meta_bg = READ_LELONG("first_meta_bg");
+
+
 
 #define EXT2_SUPER_MAGIC      0xEF53
-	if ( magic != EXT2_SUPER_MAGIC ) return NULL;
+	if ( sb.magic != EXT2_SUPER_MAGIC ) return NULL;
 
-	if ( !inodes_count || !blocks_count ) return NULL;
-	if ( inodes_count < free_inodes_count || 
-	  	blocks_count < free_blocks_count ) return NULL;
+	if ( !sb.inodes_count || !sb.blocks_count ) return NULL;
+	if ( sb.inodes_count < sb.free_inodes_count || 
+	  	sb.blocks_count < sb.free_blocks_count ) return NULL;
 
-	if ( first_data_block > 10 ) return NULL;
+	if ( sb.first_data_block > 10 ) return NULL;
 
-	if ( log_block_size > 12 ) return NULL;
-	if ( blocks_per_group < 10 ) return NULL;
+	if ( sb.log_block_size > 12 ) return NULL;
+	if ( sb.blocks_per_group < 10 ) return NULL;
 
-	if ( (get_block() - first_data_block)%blocks_per_group ) return NULL;
+	if ( (get_block() - sb.first_data_block)%sb.blocks_per_group ) return NULL;
 
-	int group_info_size = 2;
-	int inodes_per_block = get_blocksize()/128;
-	group_info_size += (inodes_per_group + inodes_per_block - 1)/inodes_per_block;
-	group_info_size += ( (blocks_per_group + 7)/8 + get_blocksize() - 1)/get_blocksize();
-	group_info_size += ( (inodes_per_group + 7)/8 + get_blocksize() - 1)/get_blocksize();
+	fs.blocksize = get_blocksize();
+	
+	if (sb.feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)
+		fs.group_desc_count = 0;
+	else
+	{
+		fs.group_desc_count = (sb.blocks_count -
+				sb.first_data_block +
+				sb.blocks_per_group - 1)
+			/ sb.blocks_per_group;
+	}
 
-	int i, j;
-	for (i=first_data_block + blocks_per_group; 
-			i < device_blocks; i+=blocks_per_group)
+	int desc_per_block = get_blocksize() / sizeof (struct ext2_group_desc);
+
+	fs.desc_blocks = (fs.group_desc_count +
+			desc_per_block - 1)
+		/ desc_per_block;
+
+	fs.inode_blocks_per_group = (((sb.inodes_per_group *
+					sb.inode_size) +
+				get_blocksize() - 1) /
+			get_blocksize());
+
+	int gr, i, j;
+	for (gr=1, i=sb.first_data_block + sb.blocks_per_group; 
+			i < device_blocks; gr++, i+=sb.blocks_per_group)
 	{
 		struct frags_list *frags_list = NULL;
 		struct frags_list *cur_frag = NULL;
 
-		for (j=0; j < group_info_size; j++)
+		int super_and_bgd_size = ext2fs_super_and_bgd_size(
+				gr, &sb, &fs);
+
+		for (j=0; j < super_and_bgd_size; j++)
 			cur_frag = addblock_to_frags_list(&frags_list, cur_frag, i+j);
 
 		anysurrect_frags_list(frags_list, j * get_blocksize(), 
