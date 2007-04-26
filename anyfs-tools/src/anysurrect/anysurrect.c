@@ -66,6 +66,7 @@ int list_all_types = 0;
 int verbose = 0;
 int quiet = 0;
 int fromfirst = 0;
+int mod_usages = 0;
 
 const char *pathprefix = "";
 const char *device_name;
@@ -83,14 +84,26 @@ const int default_text = 0;
 const char *default_indicator = "UNKNOWN";
 
 typedef char *surrect_function_t();
+typedef int parseopts_function_t(int optind, const int argc, const char* argv[]);
+typedef void usage_function_t();
 
 surrect_function_t** surrects;
 const mode_t **modes;
 const int **texts;
 const char ***indicators;
 char **typelines;
+
+const char ***modoptions;
+parseopts_function_t** parseopts;
+usage_function_t** modusages;
+
+const char ***modoptions2;
+parseopts_function_t** parseopts2;
+usage_function_t** modusages2;
+
 static int ind_type=-1;
 int num_types = 0; 
+
 
 int num_types2 = 0; 
 surrect_function_t** surrects2;
@@ -863,17 +876,18 @@ void anysurrect_fromblock(struct any_sb_info *info)
 			"\b\b\b\b\b\b\b\b", 32, 1, stdout);
 }
 
-static void PRS(int argc, const char *argv[])
+static int PRS(int argc, const char *argv[])
 {
 	int             c;
 	int show_version_only = 0;
 	char *          tmp;
+	int end_opts = 0;
 
 	list_types = (char*) default_list_types;
 	list_types2 = (char*) default_list_types;
 
-	while ((c = getopt (argc, (char**)argv,
-		     "b:i:p:u:U:qvVfg:et:T:l")) != EOF) {
+	while (!end_opts && (c = getopt (argc, (char**)argv,
+		     "b:i:p:u:U:qvVfg:et:T:lhH-")) != EOF) {
 		switch (c) {
 		case 'b':
 			input_blocksize = strtol(optarg, &tmp, 10);
@@ -953,11 +967,27 @@ _("Illegal mode for directory umask. It must be 3 octal digits.\n"));
 			list_all_types = 1;
 			break;
 
+		case 'H':
+			mod_usages = 1;
+			break;
+
+		case '-':
+			end_opts = 1;
+			break;
+
+		case 'h':
 		default:
 			usage();
 		}
 	}
 
+	list_types = strdup(list_types);
+	list_types2 = strdup(list_types2);
+	libs = strdup(libs);
+
+	if ( mod_usages )
+		return optind;
+		
 	if ( ( optind >= (argc-1) ) && !show_version_only && !list_all_types)
 		usage();
 
@@ -975,9 +1005,7 @@ _("Illegal mode for directory umask. It must be 3 octal digits.\n"));
 		inode_table = argv[optind++];
 	}
 
-	list_types = strdup(list_types);
-	list_types2 = strdup(list_types2);
-	libs = strdup(libs);
+	return optind;
 }
 
 void sigusr1_handler (int signal_number)
@@ -1032,6 +1060,7 @@ int main (int argc, const char *argv[])
 	struct any_sb_info *info;
 	unsigned long bitmap_l;
 	unsigned long *block_bitmap;
+	int optind;
 
 	char *begin;
 	char *end;
@@ -1073,7 +1102,7 @@ int main (int argc, const char *argv[])
 	sigaddset(&sa2.sa_mask, SIGUSR1);
 	sigaction (SIGUSR1, &sa2, NULL);
 
-	PRS(argc, argv);
+	optind = PRS(argc, argv);
 	
 	num_libs = 1;
 	begin = libs;
@@ -1164,6 +1193,16 @@ int main (int argc, const char *argv[])
 		begin = end;
 		while ( begin[0] == ' ' ) begin++;
 	}
+
+	begin = list_types2;
+	while ( begin[0] == ' ' ) begin++;
+	while ( (end = strchr(begin, ' ')) || ( begin[0] && 
+				(end = begin+strlen(begin)) ) )
+	{
+		num_types2++;
+		begin = end;
+		while ( begin[0] == ' ' ) begin++;
+	}
 	
 	surrects = (surrect_function_t**) 
 		MALLOC( sizeof(surrect_function_t*) * num_types );
@@ -1173,6 +1212,25 @@ int main (int argc, const char *argv[])
 		MALLOC( sizeof(int*) * num_types );
 	indicators = (const char***)
 		MALLOC( sizeof(char**) * num_types );
+
+	modoptions = (const char***)
+		MALLOC( sizeof(char**) * num_types );
+	parseopts = (parseopts_function_t**)
+		MALLOC( sizeof(parseopts_function_t*) * num_types );
+	modusages = (usage_function_t**)
+		MALLOC( sizeof(usage_function_t*) * num_types );
+
+	surrects2 = (surrect_function_t**) 
+		MALLOC( sizeof(surrect_function_t*) * num_types2 );
+	modes2 = (const mode_t**)
+		MALLOC( sizeof(mode_t*) * num_types2 );
+
+	modoptions2 = (const char***)
+		MALLOC( sizeof(char**) * num_types2 );
+	parseopts2 = (parseopts_function_t**)
+		MALLOC( sizeof(parseopts_function_t*) * num_types2 );
+	modusages2 = (usage_function_t**)
+		MALLOC( sizeof(usage_function_t*) * num_types2 );
 
 	int type = 0;
 	begin = list_types;
@@ -1229,28 +1287,28 @@ int main (int argc, const char *argv[])
 		if (!indicators[type])
 			indicators[type] = &default_indicator;
 
+		n=snprintf(buf, 1024, "%s_opts", begin);
+		if (n<0) exit(1);
+
+		modoptions[type] = dlsym(handle, buf);
+
+		n=snprintf(buf, 1024, "%s_parseopts", begin);
+		if (n<0) exit(1);
+
+		parseopts[type] = dlsym(handle, buf);
+
+		n=snprintf(buf, 1024, "%s_usage", begin);
+		if (n<0) exit(1);
+
+		modusages[type] = dlsym(handle, buf);
+
 		end[0] = old;
 		type++;
 
 		begin = end;
 		while ( begin[0] == ' ' ) begin++;
 	}
-
-	begin = list_types2;
-	while ( begin[0] == ' ' ) begin++;
-	while ( (end = strchr(begin, ' ')) || ( begin[0] && 
-				(end = begin+strlen(begin)) ) )
-	{
-		num_types2++;
-		begin = end;
-		while ( begin[0] == ' ' ) begin++;
-	}
 	
-	surrects2 = (surrect_function_t**) 
-		MALLOC( sizeof(surrect_function_t*) * num_types2 );
-	modes2 = (const mode_t**)
-		MALLOC( sizeof(mode_t*) * num_types2 );
-
 	type = 0;
 	begin = list_types2;
 	while ( begin[0] == ' ' ) begin++;
@@ -1292,11 +1350,95 @@ int main (int argc, const char *argv[])
 		if (!modes2[type])
 			modes2[type] = &default_mode;
 
+		int no_in_first_list = 1;
+		int type1;
+
+		for (type1=0; type1 < num_types; type1++)
+		{
+			if (surrects[type1] == surrects2[type])
+			{
+				no_in_first_list = 0;
+				break;
+			}
+		}
+
+		if (no_in_first_list)
+		{
+			n=snprintf(buf, 1024, "%s_opts", begin);
+			if (n<0) exit(1);
+
+			modoptions2[type] = dlsym(handle, buf);
+
+			n=snprintf(buf, 1024, "%s_parseopts", begin);
+			if (n<0) exit(1);
+
+			parseopts2[type] = dlsym(handle, buf);
+
+			n=snprintf(buf, 1024, "%s_usage", begin);
+			if (n<0) exit(1);
+
+			modusages2[type] = dlsym(handle, buf);
+		}
+		else
+		{
+			modoptions2[type] = NULL;
+			parseopts2[type] = NULL;
+			modusages2[type] = NULL;
+		}
+
 		end[0] = old;
 		type++;
 
 		begin = end;
 		while ( begin[0] == ' ' ) begin++;
+	}
+
+	if (mod_usages)
+	{
+		for (type=0; type < num_types; type++)
+			if (modusages[type])
+				modusages[type](); 
+
+		for (type=0; type < num_types2; type++)
+			if (modusages2[type])
+				modusages2[type](); 
+
+		exit(0);
+	}
+
+	while (optind < argc)
+	{
+		int y=0;
+		for (type=0; type < num_types; type++)
+		{
+			if ( modoptions[type] &&
+					strcmp(*modoptions[type], argv[optind])==0 )
+			{
+				optind++;
+				optind = parseopts[type](optind, argc, argv);
+				y++;
+				break;
+			}
+		}
+
+		if (!y)
+		for (type=0; type < num_types2; type++)
+		{
+			if ( modoptions2[type] &&
+					strcmp(*modoptions2[type], argv[optind])==0 )
+			{
+				optind++;
+				optind = parseopts2[type](optind, argc, argv);
+				break;
+			}
+		}
+
+		if (!y)
+		{
+			fprintf(stderr, "Unknown module option %s\n", argv[optind]);
+			fprintf(stderr, "Use -H for list known module options\n");
+			exit(1);
+		}
 	}
 
 	typelines = (char**)

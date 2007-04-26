@@ -717,6 +717,18 @@ int ext2fs_super_and_bgd_size(dgrp_t group, struct ext2fs_super_block *sb,
 	return (numblocks);
 }
 
+int filesystem_info_ext2fs_group_info_parseopts
+	(int optind, const int argc, const char* argv[])
+{
+	printf("parseopts:\n");
+	return optind;
+};
+
+void filesystem_info_ext2fs_group_info_usage()
+{
+	printf("filesystem_info_ext2fs_group_info surrecter usage:\n");
+	printf("\n");
+};
 
 char *filesystem_info_ext2fs_group_info_surrect()
 {
