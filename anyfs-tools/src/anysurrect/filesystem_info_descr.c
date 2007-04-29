@@ -517,7 +517,7 @@ char *filesystem_info_ext2fs_inode_table_surrect()
 		uint64_t size64 = size;
 		if ( (mode>>12) == DT_REG )
 			size64 = (uint64_t) size | (uint64_t) size_high<<32;
-		if ( links && !(mode<<12) ) return NULL;
+		if ( links && !(mode>>12) ) return NULL;
 
 		if (links) l1 = 1;
 		if ( (mode>>12) == DT_REG ) l2 = 1;
