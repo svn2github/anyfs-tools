@@ -84,7 +84,7 @@ const int default_text = 0;
 const char *default_indicator = "UNKNOWN";
 
 typedef char *surrect_function_t();
-typedef int parseopts_function_t(int optind, const int argc, const char* argv[]);
+typedef void parseopts_function_t(const int argc, const char* argv[]);
 typedef void usage_function_t();
 
 surrect_function_t** surrects;
@@ -876,7 +876,7 @@ void anysurrect_fromblock(struct any_sb_info *info)
 			"\b\b\b\b\b\b\b\b", 32, 1, stdout);
 }
 
-static int PRS(int argc, const char *argv[])
+static void PRS(int argc, const char *argv[])
 {
 	int             c;
 	int show_version_only = 0;
@@ -985,9 +985,6 @@ _("Illegal mode for directory umask. It must be 3 octal digits.\n"));
 	list_types2 = strdup(list_types2);
 	libs = strdup(libs);
 
-	if ( mod_usages )
-		return optind;
-		
 	if ( ( optind >= (argc-1) ) && !show_version_only && !list_all_types)
 		usage();
 
@@ -999,13 +996,11 @@ _("Illegal mode for directory umask. It must be 3 octal digits.\n"));
 		exit(0);
 	}
 	
-	if (!list_all_types)
+	if (!list_all_types && !mod_usages)
 	{
 		device_name = argv[optind++];
 		inode_table = argv[optind++];
 	}
-
-	return optind;
 }
 
 void sigusr1_handler (int signal_number)
@@ -1060,7 +1055,6 @@ int main (int argc, const char *argv[])
 	struct any_sb_info *info;
 	unsigned long bitmap_l;
 	unsigned long *block_bitmap;
-	int optind;
 
 	char *begin;
 	char *end;
@@ -1102,7 +1096,7 @@ int main (int argc, const char *argv[])
 	sigaddset(&sa2.sa_mask, SIGUSR1);
 	sigaction (SIGUSR1, &sa2, NULL);
 
-	optind = PRS(argc, argv);
+	PRS(argc, argv);
 	
 	num_libs = 1;
 	begin = libs;
@@ -1415,7 +1409,7 @@ int main (int argc, const char *argv[])
 					strcmp(*modoptions[type], argv[optind])==0 )
 			{
 				optind++;
-				optind = parseopts[type](optind, argc, argv);
+				parseopts[type](argc, argv);
 				y++;
 				break;
 			}
@@ -1428,7 +1422,8 @@ int main (int argc, const char *argv[])
 					strcmp(*modoptions2[type], argv[optind])==0 )
 			{
 				optind++;
-				optind = parseopts2[type](optind, argc, argv);
+				parseopts2[type](argc, argv);
+				y++;
 				break;
 			}
 		}

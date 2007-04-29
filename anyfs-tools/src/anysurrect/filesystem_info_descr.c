@@ -717,16 +717,80 @@ int ext2fs_super_and_bgd_size(dgrp_t group, struct ext2fs_super_block *sb,
 	return (numblocks);
 }
 
-int filesystem_info_ext2fs_group_info_parseopts
-	(int optind, const int argc, const char* argv[])
+static int s_blocks_per_group = -1;
+static int inode_ratio = 0;
+static int num_inodes = 0;
+
+void filesystem_info_ext2fs_group_info_parseopts
+	(int argc, const char* argv[])
 {
-	printf("parseopts:\n");
-	return optind;
+	const char * program_name = "filesystem_info_ext2fs_group_info_surrect";
+
+	int c;
+	char *tmp;
+
+	optind--;
+	int s_optind = optind;
+	argv+=optind;
+	argc-=optind;
+	optind = 0;
+
+	int endopts = 0;
+	while ( !endopts && (c = getopt (argc, argv,
+		    "g:i:N:h-")) != EOF ) {
+		switch (c) {
+		case 'g':
+			s_blocks_per_group = strtoul(optarg, &tmp, 0);
+			if (*tmp) {
+				com_err(program_name, 0,
+					_("Illegal number for blocks per group"));
+				exit(1);
+			}
+			if ((s_blocks_per_group % 8) != 0) {
+				com_err(program_name, 0,
+				_("blocks per group must be multiple of 8"));
+				exit(1);
+			}
+			break;
+		case 'i':
+			inode_ratio = strtoul(optarg, &tmp, 0);
+			if (inode_ratio < EXT2_MIN_BLOCK_SIZE ||
+			    inode_ratio > EXT2_MAX_BLOCK_SIZE * 1024 ||
+			    *tmp) {
+				com_err(program_name, 0,
+					_("invalid inode ratio %s (min %d/max %d)"),
+					optarg, EXT2_MIN_BLOCK_SIZE,
+					EXT2_MAX_BLOCK_SIZE);
+				exit(1);
+			}
+			break;
+		case 'N':
+			num_inodes = atoi(optarg);
+			break;
+
+		case '-':
+			endopts = 1;
+			break;
+
+		case 'h':
+		default:
+			filesystem_info_ext2fs_group_info_usage();
+			exit(1);
+		}
+	}
+
+	argv -= s_optind;
+	argc += s_optind;
+	optind += s_optind;
+	optind++;
 };
 
 void filesystem_info_ext2fs_group_info_usage()
 {
 	printf("filesystem_info_ext2fs_group_info surrecter usage:\n");
+	printf(
+"ext2fs [-g blocks-per-group] [ -i bytes-per-inode ] [-N  number-of-inodes]\n"
+"	[-h] [--]\n");
 	printf("\n");
 };
 
@@ -791,7 +855,15 @@ char *filesystem_info_ext2fs_group_info_surrect()
 	SKIP_STRING("default_mount_opts", 4);
 	sb.first_meta_bg = READ_LELONG("first_meta_bg");
 
+	/*
+	 * Calculate number of inodes based on the inode ratio
+	 */
+	sb.inodes_count = num_inodes ? num_inodes : 
+		inode_ratio ? ((__u64) sb.blocks_count * blocksize) / 
+		inode_ratio : sb.inodes_count;
 
+	if (s_blocks_per_group)
+		sb.blocks_per_group = s_blocks_per_group;
 
 #define EXT2_SUPER_MAGIC      0xEF53
 	if ( sb.magic != EXT2_SUPER_MAGIC ) return NULL;
@@ -824,6 +896,9 @@ char *filesystem_info_ext2fs_group_info_surrect()
 	fs.desc_blocks = (fs.group_desc_count +
 			desc_per_block - 1)
 		/ desc_per_block;
+
+	sb.inodes_per_group = (sb.inodes_count + fs.group_desc_count - 1) /
+		fs.group_desc_count;
 
 	fs.inode_blocks_per_group = (((sb.inodes_per_group *
 					sb.inode_size) +

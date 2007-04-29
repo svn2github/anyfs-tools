@@ -16,7 +16,7 @@ const char* filesystem_info_ext2fs_double_indirect_blocks_links_indicator="EXT2F
 const char* filesystem_info_ext2fs_group_info_indicator="EXT2FS_GROUPINFO";
 
 const char* filesystem_info_ext2fs_group_info_opts="ext2fs";
-int filesystem_info_ext2fs_group_info_parseopts
-	(int optind, const int argc, const char* argv[]);
+void filesystem_info_ext2fs_group_info_parseopts
+	(const int argc, const char* argv[]);
 void filesystem_info_ext2fs_group_info_usage();
 
