@@ -717,7 +717,7 @@ int ext2fs_super_and_bgd_size(dgrp_t group, struct ext2fs_super_block *sb,
 	return (numblocks);
 }
 
-static int s_blocks_per_group = -1;
+static int s_blocks_per_group = 0;
 static int inode_ratio = 0;
 static int num_inodes = 0;
 
