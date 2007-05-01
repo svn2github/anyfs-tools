@@ -497,7 +497,16 @@ char *filesystem_info_ext2fs_inode_table_surrect()
 		uint32_t double_indirect_links_block;
 		int i;
 		for (i=0; i<12; i++)
+		{
 			blocks[i] = COND_LELONG("direct_link", val <= device_blocks);
+
+			int j;
+			if (blocks[i])
+				for (j=0; j<i; j++)
+					if (blocks[i] == blocks[j])
+						return NULL;
+		}
+
 		direct_links_block = COND_LELONG("indirect_link", val <= device_blocks);
 		indirect_links_block = COND_LELONG("double_indirect_link", val <= device_blocks);
 		double_indirect_links_block = COND_LELONG("3x-indirect_link", val <= device_blocks);
@@ -517,7 +526,7 @@ char *filesystem_info_ext2fs_inode_table_surrect()
 		uint64_t size64 = size;
 		if ( (mode>>12) == DT_REG )
 			size64 = (uint64_t) size | (uint64_t) size_high<<32;
-		if ( links && !(mode>>12) ) return NULL;
+		if ( links && !(mode) ) return NULL;
 
 		if (links) l1 = 1;
 		if ( (mode>>12) == DT_REG ) l2 = 1;
