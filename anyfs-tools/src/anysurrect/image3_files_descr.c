@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <endian.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -213,6 +212,7 @@
 	} \
 })									\
 
+extern _declspec(dllexport)
 char *image_TIFF_surrect()
 {
 	int big_endian;

@@ -40,21 +40,21 @@
 #define SKIP_LELONG(name) SKIP_LONG(name)
 
 #define MALLOC(len) ({ 					\
-	char* m=malloc(len);				\
+	char* m=(char*)malloc(len);				\
 	if (!m) {					\
 		fprintf (stderr, "Not enough memory\n");\
 		exit(1);				\
 	} m; })
 
 #define ANYSURRECT_MALLOC(len, num) ({ 			\
-	char* m=anysurrect_malloc(len, num);			\
+	char* m=(char*)anysurrect_malloc(len, num);			\
 	if (!m) {					\
 		fprintf (stderr, "Not enough memory\n");\
 		exit(1);				\
 	} m; })
 
 #define COND_STRING(name, len, CONDITION) ({ 		\
-	char *val=ANYSURRECT_MALLOC(len+1, COND_STRING_MALLOC_BUFFER);\
+	char *val=(char*)ANYSURRECT_MALLOC(len+1, COND_STRING_MALLOC_BUFFER);\
 	int res = fd_read(val, len);			\
 	if (!res) {					\
 		anysurrect_free(val, COND_STRING_MALLOC_BUFFER);	\

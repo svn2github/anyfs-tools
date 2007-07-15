@@ -5,6 +5,10 @@
 #ifndef _ANY_RELEASE_FSSYS_H
 #define _ANY_RELEASE_FSSYS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 typedef int any_rwblk_t(unsigned long from, unsigned long n, char *buffer);
 extern any_rwblk_t *any_readblk;
 extern any_rwblk_t *any_writeblk;
@@ -30,4 +34,7 @@ int any_release_sysinfo(struct any_sb_info *info,
 /*add dot (".") and dotdot ("..") entries to directories*/
 int any_adddadd(struct any_sb_info *info);
 
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 #endif /*_ANY_RELEASE_FSSYS_H*/

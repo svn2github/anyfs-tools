@@ -5,4 +5,5 @@
 
 char *audio_video_MPEG12PM_surrect();
 
+_declspec(dllexport) 
 const char* audio_video_MPEG12PM_indicator="MPEG12PM";

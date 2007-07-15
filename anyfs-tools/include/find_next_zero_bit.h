@@ -13,6 +13,13 @@
 #ifndef _ANY_FIND_NEXT_ZERO_BIT_H
 #define _ANY_FIND_NEXT_ZERO_BIT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 int find_next_zero_bit(const unsigned long *addr, int size, int offset);
 
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 #endif /*_ANY_FIND_NEXT_ZERO_BIT_H*/

@@ -5,4 +5,5 @@
 
 char *cd_image_ISO_surrect();
 
+_declspec(dllexport) 
 const char* cd_image_ISO_indicator="ISO";

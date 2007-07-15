@@ -7,6 +7,30 @@
 #ifndef _FS_ANY_ANY_H
 #define _FS_ANY_ANY_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+#if defined(__linux__)
+#define _declspec(x)
+#elif defined(_WIN32)
+#define _declspec(x) __attribute__((x))
+#endif
+
+#if defined(_WIN32)
+#define	S_ISLNK(a)	0
+#define getuid()	0
+#define getgid()	0
+#define S_IRGRP 	0
+#define S_IROTH		0
+#endif
+
+#if defined(__linux__)
+#define	LL	"ll"
+#elif defined(_WIN32)
+#define	LL	"I64"
+#endif
+
 #include "config.h"
 #if (HAVE_LIBINTL_H == 1) && (HAVE_LOCALE_H == 1)
 #define ENABLE_NLS
@@ -116,6 +140,7 @@ struct any_dirent {
 struct any_dir {
 	uint32_t			d_ndirents;
 	struct any_dirent*	d_dirent;
+	void*			d_data;
 };
 
 struct any_inode {
@@ -144,4 +169,7 @@ struct any_sb_info {
 	struct any_inode *si_inode_table;
 };
 
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 #endif /* _FS_ANY_ANY_H */

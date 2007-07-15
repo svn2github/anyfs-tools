@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <endian.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -48,6 +47,7 @@
 FUNCOVER(ogg_page, OGG_PAGE);
 FUNCOVER(id3v1, ID3V1);
 
+extern _declspec(dllexport)
 char *audio_video_OGG_surrect()
 {
 	OGG_PAGE;
@@ -241,6 +241,7 @@ FUNCOVER(ckid_junk, CKID("JUNK"));
 FUNCOVER(idx1, CKID("idx1"));
 FUNCOVER(fxtc, CKID("FXTC"));
 
+extern _declspec(dllexport)
 char *audio_video_AVI_surrect()
 {
 	uint32_t riff_size = RIFF_header;

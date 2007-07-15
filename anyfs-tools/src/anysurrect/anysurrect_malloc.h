@@ -3,6 +3,10 @@
  *      CopyRight (C) 2006, Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #include <stdint.h>
 #include <stdlib.h>
 #include "any.h"
@@ -48,4 +52,8 @@ static inline void anysurrect_free(void *ptr, int num)
 
 void anysurrect_malloc_clean();
 void anysurrect_free_clean();
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 

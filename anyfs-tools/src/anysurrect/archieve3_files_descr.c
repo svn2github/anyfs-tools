@@ -28,6 +28,7 @@ extern int gzip ();
 
 #define BUFFER_SIZE	4096
 
+extern _declspec(dllexport)
 char *archieve_GZIP_surrect()
 {
 	LIST_STRING("magic", 2, {"\037\213", "\037\236", NULL});

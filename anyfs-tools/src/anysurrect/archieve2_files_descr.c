@@ -201,6 +201,7 @@ MaybeUInt64 bEnd   [BZ_MAX_HANDLED_BLOCKS];
 MaybeUInt64 rbStart[BZ_MAX_HANDLED_BLOCKS];
 MaybeUInt64 rbEnd  [BZ_MAX_HANDLED_BLOCKS];
 
+extern _declspec(dllexport)
 char * archieve_BZIP2_surrect()
 {
    BitStream*  bsIn;

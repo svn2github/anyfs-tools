@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <endian.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -48,6 +47,7 @@ FUNCOVER( jpeg_segment_in_data, JPEG_SEGMENT_IN_DATA );
 
 FUNCOVER( jpeg_data, JPEG_DATA);
 
+extern _declspec(dllexport)
 char *image_JPEG_surrect()
 {
 	EX_BYTE("magic", 0xFF);
@@ -82,6 +82,7 @@ FUNCOVER( png_chunk, PNG_CHUNK({"PLTE", "IDAT", "bKGD", "cHRM",
 			"tEXt", "tIME", "tRNS", "zTXt", 
 			NULL}) );
 
+extern _declspec(dllexport)
 char *image_PNG_surrect()
 {
 	EX_BELONG("signature_part_1", 0x89504e47);
@@ -94,6 +95,7 @@ char *image_PNG_surrect()
 
 /*BMP*/
 
+extern _declspec(dllexport)
 char *image_BMP_surrect()
 {
 	EX_STRING("magic", "BM");
@@ -101,6 +103,16 @@ char *image_BMP_surrect()
 	EX_LESHORT("magic_1", 0);
 	EX_LESHORT("magic_2", 0);
 	SKIP_LELONG("bitmap_offset");
-	SKIP_STRING("data", size-14);
+
+	EX_LELONG("biSize", 40);
+	uint32_t bi_width = READ_LELONG("biWidth");
+	uint32_t bi_height = READ_LELONG("biHeight");
+	EX_LESHORT("biPlanes", 1);
+	uint16_t bi_bit_count = READ_LESHORT("biBitCount");
+
+	if ( (size-1024) > bi_width*bi_height*(bi_bit_count/8) )
+		return NULL;
+
+	SKIP_STRING("data", size - fd_seek(SEEK_CUR,0) );
 	return "image/BMP";
 }

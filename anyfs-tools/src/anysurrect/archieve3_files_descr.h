@@ -5,4 +5,5 @@
 
 char *archieve_GZIP_surrect();
 
+_declspec(dllexport) 
 const char *archieve_GZIP_indicator="GZIP";

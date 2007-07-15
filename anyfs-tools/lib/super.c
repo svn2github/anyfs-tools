@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 #include "bitops.h"
 #include "any.h"
@@ -134,7 +135,7 @@ int write_it(struct any_sb_info *info, char itfilename[])
 		uint16_t i_mode;
 		i_mode = info->si_inode_table[mpos].i_mode;
 		len = snprintf (buffer, ANY_BUFFER_SIZE, 
-				"%04x %04x %04x %016llx %08x %08x %08x %04x %08lx\n",
+				"%04x %04x %04x %016" LL "x %08x %08x %08x %04x %08lx\n",
 				info->si_inode_table[mpos].i_mode,
 				info->si_inode_table[mpos].i_uid,
 				info->si_inode_table[mpos].i_gid,
@@ -314,6 +315,25 @@ out1:
 	return ret;
 }
 
+char *concat_strings(int n, ...)
+{
+	va_list ap;
+	int length=1;
+	int i;
+	va_start (ap, n);
+	for (i=0; i<n; i++) length+=strlen(va_arg(ap,char *));
+	va_end (ap);
+	char *concat = (char*) malloc(sizeof(char)*length);
+	if (!concat) return NULL;
+
+	concat[0]='\0';
+	va_start (ap, n);
+	for (i=0; i<n; i++) strcat(concat,va_arg(ap,char *));
+	va_end (ap);
+	return concat;
+}
+
+
 int read_it(struct any_sb_info ** it, char itfilename[])
 {       
 	struct any_sb_info *info;
@@ -343,14 +363,15 @@ int read_it(struct any_sb_info ** it, char itfilename[])
 	}
 	else
 	{
-		char *wd = get_current_dir_name();
-		asprintf (&info->si_itfilename, "%s/%s", wd, itfilename);
-		free(wd);
+		char wd[1024];
+		getcwd(wd, 1024);
+		info->si_itfilename =
+			concat_strings(2, wd, itfilename);
 	}
 
 
 	/*open inode table file for read only*/
-	file = open(itfilename, O_RDONLY, 0);
+	file = open(itfilename, O_RDONLY | O_BINARY, 0);
 	if (file==-1)
 		goto free_fail;
 

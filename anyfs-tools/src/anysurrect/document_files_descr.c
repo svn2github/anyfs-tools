@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <endian.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -470,6 +469,7 @@ FUNCOVER (crs, CROSS_REFERENCE_SUBSECTION);
 FUNCOVER(crt_th, ({ CROSS_REFERENCE_TABLE; TRAILER_HEAD; }) );
 FUNCOVER(update, UPDATE);
 
+extern _declspec(dllexport)
 char *document_PDF_surrect()
 {
 	HEADER;				SKIP_WHITESPACES;

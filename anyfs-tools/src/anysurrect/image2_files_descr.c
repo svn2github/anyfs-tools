@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <endian.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -60,6 +59,7 @@ FUNCOVER(comment, COMMENT_STRING);
 	while ( MAYBE(comment())!=ERROR_VALUE );		\
 })
 
+extern _declspec(dllexport)
 char *image_PNM_surrect()
 {
 	EX_BYTE("P", 'P');

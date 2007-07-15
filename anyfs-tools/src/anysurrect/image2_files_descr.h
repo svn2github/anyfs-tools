@@ -5,4 +5,5 @@
 
 char *image_PNM_surrect();
 
+_declspec(dllexport) 
 const char* image_PNM_indicator="PNM";

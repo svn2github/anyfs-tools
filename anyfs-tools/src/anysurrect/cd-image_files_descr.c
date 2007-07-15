@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <endian.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -87,6 +86,7 @@ inline int a_character(char a) {
 
 #define BLOCK_ALIGNED_SIZE(size) ( ( (size)+blocksize-1 )/blocksize*blocksize )
 
+extern _declspec(dllexport)
 char *cd_image_ISO_surrect()
 {
 	int i;

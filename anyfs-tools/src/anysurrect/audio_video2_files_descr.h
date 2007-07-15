@@ -5,4 +5,5 @@
 
 char *audio_video_MPEG12_surrect();
 
+_declspec(dllexport) 
 const char* audio_video_MPEG12_indicator="MPEG2";

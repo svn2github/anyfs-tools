@@ -5,4 +5,5 @@
 
 char *archieve_BZIP2_surrect();
 
+_declspec(dllexport) 
 const char *archieve_BZIP2_indicator="BZIP2";

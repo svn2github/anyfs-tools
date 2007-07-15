@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <endian.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -57,6 +56,7 @@ struct tar_header_block
 
 FUNCOVER(tar_block, TAR_BLOCK);
 
+extern _declspec(dllexport)
 char *archieve_TAR_surrect()
 {
 	TAR_BLOCK;
@@ -143,6 +143,7 @@ int zip_local_file_tail( uint32_t size )
 
 FUNCOVER(zip_local_file, ZIP_LOCAL_FILE);
 
+extern _declspec(dllexport)
 char *archieve_ZIP_surrect()
 {
 	long num_files=0;
@@ -169,6 +170,7 @@ char *archieve_ZIP_surrect()
 
 FUNCOVER(rar_block, RAR_BLOCK);
 
+extern _declspec(dllexport)
 char *archieve_RAR_surrect()
 {
 	EX_LESHORT("crc", 0x6152);

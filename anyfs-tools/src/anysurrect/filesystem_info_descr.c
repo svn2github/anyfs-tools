@@ -28,6 +28,7 @@
 /*ext2fs direct blocks links*/
 #include "any.h"
 
+extern _declspec(dllexport)
 char *filesystem_info_ext2fs_direct_blocks_links_surrect()
 {
 	any_size_t to_offset = get_blocksize();
@@ -96,6 +97,7 @@ char *filesystem_info_ext2fs_direct_blocks_links_surrect()
 	return "filesystem_info/ext2fs/direct_blocks_links";
 }
 
+extern _declspec(dllexport)
 char *filesystem_info_ext2fs_direct_blocks_links_surrect_dr()
 {
 	any_size_t to_offset = get_blocksize();
@@ -136,6 +138,7 @@ char *filesystem_info_ext2fs_direct_blocks_links_surrect_dr()
 	return "filesystem_info/ext2fs/direct_blocks_links";
 }
 
+extern _declspec(dllexport)
 struct frags_list *filesystem_info_ext2fs_direct_blocks_links_surrect_dr_to_frags_list(
 		struct frags_list **pfrags_list_begin, 
 		struct frags_list *pfrags_list)
@@ -269,6 +272,7 @@ out:
 	return "filesystem_info/ext2fs/indirect_blocks_links";
 }
 
+extern _declspec(dllexport)
 char *filesystem_info_ext2fs_indirect_blocks_links_surrect_dr()
 {
 	any_size_t to_offset = get_blocksize();
@@ -386,6 +390,7 @@ char *filesystem_info_ext2fs_double_indirect_blocks_links_surrect()
 	return "filesystem_info/ext2fs/double_indirect_blocks_links";
 }
 
+extern _declspec(dllexport)
 char *filesystem_info_ext2fs_double_indirect_blocks_links_surrect_dr()
 {
 	any_size_t to_offset = get_blocksize();
@@ -471,6 +476,7 @@ struct frags_list *double_indirect_links_to_frags_list(
 	return res;
 }
 
+extern _declspec(dllexport)
 char *filesystem_info_ext2fs_inode_table_surrect()
 {
 	any_size_t to_offset = get_blocksize();
@@ -803,6 +809,7 @@ void filesystem_info_ext2fs_group_info_usage()
 	printf("\n");
 };
 
+extern _declspec(dllexport)
 char *filesystem_info_ext2fs_group_info_surrect()
 {
 	static int done = 0;

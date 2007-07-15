@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <endian.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -21,6 +20,7 @@
 
 /*MIDI*/
 
+extern _declspec(dllexport)
 char *audio_MIDI_surrect()
 {
 	unsigned short number_tracks;
@@ -57,6 +57,7 @@ char *audio_MIDI_surrect()
 
 /*WAV*/
 
+extern _declspec(dllexport)
 char *audio_WAV_surrect()
 {
 	unsigned long size;
@@ -369,6 +370,7 @@ FUNCOVER(ID3V2_func, 		ID3V2);
 FUNCOVER(MP3_frame_func, 	MP3_frame);
 FUNCOVER(ID3V1_in_frame_func, 	ID3V1_in_frame);
 
+extern _declspec(dllexport)
 char *audio_MP3_surrect()
 {
 	int last_res;

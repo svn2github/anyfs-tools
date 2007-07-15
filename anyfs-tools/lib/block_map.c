@@ -3,8 +3,10 @@
  *	(C) 2005-2006, Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
  */
 
+#if defined(__linux__)
 #include <sys/ioctl.h>
 #include <linux/types.h>
+#endif
 
 #include <stdio.h>
 

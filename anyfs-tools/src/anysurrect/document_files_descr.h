@@ -5,4 +5,5 @@
 
 char *document_PDF_surrect();
 
+_declspec(dllexport) 
 const char* document_PDF_indicator="PDF";

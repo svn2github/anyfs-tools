@@ -3,25 +3,23 @@
  *      CopyRight (C) 2006-2007, Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#if defined(__linux__)
 #include <byteswap.h>
+#include <endian.h>
+#elif defined(_WIN32)
+#include <sys/param.h>
+#include "misc.h"
+#endif
 
-extern any_off_t	cur_offset;
-
-struct frags_list {
-	struct any_file_fragment frag;
-	signed long	offnext;
-	long whole;
-	unsigned long	num_frags;
-	any_size_t	size;
-};
-
-extern unsigned long *block_bitmap;
-extern struct frags_list *frags_list;
-extern struct frags_list *file_template_frags_list;
-extern struct frags_list *file_frags_list;
+#include "frags_funcs.h"
 
 static inline any_size_t fd_size()
 {
@@ -44,7 +42,7 @@ static inline any_off_t fd_seek(any_off_t offset, int whence)
 struct io_buffer {
 	char	*buffer;
 	any_off_t	start;
-	uint32_t	size;
+	int		size;
 };
 
 extern struct io_buffer io_buffer;
@@ -116,6 +114,234 @@ static inline unsigned long get_block()
 	return file_frags_list->frag.fr_start;
 }
 
+#if defined(__linux__)
+#define READ(a,b,c) read(a, b, c)
+
+#ifdef __cplusplus
+#define CLOSE(a) ::close(a)
+#else
+#define CLOSE(a) close(a)
+#endif
+
+#elif defined(_WIN32)
+extern struct io_buffer bufs[1024];
+
+static inline ssize_t my_read(int fd, void *buf, size_t count)
+{
+
+#define BSIZE	(512*1024)
+#define HBSIZE	(256*1024)
+#define BSIZEM	(512*1024-1)
+#define HBSIZEM	(256*1024-1)
+
+	if ( fd >= 1024 ) return read(fd, buf, count);
+
+	if (!bufs[fd].buffer)
+	{
+		bufs[fd].buffer = (char*) malloc(BSIZE);
+		bufs[fd].start = 0;
+		bufs[fd].size = 0;
+	}
+
+	any_size_t c = count;
+	any_size_t p, r;
+
+	any_off_t from = lseek64(fd, 0, SEEK_CUR);
+
+	p = from;
+
+	while (c)
+	{
+		if ( p > (bufs[fd].start + bufs[fd].size - 1) ||
+				p < bufs[fd].start ||
+				bufs[fd].size == 0 )
+		{
+			if ( p > bufs[fd].start && p < (bufs[fd].start + BSIZEM) )
+			{
+				lseek(fd, bufs[fd].start +
+						bufs[fd].size, 
+						SEEK_SET);
+
+				ssize_t z = ( (p - (bufs[fd].start + 
+						bufs[fd].size) ) >> 10) + 1;
+
+				ssize_t sz =
+					read(fd, bufs[fd].buffer +
+							bufs[fd].size, 
+							z<<10);
+
+				if (sz<0)
+					return sz;
+
+				if (sz==0)
+				{
+					lseek64(fd, p, SEEK_SET);
+					return count - c;
+				}
+
+				bufs[fd].size += sz;
+			}
+			else
+			if ( p > (bufs[fd].start + BSIZEM) &&
+			  p < (bufs[fd].start + BSIZEM + HBSIZE) )
+			{
+				if (bufs[fd].size < BSIZE)
+				{
+					lseek(fd, bufs[fd].start +
+							bufs[fd].size, 
+							SEEK_SET);
+
+					ssize_t sz =
+						read(fd, bufs[fd].buffer +
+								bufs[fd].size, 
+								BSIZE -
+								bufs[fd].size);
+
+					if (sz<0)
+						return sz;
+
+					if (sz==0)
+					{
+						lseek64(fd, p, SEEK_SET);
+						return count - c;
+					}
+
+					bufs[fd].size += sz;
+				}
+
+				any_off_t end = bufs[fd].start + bufs[fd].size;
+				any_off_t new_start = (p & (~(1<<10))) - HBSIZE;
+				any_off_t new_end = (p & (~(1<<10))) + 1024;
+
+				memmove( bufs[fd].buffer,
+						bufs[fd].buffer + 
+						(new_start - bufs[fd].start),
+						end - new_start );
+
+				bufs[fd].start = new_start;
+				bufs[fd].size = end - new_start;
+
+				lseek(fd, bufs[fd].start +
+						bufs[fd].size, 
+						SEEK_SET);
+
+				ssize_t sz =
+					read(fd, bufs[fd].buffer +
+							bufs[fd].size, 
+							new_end - end);
+
+				if (sz<0) return sz;
+
+				if (sz==0)
+				{
+					lseek64(fd, p, SEEK_SET);
+					return count - c;
+				}
+
+				bufs[fd].size += sz;
+			}
+			else
+			if ( p > (bufs[fd].start - HBSIZEM) &&
+			  p < (bufs[fd].start + HBSIZEM) )
+			{
+				any_off_t end = bufs[fd].start + bufs[fd].size;
+				any_off_t new_start = p & (~(1<<10)) - HBSIZE;
+				any_off_t new_size = min_t( any_off_t,
+						end - new_start, BSIZE);
+				any_off_t new_end = new_start + new_size;
+
+				memmove( bufs[fd].buffer + new_size - 
+						(new_end - bufs[fd].start),
+						bufs[fd].buffer,
+						new_end - bufs[fd].start );
+
+				lseek(fd, new_start, 
+						SEEK_SET);
+
+				ssize_t sz =
+					read(fd, bufs[fd].buffer, 
+							bufs[fd].start - 
+							new_start);
+
+				bufs[fd].start = new_start;
+				bufs[fd].size = new_size;
+
+				if (sz<0) return sz;
+
+				if (sz==0)
+				{
+					lseek64(fd, p, SEEK_SET);
+					return count - c;
+				}
+			}
+			else
+			{
+				lseek(fd, p, SEEK_SET);
+
+				bufs[fd].start = p;
+				bufs[fd].size =
+					read(fd, bufs[fd].buffer, 1024);
+
+				if (bufs[fd].size<0)
+					return bufs[fd].size;
+
+				if (bufs[fd].size==0)
+				{
+					lseek64(fd, p, SEEK_SET);
+					return count - c;
+				}
+			}
+		}
+
+		r = min_t(any_size_t, c, bufs[fd].size - (p - bufs[fd].start) );
+
+		switch(r)
+		{
+			case 0:
+				lseek64(fd, p, SEEK_SET);
+				return count - c;
+				printf ("%lld, %lld, %lld, %lld\n", c, bufs[fd].size - (p - bufs[fd].start),
+						p, bufs[fd].start);
+				exit (1);
+				break;
+
+			default:
+				memcpy ((char*)buf + (p-from),
+						(char*)bufs[fd].buffer + (p - bufs[fd].start), 
+						r);
+		}
+
+		c-=r;
+		p+=r;
+	}
+
+	lseek64(fd, p, SEEK_SET);
+
+	return count;
+};
+
+static inline int my_close(int fd)
+{
+	if ( fd < 1024 && bufs[fd].buffer )
+	{
+		free(bufs[fd].buffer);
+	        bufs[fd].buffer	= NULL;
+		bufs[fd].start = 0;
+		bufs[fd].size = 0;
+	}
+
+#ifdef __cplusplus
+	return ::close(fd);
+#else
+	return close(fd);
+#endif
+}
+
+#define READ(a,b,c) my_read(a, b, c)
+#define CLOSE(a) my_close(a)
+#endif
+
+
 #if __WORDSIZE == 32 
 static inline any_ssize_t fd_read32(void *buf, uint32_t count)
 {
@@ -138,7 +364,7 @@ static inline any_ssize_t fd_read32(void *buf, uint32_t count)
 			bfstart = bp;
 			io_buffer.start = cur_offset_high + bfstart;
 
-			io_buffer.size = read (fd, io_buffer.buffer, get_blocksize());
+			io_buffer.size = READ (fd, io_buffer.buffer, get_blocksize());
 			if (io_buffer.size<0) 
 				return io_buffer.size;
 			
@@ -164,20 +390,20 @@ static inline any_ssize_t fd_read32(void *buf, uint32_t count)
 				break;
 
 			case 1:
-				*(char*)(buf + (p-from)) = 
+				*(char*)((char*)buf + (p-from)) = 
 					*(char*)(io_buffer.buffer + (p - bfstart));
 				break;
 			case 2:
-				*(uint16_t*)(buf + (p-from)) = 
+				*(uint16_t*)((char*)buf + (p-from)) = 
 					*(uint16_t*)(io_buffer.buffer + (p - bfstart));
 				break;
 			case 4:
-				*(uint32_t*)(buf + (p-from)) = 
+				*(uint32_t*)((char*)buf + (p-from)) = 
 					*(uint32_t*)(io_buffer.buffer + (p - bfstart));
 				break;
 			default:
-				memcpy (buf + (p-from),
-						io_buffer.buffer + (p - bfstart), 
+				memcpy ((char*)buf + (p-from),
+						(char*)io_buffer.buffer + (p - bfstart), 
 						r);
 		}
 
@@ -213,7 +439,7 @@ static inline any_ssize_t fd_read(void *buf, any_size_t count)
 
 			io_buffer.start = bp;
 
-			io_buffer.size = read (fd, io_buffer.buffer, get_blocksize());
+			io_buffer.size = READ (fd, io_buffer.buffer, get_blocksize());
 			if (io_buffer.size<0) 
 				return io_buffer.size;
 			
@@ -237,20 +463,20 @@ static inline any_ssize_t fd_read(void *buf, any_size_t count)
 				break;
 
 			case 1:
-				*(char*)(buf + (p-from)) = 
-					*(char*)(io_buffer.buffer + (p - io_buffer.start));
+				*(char*)((char*)buf + (p-from)) = 
+					*(char*)((char*)io_buffer.buffer + (p - io_buffer.start));
 				break;
 			case 2:
-				*(uint16_t*)(buf + (p-from)) = 
-					*(uint16_t*)(io_buffer.buffer + (p - io_buffer.start));
+				*(uint16_t*)((char*)buf + (p-from)) = 
+					*(uint16_t*)((char*)io_buffer.buffer + (p - io_buffer.start));
 				break;
 			case 4:
-				*(uint32_t*)(buf + (p-from)) = 
-					*(uint32_t*)(io_buffer.buffer + (p - io_buffer.start));
+				*(uint32_t*)((char*)buf + (p-from)) = 
+					*(uint32_t*)((char*)io_buffer.buffer + (p - io_buffer.start));
 				break;
 			default:
-				memcpy (buf + (p-from),
-						io_buffer.buffer + (p - io_buffer.start), 
+				memcpy ((char*)buf + (p-from),
+						(char*)io_buffer.buffer + (p - io_buffer.start), 
 						r);
 		}
 
@@ -318,4 +544,8 @@ static inline int read_lelong(uint32_t *value)
 #endif
 	return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 

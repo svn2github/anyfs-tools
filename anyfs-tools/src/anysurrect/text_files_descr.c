@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <endian.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -106,6 +105,7 @@ FUNCOVER(uniX_ascii_text, ASCII_TEXT(uniX));
 FUNCOVER(mac_ascii_text, ASCII_TEXT(mac));
 FUNCOVER(any_ascii_text, ASCII_TEXT(any));
 
+extern _declspec(dllexport)
 char *text_ASCII_surrect()
 {
 	max_offset = 0;
@@ -188,6 +188,7 @@ FUNCOVER(uniX_eight_bit_text, EIGHT_BIT_TEXT(uniX));
 FUNCOVER(mac_eight_bit_text, EIGHT_BIT_TEXT(mac));
 FUNCOVER(any_eight_bit_text, EIGHT_BIT_TEXT(any));
 
+extern _declspec(dllexport)
 char *text_EIGHT_BIT_surrect()
 {
 	max_offset = 0;
@@ -329,6 +330,7 @@ FUNCOVER(uniX_utf8_text, UTF8_TEXT(uniX));
 FUNCOVER(mac_utf8_text, UTF8_TEXT(mac));
 FUNCOVER(any_utf8_text, UTF8_TEXT(any));
 
+extern _declspec(dllexport)
 char *text_UTF8_surrect()
 {
 	max_offset = 0;
@@ -448,6 +450,7 @@ FUNCOVER(uniX_utf16BE_text, UTF16_TEXT(BE, uniX));
 FUNCOVER(mac_utf16BE_text, UTF16_TEXT(BE, mac));
 FUNCOVER(any_utf16BE_text, UTF16_TEXT(BE, any));
 
+extern _declspec(dllexport)
 char *text_UTF16BE_surrect()
 {
 	max_offset = 0;
@@ -505,6 +508,7 @@ char *text_UTF16BE_surrect()
 	FUNCOVER(mac_utf16LE_text, UTF16_TEXT(LE, mac));
 	FUNCOVER(any_utf16LE_text, UTF16_TEXT(LE, any));
 
+extern _declspec(dllexport)
 char *text_UTF16LE_surrect()
 {
 	max_offset = 0;

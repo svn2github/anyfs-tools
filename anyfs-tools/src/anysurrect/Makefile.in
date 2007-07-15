@@ -11,7 +11,7 @@ CCFLAGS= -O3 -Wall -Winline --param inline-unit-growth=1000 \
 	 @MPEG2_CFLAGS@ @EXT2FS_CFLAGS@ @CFLAGS@
 LDFLAGS= -rdynamic -L$(LIBANYPATH) -lany @BZ2LIB@ -ldl @MPEG2_LIBS@ @EXT2FS_LIBS@
 
-OBJS = anysurrect.o anysurrect_malloc.c \
+OBJS = anysurrect.o anysurrect_malloc.c frags_funcs.c \
        audio_files_descr.o \
        audio_video_files_descr.o @MPEG2_MODULES@ audio_video3_files_descr.o\
        image_files_descr.o image2_files_descr.o image3_files_descr.o \

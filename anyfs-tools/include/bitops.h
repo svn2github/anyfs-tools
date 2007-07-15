@@ -6,7 +6,13 @@
 #ifndef _ANY_BITOPS_H
 #define _ANY_BITOPS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+#if defined(__linux__)
 #include <ext2fs/ext2fs.h>
+#endif
 
 #define test_and_set_bit(nr,addr) \
 	ext2fs_set_bit((nr),(unsigned long*)addr)
@@ -20,4 +26,7 @@
 
 #include "find_next_zero_bit.h"
 
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 #endif /*_ANY_BITOPS_H*/

@@ -6,5 +6,7 @@
 char *audio_video_OGG_surrect();
 char *audio_video_AVI_surrect();
 
+_declspec(dllexport) 
 const char* audio_video_OGG_indicator="OGG";
+_declspec(dllexport) 
 const char* audio_video_AVI_indicator="AVI";

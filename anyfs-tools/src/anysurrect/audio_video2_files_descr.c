@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <endian.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -23,6 +22,7 @@
 #include <mpeg2.h>
 #include "any.h"
 
+extern _declspec(dllexport)
 char *audio_video_MPEG12_surrect()
 {
 	COND_BELONG("magic", (val&0xFFFFFF00)==0x00000100);

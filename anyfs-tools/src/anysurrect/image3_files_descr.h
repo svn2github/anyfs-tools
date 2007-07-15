@@ -5,4 +5,5 @@
 
 char *image_TIFF_surrect();
 
+_declspec(dllexport) 
 const char* image_TIFF_indicator="TIFF";

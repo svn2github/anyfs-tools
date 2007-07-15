@@ -18,7 +18,7 @@ generateforC()
 
 generateforshell ../scripts/anyconvertfs
 
-for i in `find .. -iname "*.c"`; do
+for i in `find .. -iname "*.c"; find .. -iname "*.cpp"`; do
 	generateforC "$i" -j
 done
 

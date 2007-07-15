@@ -1,6 +1,10 @@
 #ifndef _ANY_PROGRESS_H
 #define _ANY_PROGRESS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 struct progress_struct {
         float           pr;
 	uint32_t        next_update;
@@ -32,4 +36,7 @@ int if_progress_updated(struct progress_struct *progress, uint32_t val)
 
 void progress_close(struct progress_struct *progress);
 
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 #endif /*_ANY_PROGRESS_H*/

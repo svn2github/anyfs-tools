@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <endian.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -21,6 +20,7 @@
 
 /*ELF32*/
 
+extern _declspec(dllexport)
 char *executable_ELF32_surrect()
 {
 	EX_STRING("magic", "\x7f""ELF");
