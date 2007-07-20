@@ -424,11 +424,9 @@ struct frags_list *filesystem_info_ext2fs_double_indirect_blocks_links_surrect_d
 {
 	any_size_t to_offset = get_blocksize();
 	uint32_t block;
-	do
-	{
-		block = READ_LELONG_DR("block_link");
+
+	while ( ( fd_seek_dr(0, SEEK_CUR) < to_offset ) && ( block = READ_LELONG_DR("block_link") ) );
 		pfrags_list = indirect_links_to_frags_list(pfrags_list_begin, pfrags_list, block);
-	} while ( fd_seek_dr(0, SEEK_CUR) < to_offset && block );
 
 	return pfrags_list;
 }
