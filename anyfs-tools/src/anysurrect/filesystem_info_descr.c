@@ -235,11 +235,8 @@ char *filesystem_info_ext2fs_indirect_blocks_links_surrect()
 		cur_frag = addblock_to_frags_list(&frags_list, cur_frag, block - r2 + i);
 	cur_frag = direct_links_to_frags_list(&frags_list, cur_frag, block);
 
-	while ( block )
-	{
-		block = READ_LELONG("block_link");
+	while ( (fd_seek(0, SEEK_CUR) < to_offset) && ( block = READ_LELONG("block_link") ) )
 		cur_frag = direct_links_to_frags_list(&frags_list, cur_frag, block);
-	}
 
 	{
 #define NEXT_FRAG_WA_OFS(frag, offnext)                 \
@@ -311,11 +308,9 @@ struct frags_list *filesystem_info_ext2fs_indirect_blocks_links_surrect_dr_to_fr
 {
 	any_size_t to_offset = get_blocksize();
 	uint32_t block;
-	do
-	{
-		block = READ_LELONG_DR("block_link");
+	
+	while ( ( fd_seek_dr(0, SEEK_CUR) < to_offset ) && ( block = READ_LELONG_DR("block_link") ) )
 		pfrags_list = direct_links_to_frags_list(pfrags_list_begin, pfrags_list, block);
-	} while ( fd_seek_dr(0, SEEK_CUR) < to_offset && block );
 
 	return pfrags_list;
 }

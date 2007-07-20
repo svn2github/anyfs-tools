@@ -70,23 +70,7 @@ struct hard_link {
 	struct hard_link *hl_next;
 };
 
-char *concat_strings(int n, ...)
-{
-	va_list ap;
-	int length=1;
-	int i;
-	va_start (ap, n);
-	for (i=0; i<n; i++) length+=strlen(va_arg(ap,char *));
-	va_end (ap);
-	char *concat=malloc(sizeof(char)*length);
-	if (!concat) return NULL;
-
-	concat[0]='\0';
-	va_start (ap, n);
-	for (i=0; i<n; i++) strcat(concat,va_arg(ap,char *));
-	va_end (ap);
-	return concat;
-}
+char *concat_strings(int n, ...);
 
 void fill_anyinode_by_statinfo(struct any_inode *any_inode, 
 		struct stat64 *stat_info) {

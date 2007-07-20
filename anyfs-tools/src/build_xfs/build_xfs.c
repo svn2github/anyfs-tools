@@ -2319,12 +2319,13 @@ _("You try to use blocksize %d, although inode table given for %lu blocksize\n"
 			    (rtextbytes <= XFS_MAX_RTEXTSIZE)) {
 				rtextblocks = rswidth;
 			}
-			if (!rtextblocks) {
-				rtextblocks = (blocksize < XFS_MIN_RTEXTSIZE) ?
-					XFS_MIN_RTEXTSIZE >> blocklog : 1;
-			}
 		}
-		ASSERT(rtextblocks);
+		if (!rtextblocks) {
+			rtextblocks = (blocksize < XFS_MIN_RTEXTSIZE) ?
+				XFS_MIN_RTEXTSIZE >> blocklog : 1;
+		}
+	}
+	ASSERT(rtextblocks);
 
 
 	/*

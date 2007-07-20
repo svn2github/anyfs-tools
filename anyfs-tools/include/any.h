@@ -17,7 +17,9 @@ extern "C" {
 #define _declspec(x) __attribute__((x))
 #endif
 
-#if defined(_WIN32)
+#if defined(__linux__)
+#define O_BINARY	0
+#elif defined(_WIN32)
 #define	S_ISLNK(a)	0
 #define getuid()	0
 #define getgid()	0
