@@ -50,6 +50,7 @@ struct progress_struct progress;
 int verbose = 0;
 int quiet = 0;
 int unpack = 1;
+int print_sparse_files = 0;
 
 long fs_type = 0;
 
@@ -58,7 +59,7 @@ const char *inode_table;
 
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [-qvVn] directory inode_table\n"),
+	fprintf(stderr, _("Usage: %s [-qvVns] directory inode_table\n"),
 			program_name);
 	exit(1);
 }
@@ -89,6 +90,10 @@ void fill_anyinode_by_statinfo(struct any_inode *any_inode,
 
 #ifndef REISERFS_SUPER_MAGIC
 #define REISERFS_SUPER_MAGIC 0x52654973
+#endif
+
+#ifndef FUSE_SUPER_MAGIC
+#define FUSE_SUPER_MAGIC 0x65735546
 #endif
 
 #if 0
@@ -252,11 +257,19 @@ int fill_anyinodeinfo(struct any_inode *inode, const char *path,
 					"FIGETBSZ blocksize: %d\n"
 					"Filesystem type: %x\n"), 
 					BS, bs, (unsigned) fs_type );
+
+			if (fs_type == FUSE_SUPER_MAGIC)
+			{
+				fprintf(stderr, _(
+					"\n"
+					"Please, use blkdev option for FUSE-filesystems\n") );
+			}
+
 			exit(1);
 		};
 
 		fr_length = 0;
-		numfrags = 0;
+		numfrags = 1;
 		for (i=0; i < numblocks; i++) {
 			block = get_bmap(fd, i, &r);
 			if (r<0) {
@@ -294,6 +307,11 @@ int fill_anyinodeinfo(struct any_inode *inode, const char *path,
 			fr_start = fr_start/ibs;
 		inode->i_info.file_frags->fr_frags[numfrags].
 			fr_length = (fr_length +ibs-1)/ibs;
+
+		if ( (numfrags == 1) && !fr_start && print_sparse_files )
+		{
+			printf("%s\n", path);
+		}
 
 		if ( geteuid()==0 && getuid()!=0 )
 			setreuid( geteuid(), getuid() );
@@ -599,7 +617,7 @@ static void PRS(int argc, const char *argv[])
 	int show_version_only = 0;
 
 	while ((c = getopt (argc, (char**) argv,
-		     "qvVn")) != EOF) {
+		     "qvVns")) != EOF) {
 		switch (c) {
 		case 'q':
 			quiet = 1;
@@ -612,6 +630,9 @@ static void PRS(int argc, const char *argv[])
 			break;
 		case 'n':
 			unpack = 0;
+			break;
+		case 's':
+			print_sparse_files = 1;
 			break;
 		default:
 			usage();
