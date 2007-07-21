@@ -78,7 +78,7 @@ extern int method;         /* compression method */
 #    define INBUFSIZ  0x8000  /* input buffer size */
 #  endif
 #endif
-#define INBUF_EXTRA  64     /* required by unlzw() */
+#define INBUF_EXTRA  64     /* required by anyfs_unlzw() */
 
 #ifndef	OUTBUFSIZ
 #  ifdef SMALL_MEM
@@ -87,7 +87,7 @@ extern int method;         /* compression method */
 #    define OUTBUFSIZ  16384  /* output buffer size */
 #  endif
 #endif
-#define OUTBUF_EXTRA 2048   /* required by unlzw() */
+#define OUTBUF_EXTRA 2048   /* required by anyfs_unlzw() */
 
 #ifndef DIST_BUFSIZE
 #  ifdef SMALL_MEM
@@ -102,7 +102,7 @@ extern int method;         /* compression method */
 #  define DECLARE(type, array, size)  type * near array
 #  define ALLOC(type, array, size) { \
       array = (type*)fcalloc((size_t)(((size)+1L)/2), 2*sizeof(type)); \
-      if (array == NULL) error("insufficient memory"); \
+      if (array == NULL) anyfs_error("insufficient memory"); \
    }
 #  define FREE(array) {if (array != NULL) fcfree(array), array=NULL;}
 #else
@@ -199,18 +199,18 @@ extern int test;           /* check .z file integrity */
 extern int to_stdout;      /* output to stdout (-c) */
 extern int save_orig_name; /* set if original name must be saved */
 
-#define get_byte()  (inptr < insize ? inbuf[inptr++] : fill_inbuf(0))
-#define try_byte()  (inptr < insize ? inbuf[inptr++] : fill_inbuf(1))
+#define get_byte()  (inptr < insize ? inbuf[inptr++] : anyfs_fill_inbuf(0))
+#define try_byte()  (inptr < insize ? inbuf[inptr++] : anyfs_fill_inbuf(1))
 
 /* put_byte is used for the compressed output, put_ubyte for the
- * uncompressed output. However unlzw() uses window for its
+ * uncompressed output. However anyfs_unlzw() uses window for its
  * suffix table instead of its output buffer, so it does not use put_ubyte
  * (to be cleaned up).
  */
 #define put_byte(c) {outbuf[outcnt++]=(uch)(c); if (outcnt==OUTBUFSIZ)\
-   flush_outbuf();}
+   anyfs_flush_outbuf();}
 #define put_ubyte(c) {window[outcnt++]=(uch)(c); if (outcnt==WSIZE)\
-   flush_window();}
+   anyfs_flush_window();}
 
 /* Output a 16 bit value, lsb first */
 #define put_short(w) \
@@ -240,7 +240,7 @@ extern int save_orig_name; /* set if original name must be saved */
 
 /* Diagnostic functions */
 #ifdef DEBUG
-#  define Assert(cond,msg) {if(!(cond)) error(msg);}
+#  define Assert(cond,msg) {if(!(cond)) anyfs_error(msg);}
 #  define Trace(x) fprintf x
 #  define Tracev(x) {if (verbose) fprintf x ;}
 #  define Tracevv(x) {if (verbose>1) fprintf x ;}
@@ -263,17 +263,17 @@ extern int zip        OF((int in, int out));
 extern int file_read  OF((char *buf,  unsigned size));
 
 	/* in unzip.c */
-extern int unzip      OF((int in, int out));
-extern int check_zipfile OF((int in));
+extern int anyfs_unzip      OF((int in, int out));
+extern int anyfs_check_zipfile OF((int in));
 
 	/* in unpack.c */
-extern int unpack     OF((int in, int out));
+extern int anyfs_unpack     OF((int in, int out));
 
 	/* in unlzh.c */
-extern int unlzh      OF((int in, int out));
+extern int anyfs_unlzh      OF((int in, int out));
 
 	/* in gzip.c */
-RETSIGTYPE abort_gzip OF((void));
+RETSIGTYPE anyfs_abort_gzip OF((void));
 
         /* in deflate.c */
 void lm_init OF((int pack_level, ush *flags));
@@ -293,23 +293,23 @@ void     copy_block OF((char *buf, unsigned len, int header));
 extern   int (*read_buf) OF((char *buf, unsigned size));
 
 	/* in util.c: */
-extern int copy           OF((int in, int out));
-extern ulg  updcrc        OF((uch *s, unsigned n));
-extern void clear_bufs    OF((void));
-extern int  fill_inbuf    OF((int eof_ok));
-extern void flush_outbuf  OF((void));
-extern void flush_window  OF((void));
-extern void write_buf     OF((int fd, voidp buf, unsigned cnt));
-extern char *strlwr       OF((char *s));
-extern char *basename     OF((char *fname));
-extern void make_simple_name OF((char *name));
-extern char *add_envopt   OF((int *argcp, char ***argvp, char *env));
-extern void error         OF((char *m));
-extern void warn          OF((char *a, char *b));
-extern void read_error    OF((void));
-extern void write_error   OF((void));
-extern void display_ratio OF((long num, long den, FILE *file));
+extern int anyfs_copy           OF((int in, int out));
+extern ulg  anyfs_updcrc        OF((uch *s, unsigned n));
+extern void anyfs_clear_bufs    OF((void));
+extern int  anyfs_fill_inbuf    OF((int eof_ok));
+extern void anyfs_flush_outbuf  OF((void));
+extern void anyfs_flush_window  OF((void));
+extern void anyfs_write_buf     OF((int fd, voidp buf, unsigned cnt));
+extern char *anyfs_strlwr       OF((char *s));
+extern char *anyfs_basename     OF((char *fname));
+extern void anyfs_make_simple_name OF((char *name));
+extern char *anyfs_add_envopt   OF((int *argcp, char ***argvp, char *env));
+extern void anyfs_error         OF((char *m));
+extern void anyfs_warn          OF((char *a, char *b));
+extern void anyfs_read_error    OF((void));
+extern void anyfs_write_error   OF((void));
+extern void anyfs_display_ratio OF((long num, long den, FILE *file));
 extern voidp xmalloc      OF((unsigned int size));
 
 	/* in inflate.c */
-extern int inflate OF((void));
+extern int anyfs_inflate OF((void));

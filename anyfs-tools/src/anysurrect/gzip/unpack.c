@@ -58,7 +58,7 @@ local int peek_bits; /* Number of peek bits currently used */
  * So for most codes a single lookup will be necessary.
  */
 #if (1<<MAX_PEEK) > OUTBUFSIZ
-    error cannot overlay prefix_len and outbuf
+    anyfs_error cannot overlay prefix_len and outbuf
 #endif
 
 local ulg bitbuf;
@@ -85,13 +85,13 @@ local int valid;                  /* number of valid bits in bitbuf */
 
 /* Local functions */
 
-local void read_tree  OF((void));
-local void build_tree OF((void));
+local void anyfs_read_tree  OF((void));
+local void anyfs_build_tree OF((void));
 
 /* ===========================================================================
  * Read the Huffman tree.
  */
-local void read_tree()
+local void anyfs_read_tree()
 {
     int len;  /* bit length */
     int base; /* base offset for a sequence of leaves */
@@ -103,7 +103,7 @@ local void read_tree()
 
     max_len = (int)get_byte(); /* maximum bit length of Huffman codes */
     if (max_len > MAX_BITLEN) {
-	error("invalid compressed data -- Huffman code > 32 bits");
+	anyfs_error("invalid compressed data -- Huffman code > 32 bits");
     }
 
     /* Get the number of leaves at each bit length */
@@ -113,7 +113,7 @@ local void read_tree()
 	n += leaves[len];
     }
     if (n > LITERALS) {
-	error("too many leaves in Huffman tree");
+	anyfs_error("too many leaves in Huffman tree");
     }
     Trace((stderr, "orig_len %ld, max_len %d, leaves %d\n",
 	   orig_len, max_len, n));
@@ -142,7 +142,7 @@ local void read_tree()
 /* ===========================================================================
  * Build the Huffman tree and the prefix table.
  */
-local void build_tree()
+local void anyfs_build_tree()
 {
     int nodes = 0; /* number of nodes (parents+leaves) at current bit length */
     int len;       /* current bit length */
@@ -182,7 +182,7 @@ local void build_tree()
  *   the compressed data, from offsets inptr to insize-1 included.
  *   The magic header has already been checked. The output buffer is cleared.
  */
-int unpack(in, out)
+int anyfs_unpack(in, out)
     int in, out;            /* input and output file descriptors */
 {
     int len;                /* Bit length of current code */
@@ -193,8 +193,8 @@ int unpack(in, out)
     ifd = in;
     ofd = out;
 
-    read_tree();     /* Read the Huffman tree */
-    build_tree();    /* Build the prefix table */
+    anyfs_read_tree();     /* Read the Huffman tree */
+    anyfs_build_tree();    /* Build the prefix table */
     clear_bitbuf();  /* Initialize bit input */
     peek_mask = (1<<peek_bits)-1;
 
@@ -230,10 +230,10 @@ int unpack(in, out)
 	skip_bits(len);
     } /* for (;;) */
 
-    flush_window();
+    anyfs_flush_window();
     Trace((stderr, "bytes_out %ld\n", bytes_out));
     if (orig_len != (ulg)bytes_out) {
-	error("invalid compressed data--length error");
+	anyfs_error("invalid compressed data--length error");
     }
     return OK;
 }

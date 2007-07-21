@@ -70,7 +70,7 @@ static int cmp_32_bits(char *buf, long x)
   return 1;
 }
   
-void unit_summary()
+void anyfs_unit_summary()
 {
     int n;
 
@@ -405,7 +405,7 @@ any_size_t scan_pes(int verbose)
 
 		// get pts time stamp:
 		memcpy(scan_buf, &buf[6], 16);
-		has_pts_dts=get_pts_dts(scan_buf, &i_pts, &i_dts);
+		has_pts_dts=anyfs_get_pts_dts(scan_buf, &i_pts, &i_dts);
 		
 		if(has_pts_dts) {
 		  
@@ -413,7 +413,7 @@ any_size_t scan_pes(int verbose)
 		    for(n=0; n<100; ++n) {
 		    
 		      if(cmp_32_bits(buf+n, TC_MAGIC_M2V)) {
-			stats_sequence(buf+n+4, &si);
+			anyfs_stats_sequence(buf+n+4, &si);
 			show_seq_info=1;
 			break;
 		      }
@@ -421,7 +421,7 @@ any_size_t scan_pes(int verbose)
 		  }
 		  for(n=0; n<100; ++n) {
 		    if(cmp_32_bits(buf+n, TC_MAGIC_M2V)) {
-		      stats_sequence_silent(buf+n+4, &si);
+		      anyfs_stats_sequence_silent(buf+n+4, &si);
 		      if (si.brv>max_bitrate) max_bitrate=si.brv;
 		      if (si.brv<min_bitrate) min_bitrate=si.brv;
 		      tot_bitrate += si.brv;
@@ -431,7 +431,7 @@ any_size_t scan_pes(int verbose)
 
 		  if( ref_pts != 0 && i_pts < ref_pts) {
 		    
-		    unit_summary();
+		    anyfs_unit_summary();
 		    unit_ctr++;
 		  }
 		  ref_pts=i_pts;
@@ -452,7 +452,7 @@ any_size_t scan_pes(int verbose)
 		for(n=0; n<100; ++n) {
 		  
 		  if(cmp_32_bits(buf+n, TC_MAGIC_M2V)) {
-		    stats_sequence(buf+n+4, &si);
+		    anyfs_stats_sequence(buf+n+4, &si);
 		    show_seq_info=1;
 		  }
 		}
@@ -460,7 +460,7 @@ any_size_t scan_pes(int verbose)
 
 	      // get pts time stamp:
 	      memcpy(scan_buf, &buf[6], 16);
-	      has_pts_dts=get_pts_dts(scan_buf, &i_pts, &i_dts);
+	      has_pts_dts=anyfs_get_pts_dts(scan_buf, &i_pts, &i_dts);
 	      
 	      if(has_pts_dts) {
 		
@@ -498,7 +498,7 @@ any_size_t scan_pes(int verbose)
 	    fprintf(stderr, "(%s) looks like an elementary stream - not program stream\n", __FILE__);
 #endif
 	    
-	    stats_sequence(&buf[4], &si);
+	    anyfs_stats_sequence(&buf[4], &si);
 	    
 	    if (!pack_header_ctr) return 0;
 	    pack_header_pos = fd_seek(0, SEEK_CUR) - (end - buf);
@@ -543,7 +543,7 @@ any_size_t scan_pes(int verbose)
 
  summary:
 
-    unit_summary();
+    anyfs_unit_summary();
 
 #ifdef DEBUG
     fprintf(stderr, "(%s) detected a total of %d presentation unit(s) PU and %d sequence(s)\n", __FILE__, tot_unit_ctr, tot_seq_ctr);

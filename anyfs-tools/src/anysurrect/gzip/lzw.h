@@ -20,7 +20,7 @@
  * It's a pity that old uncompress does not check bit 0x20. That makes
  * extension of the format actually undesirable because old compress
  * would just crash on the new format instead of giving a meaningful
- * error message. It does check the number of bits, but it's more
+ * anyfs_error message. It does check the number of bits, but it's more
  * helpful to say "unsupported format, get a new version" than
  * "can only handle 16 bits".
  */
@@ -39,4 +39,4 @@ extern int maxbits;      /* max bits per code for LZW */
 extern int block_mode;   /* block compress mode -C compatible with 2.0 */
 
 extern int lzw    OF((int in, int out));
-extern int unlzw  OF((int in, int out));
+extern int anyfs_unlzw  OF((int in, int out));

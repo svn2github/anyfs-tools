@@ -292,7 +292,7 @@
 
 #ifndef MAKE_LEGAL_NAME
 #  ifdef NO_MULTIPLE_DOTS
-#    define MAKE_LEGAL_NAME(name)   make_simple_name(name)
+#    define MAKE_LEGAL_NAME(name)   anyfs_make_simple_name(name)
 #  else
 #    define MAKE_LEGAL_NAME(name)
 #  endif

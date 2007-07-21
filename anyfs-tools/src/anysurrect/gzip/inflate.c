@@ -28,7 +28,7 @@
    length then get the distance and emit the referred-to bytes from the
    sliding window of previously emitted data.
 
-   There are (currently) three kinds of inflate blocks: stored, fixed, and
+   There are (currently) three kinds of anyfs_inflate blocks: stored, fixed, and
    dynamic.  The compressor deals with some chunk of data at a time, and
    decides which method to use on a chunk-by-chunk basis.  A chunk might
    typically be 32K or 64K.  If the chunk is uncompressible, then the
@@ -39,7 +39,7 @@
    If the data is compressible, then either the fixed or dynamic methods
    are used.  In the dynamic method, the compressed data is preceded by
    an encoding of the literal/length and distance Huffman codes that are
-   to be used to decode this block.  The representation is itself Huffman
+   to be used to anyfs_decode this block.  The representation is itself Huffman
    coded, and so is preceded by a description of that code.  These code
    descriptions take up a little space, and so for small blocks, there is
    a predefined set of codes, called the fixed codes.  The fixed method is
@@ -121,7 +121,7 @@ static char rcsid[] = "$Id: inflate.c,v 0.14 1993/06/10 13:27:04 jloup Exp $";
    means that v is a literal, 16 < e < 32 means that v is a pointer to
    the next table, which codes e - 16 bits, and lastly e == 99 indicates
    an unused code.  If a code with e == 99 is looked up, this implies an
-   error in the data. */
+   anyfs_error in the data. */
 struct huft {
   uch e;                /* number of extra bits or operation */
   uch b;                /* number of bits in this code or subcode */
@@ -133,18 +133,18 @@ struct huft {
 
 
 /* Function prototypes */
-int huft_build OF((unsigned *, unsigned, unsigned, ush *, ush *,
+int anyfs_huft_build OF((unsigned *, unsigned, unsigned, ush *, ush *,
                    struct huft **, int *));
-int huft_free OF((struct huft *));
-int inflate_codes OF((struct huft *, struct huft *, int, int));
-int inflate_stored OF((void));
-int inflate_fixed OF((void));
-int inflate_dynamic OF((void));
-int inflate_block OF((int *));
-int inflate OF((void));
+int anyfs_huft_free OF((struct huft *));
+int anyfs_inflate_codes OF((struct huft *, struct huft *, int, int));
+int anyfs_inflate_stored OF((void));
+int anyfs_inflate_fixed OF((void));
+int anyfs_inflate_dynamic OF((void));
+int anyfs_inflate_block OF((int *));
+int anyfs_inflate OF((void));
 
 
-/* The inflate algorithm uses a sliding 32K byte window on the uncompressed
+/* The anyfs_inflate algorithm uses a sliding 32K byte window on the uncompressed
    stream to find repeated byte strings.  This is implemented here as a
    circular buffer.  The index is updated simply by incrementing and then
    and'ing with 0x7fff (32K-1). */
@@ -154,7 +154,7 @@ int inflate OF((void));
    must be in unzip.h, included above. */
 /* unsigned wp;             current position in slide */
 #define wp outcnt
-#define flush_output(w) (wp=(w),flush_window())
+#define flush_output(w) (wp=(w),anyfs_flush_window())
 
 /* Tables for deflate from PKZIP's appnote.txt. */
 static unsigned border[] = {    /* Order of the bit length code lengths */
@@ -177,7 +177,7 @@ static ush cpdext[] = {         /* Extra bits for distance codes */
 
 
 
-/* Macros for inflate() bit peeking and grabbing.
+/* Macros for anyfs_inflate() bit peeking and grabbing.
    The usage is:
    
         NEEDBITS(j)
@@ -229,19 +229,19 @@ ush mask_bits[] = {
 
 /*
    Huffman code decoding is performed using a multi-level table lookup.
-   The fastest way to decode is to simply build a lookup table whose
+   The fastest way to anyfs_decode is to simply build a lookup table whose
    size is determined by the longest code.  However, the time it takes
    to build this table can also be a factor if the data being decoded
    is not very long.  The most common codes are necessarily the
    shortest codes, so those codes dominate the decoding time, and hence
    the speed.  The idea is you can have a shorter table that decodes the
    shorter, more probable codes, and then point to subsidiary tables for
-   the longer codes.  The time it costs to decode the longer codes is
+   the longer codes.  The time it costs to anyfs_decode the longer codes is
    then traded against the time it takes to make longer tables.
 
    This results of this trade are in the variables lbits and dbits
    below.  lbits is the number of bits the first level table for literal/
-   length codes can decode in one step, and dbits is the same thing for
+   length codes can anyfs_decode in one step, and dbits is the same thing for
    the distance codes.  Subsequent tables are also less than or equal to
    those sizes.  These values may be adjusted either when all of the
    codes are shorter than that, in which case the longest code length in
@@ -272,7 +272,7 @@ int dbits = 6;          /* bits in base distance lookup table */
 unsigned hufts;         /* track memory usage */
 
 
-int huft_build(b, n, s, d, e, t, m)
+int anyfs_huft_build(b, n, s, d, e, t, m)
 unsigned *b;            /* code lengths in bits (all assumed <= BMAX) */
 unsigned n;             /* number of codes (assumed <= N_MAX) */
 unsigned s;             /* number of simple-valued codes (0..s-1) */
@@ -281,7 +281,7 @@ ush *e;                 /* list of extra bits for non-simple codes */
 struct huft **t;        /* result: starting table */
 int *m;                 /* maximum lookup bits, returns actual */
 /* Given a list of code lengths and a maximum table size, make a set of
-   tables to decode that set of codes.  Return zero on success, one if
+   tables to anyfs_decode that set of codes.  Return zero on success, one if
    the given code set is incomplete (the tables are still built in this
    case), two if the input is invalid (all zero length codes or an
    oversubscribed set of lengths), and three if not enough memory. */
@@ -408,11 +408,11 @@ int *m;                 /* maximum lookup bits, returns actual */
             (struct huft *)NULL)
         {
           if (h)
-            huft_free(u[0]);
+            anyfs_huft_free(u[0]);
           return 3;             /* not enough memory */
         }
         hufts += z + 1;         /* track memory usage */
-        *t = q + 1;             /* link to list for huft_free() */
+        *t = q + 1;             /* link to list for anyfs_huft_free() */
         *(t = &(q->v.t)) = (struct huft *)NULL;
         u[h] = ++q;             /* table starts after link */
 
@@ -470,9 +470,9 @@ int *m;                 /* maximum lookup bits, returns actual */
 
 
 
-int huft_free(t)
+int anyfs_huft_free(t)
 struct huft *t;         /* table to free */
-/* Free the malloc'ed tables built by huft_build(), which makes a linked
+/* Free the malloc'ed tables built by anyfs_huft_build(), which makes a linked
    list of the tables it made, with the links in a dummy first entry of
    each table. */
 {
@@ -491,14 +491,14 @@ struct huft *t;         /* table to free */
 }
 
 
-int inflate_codes(tl, td, bl, bd)
+int anyfs_inflate_codes(tl, td, bl, bd)
 struct huft *tl, *td;   /* literal/length and distance decoder tables */
 int bl, bd;             /* number of bits decoded by tl[] and td[] */
-/* inflate (decompress) the codes in a deflated (compressed) block.
-   Return an error code or zero if it all goes ok. */
+/* anyfs_inflate (decompress) the codes in a deflated (compressed) block.
+   Return an anyfs_error code or zero if it all goes ok. */
 {
   register unsigned e;  /* table entry flag/number of extra bits */
-  unsigned n, d;        /* length and index for copy */
+  unsigned n, d;        /* length and index for anyfs_copy */
   unsigned w;           /* current window position */
   struct huft *t;       /* pointer to table entry */
   unsigned ml, md;      /* masks for bl and bd bits */
@@ -512,7 +512,7 @@ int bl, bd;             /* number of bits decoded by tl[] and td[] */
   w = wp;                       /* initialize window position */
   int blocksize = 0;
 
-  /* inflate the coded data */
+  /* anyfs_inflate the coded data */
   ml = mask_bits[bl];           /* precompute masks for speed */
   md = mask_bits[bd];
   for (; blocksize < 8*100*1024 ;) /* do until end of block */
@@ -545,13 +545,13 @@ int bl, bd;             /* number of bits decoded by tl[] and td[] */
       if (e == 15)
         break;
 
-      /* get length of block to copy */
+      /* get length of block to anyfs_copy */
       blocksize += e;
       NEEDBITS(e)
       n = t->v.n + ((unsigned)b & mask_bits[e]);
       DUMPBITS(e);
 
-      /* decode distance of block to copy */
+      /* anyfs_decode distance of block to anyfs_copy */
       blocksize += bd;
       NEEDBITS((unsigned)bd)
       if ((e = (t = td + ((unsigned)b & md))->e) > 16)
@@ -570,7 +570,7 @@ int bl, bd;             /* number of bits decoded by tl[] and td[] */
       DUMPBITS(e)
       Tracevv((stderr,"\\[%d,%d]", w-d, n));
 
-      /* do the copy */
+      /* do the anyfs_copy */
       do {
         n -= (e = (e = WSIZE - ((d &= WSIZE-1) > w ? d : w)) > n ? n : e);
 #if !defined(NOMEMCPY) && !defined(DEBUG)
@@ -606,7 +606,7 @@ int bl, bd;             /* number of bits decoded by tl[] and td[] */
 
 
 
-int inflate_stored()
+int anyfs_inflate_stored()
 /* "decompress" an inflated type 0 (stored) block. */
 {
   unsigned n;           /* number of bytes in block */
@@ -632,7 +632,7 @@ int inflate_stored()
   DUMPBITS(16)
   NEEDBITS(16)
   if (n != (unsigned)((~b) & 0xffff))
-    return 1;                   /* error in compressed data */
+    return 1;                   /* anyfs_error in compressed data */
   DUMPBITS(16)
 
 
@@ -659,7 +659,7 @@ int inflate_stored()
 
 
 
-int inflate_fixed()
+int anyfs_inflate_fixed()
 /* decompress an inflated type 1 (fixed Huffman codes) block.  We should
    either replace this with a custom decoder, or at least precompute the
    Huffman tables. */
@@ -669,7 +669,7 @@ int inflate_fixed()
   struct huft *td;      /* distance code table */
   int bl;               /* lookup bits for tl */
   int bd;               /* lookup bits for td */
-  unsigned l[288];      /* length list for huft_build */
+  unsigned l[288];      /* length list for anyfs_huft_build */
 
 
   /* set up literal table */
@@ -682,7 +682,7 @@ int inflate_fixed()
   for (; i < 288; i++)          /* make a complete, but wrong code set */
     l[i] = 8;
   bl = 7;
-  if ((i = huft_build(l, 288, 257, cplens, cplext, &tl, &bl)) != 0)
+  if ((i = anyfs_huft_build(l, 288, 257, cplens, cplext, &tl, &bl)) != 0)
     return i;
 
 
@@ -690,27 +690,27 @@ int inflate_fixed()
   for (i = 0; i < 30; i++)      /* make an incomplete code set */
     l[i] = 5;
   bd = 5;
-  if ((i = huft_build(l, 30, 0, cpdist, cpdext, &td, &bd)) > 1)
+  if ((i = anyfs_huft_build(l, 30, 0, cpdist, cpdext, &td, &bd)) > 1)
   {
-    huft_free(tl);
+    anyfs_huft_free(tl);
     return i;
   }
 
 
   /* decompress until an end-of-block code */
-  if (inflate_codes(tl, td, bl, bd))
+  if (anyfs_inflate_codes(tl, td, bl, bd))
     return 1;
 
 
   /* free the decoding tables, return */
-  huft_free(tl);
-  huft_free(td);
+  anyfs_huft_free(tl);
+  anyfs_huft_free(td);
   return 0;
 }
 
 
 
-int inflate_dynamic()
+int anyfs_inflate_dynamic()
 /* decompress an inflated type 2 (dynamic Huffman codes) block. */
 {
   int i;                /* temporary variables */
@@ -770,10 +770,10 @@ int inflate_dynamic()
 
   /* build decoding table for trees--single level, 7 bit lookup */
   bl = 7;
-  if ((i = huft_build(ll, 19, 19, NULL, NULL, &tl, &bl)) != 0)
+  if ((i = anyfs_huft_build(ll, 19, 19, NULL, NULL, &tl, &bl)) != 0)
   {
     if (i == 1)
-      huft_free(tl);
+      anyfs_huft_free(tl);
     return i;                   /* incomplete code set */
   }
 
@@ -826,7 +826,7 @@ int inflate_dynamic()
 
 
   /* free decoding table for trees */
-  huft_free(tl);
+  anyfs_huft_free(tl);
 
 
   /* restore the global bit buffer */
@@ -836,16 +836,16 @@ int inflate_dynamic()
 
   /* build the decoding tables for literal/length and distance codes */
   bl = lbits;
-  if ((i = huft_build(ll, nl, 257, cplens, cplext, &tl, &bl)) != 0)
+  if ((i = anyfs_huft_build(ll, nl, 257, cplens, cplext, &tl, &bl)) != 0)
   {
     if (i == 1) {
       fprintf(stderr, " incomplete literal tree\n");
-      huft_free(tl);
+      anyfs_huft_free(tl);
     }
     return i;                   /* incomplete code set */
   }
   bd = dbits;
-  if ((i = huft_build(ll + nl, nd, 0, cpdist, cpdext, &td, &bd)) != 0)
+  if ((i = anyfs_huft_build(ll + nl, nd, 0, cpdist, cpdext, &td, &bd)) != 0)
   {
     if (i == 1) {
       fprintf(stderr, " incomplete distance tree\n");
@@ -853,28 +853,28 @@ int inflate_dynamic()
       i = 0;
     }
 #else
-      huft_free(td);
+      anyfs_huft_free(td);
     }
-    huft_free(tl);
+    anyfs_huft_free(tl);
     return i;                   /* incomplete code set */
 #endif
   }
 
 
   /* decompress until an end-of-block code */
-  if (inflate_codes(tl, td, bl, bd))
+  if (anyfs_inflate_codes(tl, td, bl, bd))
     return 1;
 
 
   /* free the decoding tables, return */
-  huft_free(tl);
-  huft_free(td);
+  anyfs_huft_free(tl);
+  anyfs_huft_free(td);
   return 0;
 }
 
 
 
-int inflate_block(e)
+int anyfs_inflate_block(e)
 int *e;                 /* last block flag */
 /* decompress an inflated block */
 {
@@ -905,13 +905,13 @@ int *e;                 /* last block flag */
   bk = k;
 
 
-  /* inflate that block type */
+  /* anyfs_inflate that block type */
   if (t == 2)
-    return inflate_dynamic();
+    return anyfs_inflate_dynamic();
   if (t == 0)
-    return inflate_stored();
+    return anyfs_inflate_stored();
   if (t == 1)
-    return inflate_fixed();
+    return anyfs_inflate_fixed();
 
 
   /* bad block type */
@@ -920,7 +920,7 @@ int *e;                 /* last block flag */
 
 
 
-int inflate()
+int anyfs_inflate()
 /* decompress an inflated entry */
 {
   int e;                /* last block flag */
@@ -938,7 +938,7 @@ int inflate()
   h = 0;
   do {
     hufts = 0;
-    if ((r = inflate_block(&e)) != 0)
+    if ((r = anyfs_inflate_block(&e)) != 0)
     {
       return r;
     }

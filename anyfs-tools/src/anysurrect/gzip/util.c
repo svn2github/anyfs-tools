@@ -43,17 +43,17 @@ extern ulg crc_32_tab[];   /* crc table, defined below */
  * Copy input to output unchanged: zcat == cat with --force.
  * IN assertion: insize bytes have already been read in inbuf.
  */
-int copy(in, out)
+int anyfs_copy(in, out)
     int in, out;   /* input and output file descriptors */
 {
     errno = 0;
     while (insize != 0 && (int)insize != EOF) {
-	write_buf(out, (char*)inbuf, insize);
+	anyfs_write_buf(out, (char*)inbuf, insize);
 	bytes_out += insize;
 	insize = read(in, (char*)inbuf, INBUFSIZ);
     }
     if ((int)insize == EOF && errno != 0) {
-	read_error();
+	anyfs_read_error();
     }
     bytes_in = bytes_out;
     return OK;
@@ -64,7 +64,7 @@ int copy(in, out)
  * pointer, then initialize the crc shift register contents instead.
  * Return the current crc in either case.
  */
-ulg updcrc(s, n)
+ulg anyfs_updcrc(s, n)
     uch *s;                 /* pointer to bytes to pump through */
     unsigned n;             /* number of bytes in s[] */
 {
@@ -87,7 +87,7 @@ ulg updcrc(s, n)
 /* ===========================================================================
  * Clear input and output buffers
  */
-void clear_bufs()
+void anyfs_clear_bufs()
 {
     outcnt = 0;
     insize = inptr = 0;
@@ -97,7 +97,7 @@ void clear_bufs()
 /* ===========================================================================
  * Fill the input buffer. This is called only when the buffer is empty.
  */
-int fill_inbuf(eof_ok)
+int anyfs_fill_inbuf(eof_ok)
     int eof_ok;          /* set if EOF acceptable as a result */
 {
     int len;
@@ -114,7 +114,7 @@ int fill_inbuf(eof_ok)
 
     if (insize == 0) {
 	if (eof_ok) return EOF;
-	read_error();
+	anyfs_read_error();
     }
     bytes_in += (ulg)insize;
     inptr = 1;
@@ -125,11 +125,11 @@ int fill_inbuf(eof_ok)
  * Write the output buffer outbuf[0..outcnt-1] and update bytes_out.
  * (used for the compressed data only)
  */
-void flush_outbuf()
+void anyfs_flush_outbuf()
 {
     if (outcnt == 0) return;
 
-    write_buf(ofd, (char *)outbuf, outcnt);
+    anyfs_write_buf(ofd, (char *)outbuf, outcnt);
     bytes_out += (ulg)outcnt;
     outcnt = 0;
 }
@@ -138,13 +138,13 @@ void flush_outbuf()
  * Write the output window window[0..outcnt-1] and update crc and bytes_out.
  * (Used for the decompressed data only.)
  */
-void flush_window()
+void anyfs_flush_window()
 {
     if (outcnt == 0) return;
-    updcrc(window, outcnt);
+    anyfs_updcrc(window, outcnt);
 
     if (!test) {
-	write_buf(ofd, (char *)window, outcnt);
+	anyfs_write_buf(ofd, (char *)window, outcnt);
     }
     bytes_out += (ulg)outcnt;
     outcnt = 0;
@@ -152,9 +152,9 @@ void flush_window()
 
 /* ===========================================================================
  * Does the same as write(), but also handles partial pipe writes and checks
- * for error return.
+ * for anyfs_error return.
  */
-void write_buf(fd, buf, cnt)
+void anyfs_write_buf(fd, buf, cnt)
     int       fd;
     voidp     buf;
     unsigned  cnt;
@@ -163,7 +163,7 @@ void write_buf(fd, buf, cnt)
 
     while ((n = write(fd, buf, cnt)) != cnt) {
 	if (n == (unsigned)(-1)) {
-	    write_error();
+	    anyfs_write_error();
 	}
 	cnt -= n;
 	buf = (voidp)((char*)buf+n);
@@ -173,7 +173,7 @@ void write_buf(fd, buf, cnt)
 /* ========================================================================
  * Put string s in lower case, return s.
  */
-char *strlwr(s)
+char *anyfs_strlwr(s)
     char *s;
 {
     char *t;
@@ -186,7 +186,7 @@ char *strlwr(s)
  * any version suffix). For systems with file names that are not
  * case sensitive, force the base name to lower case.
  */
-char *basename(fname)
+char *anyfs_basename(fname)
     char *fname;
 {
     char *p;
@@ -201,7 +201,7 @@ char *basename(fname)
 #ifdef SUFFIX_SEP
     if ((p = strrchr(fname, SUFFIX_SEP)) != NULL) *p = '\0';
 #endif
-    if (casemap('A') == 'a') strlwr(fname);
+    if (casemap('A') == 'a') anyfs_strlwr(fname);
     return fname;
 }
 
@@ -213,7 +213,7 @@ char *basename(fname)
  * MAKE_LEGAL_NAME in tailor.h and providing the function in a target
  * dependent module.
  */
-void make_simple_name(name)
+void anyfs_make_simple_name(name)
     char *name;
 {
     char *p = strrchr(name, '.');
@@ -284,7 +284,7 @@ int strcspn(s, reject)
  */
 #define SEPARATOR	" \t"	/* separators in env variable */
 
-char *add_envopt(argcp, argvp, env)
+char *anyfs_add_envopt(argcp, argvp, env)
     int *argcp;          /* pointer to argc */
     char ***argvp;       /* pointer to argv */
     char *env;           /* name of environment variable */
@@ -317,22 +317,22 @@ char *add_envopt(argcp, argvp, env)
      * the original arg list did not end with a NULL.
      */
     nargv = (char**)calloc(*argcp+1, sizeof(char *));
-    if (nargv == NULL) error("out of memory");
+    if (nargv == NULL) anyfs_error("out of memory");
     oargv  = *argvp;
     *argvp = nargv;
 
     /* Copy the program name first */
-    if (oargc-- < 0) error("argc<=0");
+    if (oargc-- < 0) anyfs_error("argc<=0");
     *(nargv++) = *(oargv++);
 
-    /* Then copy the environment args */
+    /* Then anyfs_copy the environment args */
     for (p = env; nargc > 0; nargc--) {
 	p += strspn(p, SEPARATOR);	     /* skip separators */
 	*(nargv++) = p;			     /* store start */
 	while (*p++) ;			     /* skip over word */
     }
 
-    /* Finally copy the old args and add a NULL (usual convention) */
+    /* Finally anyfs_copy the old args and add a NULL (usual convention) */
     while (oargc--) *(nargv++) = *(oargv++);
     *nargv = NULL;
     return env;
@@ -341,22 +341,22 @@ char *add_envopt(argcp, argvp, env)
 /* ========================================================================
  * Error handlers.
  */
-void error(m)
+void anyfs_error(m)
     char *m;
 {
 #ifdef DEBUG
     fprintf(stderr, "\n%s: %s: %s\n", progname, ifname, m);
 #endif
-    abort_gzip();
+    anyfs_abort_gzip();
 }
 
-void warn(a, b)
+void anyfs_warn(a, b)
     char *a, *b;            /* message strings juxtaposed in output */
 {
     WARN((stderr, "%s: %s: warning: %s%s\n", progname, ifname, a, b));
 }
 
-void read_error()
+void anyfs_read_error()
 {
     fprintf(stderr, "\n%s: ", progname);
     if (errno != 0) {
@@ -364,20 +364,20 @@ void read_error()
     } else {
 	fprintf(stderr, "%s: unexpected end of file\n", ifname);
     }
-    abort_gzip();
+    anyfs_abort_gzip();
 }
 
-void write_error()
+void anyfs_write_error()
 {
     fprintf(stderr, "\n%s: ", progname);
     perror(ofname);
-    abort_gzip();
+    anyfs_abort_gzip();
 }
 
 /* ========================================================================
  * Display compression ratio on the given stream on 6 characters.
  */
-void display_ratio(num, den, file)
+void anyfs_display_ratio(num, den, file)
     long num;
     long den;
     FILE *file;
@@ -409,7 +409,7 @@ voidp xmalloc (size)
 {
     voidp cp = (voidp)malloc (size);
 
-    if (cp == NULL) error("out of memory");
+    if (cp == NULL) anyfs_error("out of memory");
     return cp;
 }
 

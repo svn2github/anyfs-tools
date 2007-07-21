@@ -48,7 +48,7 @@ int ext_header = 0; /* set if extended local header */
  * Check zip file and advance inptr to the start of the compressed data.
  * Get ofname from the local header if necessary.
  */
-int check_zipfile(in)
+int anyfs_check_zipfile(in)
     int in;   /* input file descriptors */
 {
     uch *h = inbuf + inptr; /* first local header */
@@ -81,7 +81,7 @@ int check_zipfile(in)
 	return ERROR;
     }
 
-    /* Save flags for unzip() */
+    /* Save flags for anyfs_unzip() */
     ext_header = (h[LOCFLG] & EXTFLG) != 0;
     pkzip = 1;
 
@@ -96,7 +96,7 @@ int check_zipfile(in)
  *   the compressed data, from offsets inptr to insize-1 included.
  *   The magic header has already been checked. The output buffer is cleared.
  */
-int unzip(in, out)
+int anyfs_unzip(in, out)
     int in, out;   /* input and output file descriptors */
 {
     ulg orig_crc = 0;       /* original crc */
@@ -107,7 +107,7 @@ int unzip(in, out)
     ifd = in;
     ofd = out;
 
-    updcrc(NULL, 0);           /* initialize crc */
+    anyfs_updcrc(NULL, 0);           /* initialize crc */
 
     if (pkzip && !ext_header) {  /* crc and length at the end otherwise */
 	orig_crc = LG(inbuf + LOCCRC);
@@ -117,12 +117,12 @@ int unzip(in, out)
     /* Decompress */
     if (method == DEFLATED)  {
 
-	int res = inflate();
+	int res = anyfs_inflate();
 
 	if (res == 3) {
-	    error("out of memory");
+	    anyfs_error("out of memory");
 	} else if (res != 0) {
-	    error("invalid compressed data--format violated");
+	    anyfs_error("invalid compressed data--format violated");
 	}
 
     } else if (pkzip && method == STORED) {
@@ -132,7 +132,7 @@ int unzip(in, out)
 	if (n != LG(inbuf + LOCSIZ) - (decrypt ? RAND_HEAD_LEN : 0)) {
 
 	    fprintf(stderr, "len %ld, siz %ld\n", n, LG(inbuf + LOCSIZ));
-	    error("invalid compressed data--length mismatch");
+	    anyfs_error("invalid compressed data--length mismatch");
 	}
 	while (n--) {
 	    uch c = (uch)get_byte();
@@ -141,9 +141,9 @@ int unzip(in, out)
 #endif
 	    put_ubyte(c);
 	}
-	flush_window();
+	anyfs_flush_window();
     } else {
-	error("internal error, invalid method");
+	anyfs_error("internal error, invalid method");
     }
 
     /* Get the crc and original length */
@@ -152,7 +152,7 @@ int unzip(in, out)
 	 * uncompressed input size modulo 2^32
          */
 	for (n = 0; n < 8; n++) {
-	    buf[n] = (uch)get_byte(); /* may cause an error if EOF */
+	    buf[n] = (uch)get_byte(); /* may cause an anyfs_error if EOF */
 	}
 	orig_crc = LG(buf);
 	orig_len = LG(buf+4);
@@ -164,18 +164,18 @@ int unzip(in, out)
          * uncompressed size 4-bytes
 	 */
 	for (n = 0; n < EXTHDR; n++) {
-	    buf[n] = (uch)get_byte(); /* may cause an error if EOF */
+	    buf[n] = (uch)get_byte(); /* may cause an anyfs_error if EOF */
 	}
 	orig_crc = LG(buf+4);
 	orig_len = LG(buf+12);
     }
 
     /* Validate decompression */
-    if (orig_crc != updcrc(outbuf, 0)) {
-	error("invalid compressed data--crc error");
+    if (orig_crc != anyfs_updcrc(outbuf, 0)) {
+	anyfs_error("invalid compressed data--crc error");
     }
     if (orig_len != (ulg)bytes_out) {
-	error("invalid compressed data--length error");
+	anyfs_error("invalid compressed data--length error");
     }
 
     /* Check if there are more entries in a pkzip file */

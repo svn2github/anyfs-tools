@@ -49,7 +49,7 @@ static int cmp_32_bits(char *buf, long x)
 }
 #endif
 
-unsigned int stream_read_int16(unsigned char *s)
+unsigned int anyfs_stream_read_int16(unsigned char *s)
 { 
   unsigned int a, b, result;
 
@@ -60,7 +60,7 @@ unsigned int stream_read_int16(unsigned char *s)
   return result;
 }
 
-int stats_sequence_silent(uint8_t * buffer, seq_info_t *seq_info)
+int anyfs_stats_sequence_silent(uint8_t * buffer, seq_info_t *seq_info)
 {
   
   int horizontal_size;
@@ -99,7 +99,7 @@ int stats_sequence_silent(uint8_t * buffer, seq_info_t *seq_info)
   return(0);
   
 }
-int stats_sequence(uint8_t * buffer, seq_info_t *seq_info)
+int anyfs_stats_sequence(uint8_t * buffer, seq_info_t *seq_info)
 {
   
   int horizontal_size;
@@ -160,7 +160,7 @@ int stats_sequence(uint8_t * buffer, seq_info_t *seq_info)
   
 }
 
-int get_pts_dts(char *buffer, unsigned long *pts, unsigned long *dts)
+int anyfs_get_pts_dts(char *buffer, unsigned long *pts, unsigned long *dts)
 {
   unsigned int pes_header_bytes = 0;
   unsigned int pts_dts_flags;
@@ -183,10 +183,10 @@ int get_pts_dts(char *buffer, unsigned long *pts, unsigned long *dts)
       
       *pts = (buffer[ptr++] >> 1) & 7;  //low 4 bits (7==1111) 
       *pts <<= 15;
-      *pts |= (stream_read_int16(&buffer[ptr]) >> 1);
+      *pts |= (anyfs_stream_read_int16(&buffer[ptr]) >> 1);
       ptr+=2;
       *pts <<= 15;
-      *pts |= (stream_read_int16(&buffer[ptr]) >> 1);
+      *pts |= (anyfs_stream_read_int16(&buffer[ptr]) >> 1);
       ptr+=2;
 
       pes_header_bytes += 5;
@@ -199,18 +199,18 @@ int get_pts_dts(char *buffer, unsigned long *pts, unsigned long *dts)
       
       *pts = (buffer[ptr++] >> 1) & 7;  //low 4 bits (7==1111) 
       *pts <<= 15;
-      *pts |= (stream_read_int16(&buffer[ptr]) >> 1);
+      *pts |= (anyfs_stream_read_int16(&buffer[ptr]) >> 1);
       ptr+=2;
       *pts <<= 15;
-      *pts |= (stream_read_int16(&buffer[ptr]) >> 1);
+      *pts |= (anyfs_stream_read_int16(&buffer[ptr]) >> 1);
       ptr+=2;
       
       *dts = (buffer[ptr++] >> 1) & 7;  
       *dts <<= 15;
-      *dts |= (stream_read_int16(&buffer[ptr]) >> 1);
+      *dts |= (anyfs_stream_read_int16(&buffer[ptr]) >> 1);
       ptr+=2;
       *dts <<= 15;
-      *dts |= (stream_read_int16(&buffer[ptr]) >> 1);
+      *dts |= (anyfs_stream_read_int16(&buffer[ptr]) >> 1);
       ptr+=2;
 
       pes_header_bytes += 10;

@@ -15,24 +15,24 @@ static char rcsid[] = "$Id: unlzh.c,v 1.2 1993/06/24 10:59:01 jloup Exp $";
 
 /* decode.c */
 
-local unsigned  decode  OF((unsigned count, uch buffer[]));
-local void decode_start OF((void));
+local unsigned  anyfs_decode  OF((unsigned count, uch buffer[]));
+local void anyfs_decode_start OF((void));
 
 /* huf.c */
-local void huf_decode_start OF((void));
-local unsigned decode_c     OF((void));
-local unsigned decode_p     OF((void));
-local void read_pt_len      OF((int nn, int nbit, int i_special));
-local void read_c_len       OF((void));
+local void anyfs_huf_decode_start OF((void));
+local unsigned anyfs_decode_c     OF((void));
+local unsigned anyfs_decode_p     OF((void));
+local void anyfs_read_pt_len      OF((int nn, int nbit, int i_special));
+local void anyfs_read_c_len       OF((void));
 
 /* io.c */
-local void fillbuf      OF((int n));
-local unsigned getbits  OF((int n));
-local void init_getbits OF((void));
+local void anyfs_fillbuf      OF((int n));
+local unsigned anyfs_getbits  OF((int n));
+local void anyfs_init_getbits OF((void));
 
 /* maketbl.c */
 
-local void make_table OF((int nchar, uch bitlen[],
+local void anyfs_make_table OF((int nchar, uch bitlen[],
 			  int tablebits, ush table[]));
 
 
@@ -79,13 +79,13 @@ local void make_table OF((int nchar, uch bitlen[],
 #define left  prev
 #define right head
 #if NC > (1<<(BITS-2))
-    error cannot overlay left+right and prev
+    anyfs_error cannot overlay left+right and prev
 #endif
 
 /* local uch c_len[NC]; */
 #define c_len outbuf
 #if NC > OUTBUFSIZ
-    error cannot overlay c_len and outbuf
+    anyfs_error cannot overlay c_len and outbuf
 #endif
 
 local uch pt_len[NPT];
@@ -95,7 +95,7 @@ local ush pt_table[256];
 /* local ush c_table[4096]; */
 #define c_table d_buf
 #if (DIST_BUFSIZE-1) < 4095
-    error cannot overlay c_table and d_buf
+    anyfs_error cannot overlay c_table and d_buf
 #endif
 
 /***********************************************************
@@ -106,7 +106,7 @@ local ush       bitbuf;
 local unsigned  subbitbuf;
 local int       bitcount;
 
-local void fillbuf(n)  /* Shift bitbuf n bits left, read n bits */
+local void anyfs_fillbuf(n)  /* Shift bitbuf n bits left, read n bits */
     int n;
 {
     bitbuf <<= n;
@@ -119,26 +119,26 @@ local void fillbuf(n)  /* Shift bitbuf n bits left, read n bits */
     bitbuf |= subbitbuf >> (bitcount -= n);
 }
 
-local unsigned getbits(n)
+local unsigned anyfs_getbits(n)
     int n;
 {
     unsigned x;
 
-    x = bitbuf >> (BITBUFSIZ - n);  fillbuf(n);
+    x = bitbuf >> (BITBUFSIZ - n);  anyfs_fillbuf(n);
     return x;
 }
 
-local void init_getbits()
+local void anyfs_init_getbits()
 {
     bitbuf = 0;  subbitbuf = 0;  bitcount = 0;
-    fillbuf(BITBUFSIZ);
+    anyfs_fillbuf(BITBUFSIZ);
 }
 
 /***********************************************************
 	maketbl.c -- make table for decoding
 ***********************************************************/
 
-local void make_table(nchar, bitlen, tablebits, table)
+local void anyfs_make_table(nchar, bitlen, tablebits, table)
     int nchar;
     uch bitlen[];
     int tablebits;
@@ -154,7 +154,7 @@ local void make_table(nchar, bitlen, tablebits, table)
     for (i = 1; i <= 16; i++)
 	start[i + 1] = start[i] + (count[i] << (16 - i));
     if ((start[17] & 0xffff) != 0)
-	error("Bad table\n");
+	anyfs_error("Bad table\n");
 
     jutbits = 16 - tablebits;
     for (i = 1; i <= (unsigned)tablebits; i++) {
@@ -202,7 +202,7 @@ local void make_table(nchar, bitlen, tablebits, table)
         huf.c -- static Huffman
 ***********************************************************/
 
-local void read_pt_len(nn, nbit, i_special)
+local void anyfs_read_pt_len(nn, nbit, i_special)
     int nn;
     int nbit;
     int i_special;
@@ -210,9 +210,9 @@ local void read_pt_len(nn, nbit, i_special)
     int i, c, n;
     unsigned mask;
 
-    n = getbits(nbit);
+    n = anyfs_getbits(nbit);
     if (n == 0) {
-	c = getbits(nbit);
+	c = anyfs_getbits(nbit);
 	for (i = 0; i < nn; i++) pt_len[i] = 0;
 	for (i = 0; i < 256; i++) pt_table[i] = c;
     } else {
@@ -223,26 +223,26 @@ local void read_pt_len(nn, nbit, i_special)
 		mask = (unsigned) 1 << (BITBUFSIZ - 1 - 3);
 		while (mask & bitbuf) {  mask >>= 1;  c++;  }
 	    }
-	    fillbuf((c < 7) ? 3 : c - 3);
+	    anyfs_fillbuf((c < 7) ? 3 : c - 3);
 	    pt_len[i++] = c;
 	    if (i == i_special) {
-		c = getbits(2);
+		c = anyfs_getbits(2);
 		while (--c >= 0) pt_len[i++] = 0;
 	    }
 	}
 	while (i < nn) pt_len[i++] = 0;
-	make_table(nn, pt_len, 8, pt_table);
+	anyfs_make_table(nn, pt_len, 8, pt_table);
     }
 }
 
-local void read_c_len()
+local void anyfs_read_c_len()
 {
     int i, c, n;
     unsigned mask;
 
-    n = getbits(CBIT);
+    n = anyfs_getbits(CBIT);
     if (n == 0) {
-	c = getbits(CBIT);
+	c = anyfs_getbits(CBIT);
 	for (i = 0; i < NC; i++) c_len[i] = 0;
 	for (i = 0; i < 4096; i++) c_table[i] = c;
     } else {
@@ -257,31 +257,31 @@ local void read_c_len()
 		    mask >>= 1;
 		} while (c >= NT);
 	    }
-	    fillbuf((int) pt_len[c]);
+	    anyfs_fillbuf((int) pt_len[c]);
 	    if (c <= 2) {
 		if      (c == 0) c = 1;
-		else if (c == 1) c = getbits(4) + 3;
-		else             c = getbits(CBIT) + 20;
+		else if (c == 1) c = anyfs_getbits(4) + 3;
+		else             c = anyfs_getbits(CBIT) + 20;
 		while (--c >= 0) c_len[i++] = 0;
 	    } else c_len[i++] = c - 2;
 	}
 	while (i < NC) c_len[i++] = 0;
-	make_table(NC, c_len, 12, c_table);
+	anyfs_make_table(NC, c_len, 12, c_table);
     }
 }
 
-local unsigned decode_c()
+local unsigned anyfs_decode_c()
 {
     unsigned j, mask;
 
     if (blocksize == 0) {
-	blocksize = getbits(16);
+	blocksize = anyfs_getbits(16);
 	if (blocksize == 0) {
 	    return NC; /* end of file */
 	}
-	read_pt_len(NT, TBIT, 3);
-	read_c_len();
-	read_pt_len(NP, PBIT, -1);
+	anyfs_read_pt_len(NT, TBIT, 3);
+	anyfs_read_c_len();
+	anyfs_read_pt_len(NP, PBIT, -1);
     }
     blocksize--;
     j = c_table[bitbuf >> (BITBUFSIZ - 12)];
@@ -293,11 +293,11 @@ local unsigned decode_c()
 	    mask >>= 1;
 	} while (j >= NC);
     }
-    fillbuf((int) c_len[j]);
+    anyfs_fillbuf((int) c_len[j]);
     return j;
 }
 
-local unsigned decode_p()
+local unsigned anyfs_decode_p()
 {
     unsigned j, mask;
 
@@ -310,33 +310,33 @@ local unsigned decode_p()
 	    mask >>= 1;
 	} while (j >= NP);
     }
-    fillbuf((int) pt_len[j]);
-    if (j != 0) j = ((unsigned) 1 << (j - 1)) + getbits((int) (j - 1));
+    anyfs_fillbuf((int) pt_len[j]);
+    if (j != 0) j = ((unsigned) 1 << (j - 1)) + anyfs_getbits((int) (j - 1));
     return j;
 }
 
-local void huf_decode_start()
+local void anyfs_huf_decode_start()
 {
-    init_getbits();  blocksize = 0;
+    anyfs_init_getbits();  blocksize = 0;
 }
 
 /***********************************************************
         decode.c
 ***********************************************************/
 
-local int j;    /* remaining bytes to copy */
+local int j;    /* remaining bytes to anyfs_copy */
 local int done; /* set at end of input */
 
-local void decode_start()
+local void anyfs_decode_start()
 {
-    huf_decode_start();
+    anyfs_huf_decode_start();
     j = 0;
     done = 0;
 }
 
 /* Decode the input and return the number of decoded bytes put in buffer
  */
-local unsigned decode(count, buffer)
+local unsigned anyfs_decode(count, buffer)
     unsigned count;
     uch buffer[];
     /* The calling function must keep the number of
@@ -344,7 +344,7 @@ local unsigned decode(count, buffer)
        either 'count' bytes or 'DICSIZ' bytes, whichever
        is smaller, into the array 'buffer[]' of size
        'DICSIZ' or more.
-       Call decode_start() once for each new file
+       Call anyfs_decode_start() once for each new file
        before calling this function.
      */
 {
@@ -358,7 +358,7 @@ local unsigned decode(count, buffer)
 	if (++r == count) return r;
     }
     for ( ; ; ) {
-	c = decode_c();
+	c = anyfs_decode_c();
 	if (c == NC) {
 	    done = 1;
 	    return r;
@@ -368,7 +368,7 @@ local unsigned decode(count, buffer)
 	    if (++r == count) return r;
 	} else {
 	    j = c - (UCHAR_MAX + 1 - THRESHOLD);
-	    i = (r - decode_p() - 1) & (DICSIZ - 1);
+	    i = (r - anyfs_decode_p() - 1) & (DICSIZ - 1);
 	    while (--j >= 0) {
 		buffer[r] = buffer[i];
 		i = (i + 1) & (DICSIZ - 1);
@@ -382,7 +382,7 @@ local unsigned decode(count, buffer)
 /* ===========================================================================
  * Unlzh in to out. Return OK or ERROR.
  */
-int unlzh(in, out)
+int anyfs_unlzh(in, out)
     int in;
     int out;
 {
@@ -390,11 +390,11 @@ int unlzh(in, out)
     ifd = in;
     ofd = out;
 
-    decode_start();
+    anyfs_decode_start();
     while (!done) {
-	n = decode((unsigned) DICSIZ, window);
+	n = anyfs_decode((unsigned) DICSIZ, window);
 	if (!test && n > 0) {
-	    write_buf(out, (char*)window, n);
+	    anyfs_write_buf(out, (char*)window, n);
 	}
     }
     return OK;

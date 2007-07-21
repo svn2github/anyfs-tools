@@ -189,7 +189,7 @@ int block_mode = BLOCK_MODE; /* block compress mode -C compatible with 2.0 */
  *   The magic header has already been checked and skipped.
  *   bytes_in and bytes_out have been initialized.
  */
-int unlzw(in, out) 
+int anyfs_unlzw(in, out) 
     int in, out;    /* input and output file descriptors */
 {
     REG2   char_type  *stackp;
@@ -259,7 +259,7 @@ int unlzw(in, out)
 	
 	if (insize < INBUF_EXTRA) {
 	    if ((rsize = read(in, (char*)inbuf+insize, INBUFSIZ)) == EOF) {
-		read_error();
+		anyfs_read_error();
 	    }
 	    insize += rsize;
 	    bytes_in += (ulg)rsize;
@@ -284,7 +284,7 @@ int unlzw(in, out)
 	    Tracev((stderr, "%d ", code));
 
 	    if (oldcode == -1) {
-		if (code >= 256) error("corrupt input.");
+		if (code >= 256) anyfs_error("corrupt input.");
 		outbuf[outpos++] = (char_type)(finchar = (int)(oldcode=code));
 		continue;
 	    }
@@ -315,10 +315,10 @@ int unlzw(in, out)
 			    posbits, p[-1],p[0],p[1],p[2],p[3]);
 #endif
 		    if (!test && outpos > 0) {
-			write_buf(out, (char*)outbuf, outpos);
+			anyfs_write_buf(out, (char*)outbuf, outpos);
 			bytes_out += (ulg)outpos;
 		    }
-		    error(to_stdout ? "corrupt input." :
+		    anyfs_error(to_stdout ? "corrupt input." :
 			  "corrupt input. Use zcat to recover some data.");
 		}
 		*--stackp = (char_type)finchar;
@@ -346,7 +346,7 @@ int unlzw(in, out)
 			}
 			if (outpos >= OUTBUFSIZ) {
 			    if (!test) {
-				write_buf(out, (char*)outbuf, outpos);
+				anyfs_write_buf(out, (char*)outbuf, outpos);
 				bytes_out += (ulg)outpos;
 			    }
 			    outpos = 0;
@@ -370,7 +370,7 @@ int unlzw(in, out)
     } while (rsize != 0);
     
     if (!test && outpos > 0) {
-	write_buf(out, (char*)outbuf, outpos);
+	anyfs_write_buf(out, (char*)outbuf, outpos);
 	bytes_out += (ulg)outpos;
     }
     return OK;

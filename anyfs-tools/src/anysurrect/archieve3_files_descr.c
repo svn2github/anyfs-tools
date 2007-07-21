@@ -60,7 +60,7 @@ char *archieve_GZIP_surrect()
 		dup2(stdindes[0], fileno(stdin));
 		dup2(stderrdes[1], fileno(stdout));
 
-		exit ( gzip() );
+		exit ( anyfs_gzip() );
 	}
 
 	fcntl(stdindes[1], F_SETFL, O_NONBLOCK);

@@ -1,6 +1,6 @@
 /* gzip (GNU zip) -- compress files with zip algorithm and 'compress' interface
  * Copyright (C) 1992-1993 Jean-loup Gailly
- * The unzip code was written and put in the public domain by Mark Adler.
+ * The anyfs_unzip code was written and put in the public domain by Mark Adler.
  * Portions of the lzw code are derived from the public domain 'compress'
  * written by Spencer Thomas, Joe Orost, James Woods, Jim McKie, Steve Davies,
  * Ken Turkowski, Dave Mack and Peter Jannesen.
@@ -26,7 +26,7 @@ static char  *license_msg[] = {
 "   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the",
 "   GNU General Public License for more details.",
 "",
-"   You should have received a copy of the GNU General Public License",
+"   You should have received a anyfs_copy of the GNU General Public License",
 "   along with this program; if not, write to the Free Software",
 "   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.",
 0};
@@ -140,7 +140,7 @@ long total_in = 0;         /* input bytes for all files */
 long total_out = 0;        /* output bytes for all files */
 char ifname[10]; /* input file name */
 char ofname[10]; /* output file name */
-int  remove_ofname = 0;	   /* remove output file on error */
+int  remove_ofname = 0;	   /* remove output file on anyfs_error */
 struct stat istat;         /* status for input file */
 int  ifd;                  /* input file descriptor */
 int  ofd;                  /* output file descriptor */
@@ -155,16 +155,16 @@ any_ssize_t FILESIZE;
 
 /* local functions */
 
-local void treat_stdin  OF((void));
-local int  get_method   OF((int in));
-local void do_exit      OF((int exitcode));
+local void anyfs_treat_stdin  OF((void));
+local int  anyfs_get_method   OF((int in));
+local void anyfs_do_exit      OF((int exitcode));
       int main          OF((int argc, char **argv));
-int (*work) OF((int infile, int outfile)) = unzip; /* function to call */
+int (*work) OF((int infile, int outfile)) = anyfs_unzip; /* function to call */
 
 #define strequ(s1, s2) (strcmp((s1),(s2)) == 0)
 
 /* ======================================================================== */
-int gzip ()
+int anyfs_gzip()
 {
     to_stdout = 1;
     decompress = 1;
@@ -187,16 +187,16 @@ int gzip ()
 
     FILESIZE = 0;
 
-    treat_stdin();
+    anyfs_treat_stdin();
 
-    do_exit(exit_code);
+    anyfs_do_exit(exit_code);
     return exit_code; /* just to avoid lint warning */
 }
 
 /* ========================================================================
  * Compress or decompress stdin
  */
-local void treat_stdin()
+local void anyfs_treat_stdin()
 {
     strcpy(ifname, "stdin");
     strcpy(ofname, "stdout");
@@ -204,14 +204,14 @@ local void treat_stdin()
     /* Get the time stamp on the input file. */
     time_stamp = 0; /* time unknown by default */
 
-    clear_bufs(); /* clear input and output buffers */
+    anyfs_clear_bufs(); /* clear input and output buffers */
     to_stdout = 1;
     part_nb = 0;
 
     if (decompress) {
-	method = get_method(ifd);
+	method = anyfs_get_method(ifd);
 	if (method < 0) {
-	    do_exit(exit_code); /* error message already emitted */
+	    anyfs_do_exit(exit_code); /* anyfs_error message already emitted */
 	}
     }
 
@@ -224,8 +224,8 @@ local void treat_stdin()
 	/* end of file */
 
 	FILESIZE = FILEPOS;
-	method = get_method(ifd);
-	if (method < 0) return; /* error message already emitted */
+	method = anyfs_get_method(ifd);
+	if (method < 0) return; /* anyfs_error message already emitted */
 	bytes_out = 0;            /* required for length check */
     }
 }
@@ -241,7 +241,7 @@ local void treat_stdin()
  * IN assertions: there is at least one remaining compressed member.
  *   If the member is a zip file, it must be the only one.
  */
-local int get_method(in)
+local int anyfs_get_method(in)
     int in;        /* input file descriptor */
 {
     uch flags;     /* compression flags */
@@ -278,7 +278,7 @@ local int get_method(in)
 	    exit_code = ERROR;
 	    return -1;
 	}
-	work = unzip;
+	work = anyfs_unzip;
 	flags  = (uch)get_byte();
 
 	if ((flags & ENCRYPTED) != 0) {
@@ -343,13 +343,13 @@ local int get_method(in)
 		do {c=get_byte();} while (c != 0);
 	    } else {
 		/* Copy the base name. Keep a directory prefix intact. */
-                char *p = basename(ofname);
+                char *p = anyfs_basename(ofname);
                 char *base = p;
 		for (;;) {
 		    *p = (char)get_char();
 		    if (*p++ == '\0') break;
 		    if (p >= ofname+sizeof(ofname)) {
-			error("corrupted input -- file name too large");
+			anyfs_error("corrupted input -- file name too large");
 		    }
 		}
                 /* If necessary, adapt the name to local OS conventions: */
@@ -371,28 +371,28 @@ local int get_method(in)
          * We are thus guaranteed that the entire local header fits in inbuf.
          */
         inptr = 0;
-	work = unzip;
-	if (check_zipfile(in) != OK) return -1;
-	/* check_zipfile may get ofname from the local header */
+	work = anyfs_unzip;
+	if (anyfs_check_zipfile(in) != OK) return -1;
+	/* anyfs_check_zipfile may get ofname from the local header */
 	last_member = 1;
 
     } else if (memcmp(magic, PACK_MAGIC, 2) == 0) {
-	work = unpack;
+	work = anyfs_unpack;
 	method = PACKED;
 
     } else if (memcmp(magic, LZW_MAGIC, 2) == 0) {
-	work = unlzw;
+	work = anyfs_unlzw;
 	method = COMPRESSED;
 	last_member = 1;
 
     } else if (memcmp(magic, LZH_MAGIC, 2) == 0) {
-	work = unlzh;
+	work = anyfs_unlzh;
 	method = LZHED;
 	last_member = 1;
 
     } else if (force && to_stdout && !list) { /* pass input unchanged */
 	method = STORED;
-	work = copy;
+	work = anyfs_copy;
         inptr = 0;
 	last_member = 1;
     }
@@ -414,7 +414,7 @@ local int get_method(in)
 /* ========================================================================
  * Free all dynamically allocated variables and exit with the given code.
  */
-local void do_exit(exitcode)
+local void anyfs_do_exit(exitcode)
     int exitcode;
 {
     static int in_exit = 0;
@@ -440,13 +440,13 @@ local void do_exit(exitcode)
 }
 
 /* ========================================================================
- * Signal and error handler.
+ * Signal and anyfs_error handler.
  */
-RETSIGTYPE abort_gzip()
+RETSIGTYPE anyfs_abort_gzip()
 {
    if (remove_ofname) {
        close(ofd);
        unlink (ofname);
    }
-   do_exit(ERROR);
+   anyfs_do_exit(ERROR);
 }
