@@ -393,8 +393,8 @@ void anysurrect_fromblock(struct any_sb_info *info)
 	if (!quiet && if_progress_updated(&progress,
 				file_template_frags_list->frag.fr_start))
 	{
-		fwrite( typelines[0], 32, 1, stdout);
-		fflush(stdout);
+		fwrite( typelines[0], 32, 1, stderr);
+		fflush(stderr);
 	}
 	
 	for (type=0; type<num_types; type++)
@@ -444,7 +444,7 @@ void anysurrect_fromblock(struct any_sb_info *info)
 		fwrite( "\b\b\b\b\b\b\b\b"
 			"\b\b\b\b\b\b\b\b"
 			"\b\b\b\b\b\b\b\b"
-			"\b\b\b\b\b\b\b\b", 32, 1, stdout);
+			"\b\b\b\b\b\b\b\b", 32, 1, stderr);
 }
 
 static void PRS(int argc, const char *argv[])
@@ -581,10 +581,10 @@ void sigusr1_handler (int signal_number)
 		fwrite( "\b\b\b\b\b\b\b\b"
 			"\b\b\b\b\b\b\b\b"
 			"\b\b\b\b\b\b\b\b"
-			"\b\b\b\b\b\b\b\b", 32, 1, stdout);
-		fwrite( typelines[ind_type], 32, 1, stdout);
+			"\b\b\b\b\b\b\b\b", 32, 1, stderr);
+		fwrite( typelines[ind_type], 32, 1, stderr);
 	}
-	fflush(stdout);
+	fflush(stderr);
 }
 
 void sigint_handler (int signal_number)
@@ -594,11 +594,11 @@ void sigint_handler (int signal_number)
 		fwrite( "\b\b\b\b\b\b\b\b"
 			"\b\b\b\b\b\b\b\b"
 			"\b\b\b\b\b\b\b\b"
-			"\b\b\b\b\b\b\b\b", 32, 1, stdout);
-		fwrite( typelines[ind_type], 32, 1, stdout);
+			"\b\b\b\b\b\b\b\b", 32, 1, stderr);
+		fwrite( typelines[ind_type], 32, 1, stderr);
 	}
-	printf ("\nuser cancel\n");
-	fflush(stdout);
+	fprintf (stderr, "\nuser cancel\n");
+	fflush(stderr);
 
 	_exit(1);
 }
@@ -610,10 +610,10 @@ void sigsegv_handler (int signal_number)
 		fwrite( "\b\b\b\b\b\b\b\b"
 			"\b\b\b\b\b\b\b\b"
 			"\b\b\b\b\b\b\b\b"
-			"\b\b\b\b\b\b\b\b", 32, 1, stdout);
-		fwrite( typelines[ind_type], 32, 1, stdout);
+			"\b\b\b\b\b\b\b\b", 32, 1, stderr);
+		fwrite( typelines[ind_type], 32, 1, stderr);
 	}
-	fflush(stdout);
+	fflush(stderr);
 	fprintf (stderr, "\nSegmentation fault\n");
 
 	abort();

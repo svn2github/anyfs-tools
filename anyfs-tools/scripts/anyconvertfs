@@ -32,6 +32,10 @@ PRINT()
 	STRING="${STRING//\{BUILD_FS\}/${BOLD}\"$BUILD_FS\"${CLEAR}}"
 	STRING="${STRING//\{LABEL\}/${BOLD}\"$LABEL\"${CLEAR}}"
 	STRING="${STRING//\{USE_ANY_FS_OR_FUSE\}/${BOLD}\"$USE_ANY_FS_OR_FUSE\"${CLEAR}}"
+	
+	STRING="${STRING//\{LOOPDEVICE\}/${BOLD}\"$LOOPDEVICE\"${CLEAR}}"
+	STRING="${STRING//\{RESCUELIST\}/${BOLD}\"$RESCUELIST\"${CLEAR}}"
+	STRING="${STRING//\{RESCUEDIR\}/${BOLD}\"$RESCUEDIR\"${CLEAR}}"
 
 	STRING="${STRING//\{MESG\}/$MESG}"
 
@@ -71,7 +75,7 @@ checkutilities ()
     done
 }
 
-checkutilities "`$GT"It is necessary to work."`" mount modprobe awk df build_it stat head reblock || exit 1
+checkutilities "`$GT"It is necessary to work."`" mount modprobe awk tr df build_it stat head reblock || exit 1
 
 usage ()
 {
@@ -383,7 +387,7 @@ mkdir $TMPDIR
 	exit 1
 }
 
-TMPDIRDEVICE="`df "$TMPDIR" | awk -- '(NR==2) {print $1}'`"
+TMPDIRDEVICE="`df -P "$TMPDIR" | awk -- '(NR==2) {print $1}'`"
 
 [[ "$TMPDIRDEVICE" == "$DEVICE" ]] &&
 {
@@ -394,11 +398,31 @@ TMPDIRDEVICE="`df "$TMPDIR" | awk -- '(NR==2) {print $1}'`"
 ANYMOUNTPOINT="$TMPDIR/anymountpoint"
 
 MOUNTPOINT="$TMPDIR/mountpoint"
+
+RESCUELIST="$TMPDIR/rescue.list"
+RESCUEDIR="$TMPDIR/rescue"
+
 WASMOUNTED="N"
+
+[[ "$FROMFS" == "ntfs-3g" ]] &&
+{
+	checkutilities "`$GT"It is neccessary for converting from"` $FROMFS" ntfs-3g || exit 1
+}
 
 mount | grep -q "$DEVICE" && WASMOUNTED="Y"
 
-if [[ "$WASMOUNTED" == "Y" ]]; then
+if [[ "$FROMFS" == "ntfs-3g" && $WASMOUNTED == "Y" ]]; then
+	umount "$DEVICE" ||
+        {
+		PRINT "`$GT""\
+"{DEVICE} was mounted and I cannot umount it
+for convert it from ntfs-3g"`"
+		exit 1
+	}	
+fi
+
+if [[ "$WASMOUNTED" == "Y" && "$FROMFS" != "ntfs-3g" ]]; then
+
 	MOUNTPOINT="`mount | awk -- '($1 == "'"$DEVICE"'") {print $3; exit}'`"
 	MOUNTOPTIONS="`mount | awk -- '($1 == "'"$DEVICE"'") {sub (/^\(/, "", $6); sub (/\)$/, "", $6); print $6}'`"
 	MOUNTEDFS="`mount | awk -- '($1 == "'"$DEVICE"'") {print $5; exit}'`"
@@ -518,18 +542,46 @@ But {UNDER}--inodetable{CLEAR} is option for converting from {UNDER}anyfs{CLEAR}
 	[[ "$FROMFS" == "AUTO" ]] || TYPEFSOPS="-t $FROMFS"
 
 	MOUNTOPTIONS="rw"
-	[ -b "$DEVICE" ] || MOUNTOPTIONS="rw,loop"
-	[ "$INODETABLE" ] && MOUNTOPTIONS="$MOUNTOPTIONS,inodetable=$INODETABLE"
 
-	[[ "$FROMFS" == "any" ]] ||
-	mount $TYPEFSOPS -o "$MOUNTOPTIONS",ro "$DEVICE" "$MOUNTPOINT" ||
-	{
-		echo -e `$GT"Error while mount device in read-only mode"`
-		exit 1
-	}
+	if [[ "$FROMFS" == "ntfs-3g" ]]; then
+		MOUNTOPTIONS="$MOUNTOPTIONS,blkdev"
 
-	[[ "$FROMFS" ==  "AUTO" ]] &&
-		FROMFS="`mount | awk -- '($1 == "'"$DEVICE"'") {print $5}'`"
+		LOOPDEVICE=""
+		[ -b "$DEVICE" ] || 
+		{
+			LOOPDEVICE="`losetup -f`" ||
+			{
+				PRINT "`$GT""\
+"Error while search free loop device for mount ntfs-3g in blkdev mode"`"
+				exit 1
+			}
+
+			losetup "$LOOPDEVICE" "$DEVICE" ||
+			{
+				PRINT "`$GT""\
+"Error while setup loop device for mount ntfs-3g in blkdev mode"`"
+				exit 1
+			}
+		}
+
+		MOUNTDEVICE="$DEVICE"
+		[ "$LOOPDEVICE" ] && MOUNTDEVICE="$LOOPDEVICE"
+
+		ntfs-3g "$MOUNTDEVICE" "$MOUNTPOINT" -o "$MOUNTOPTIONS",ro
+	else
+		[ -b "$DEVICE" ] || MOUNTOPTIONS="rw,loop"
+		[ "$INODETABLE" ] && MOUNTOPTIONS="$MOUNTOPTIONS,inodetable=$INODETABLE"
+
+		[[ "$FROMFS" == "any" ]] ||
+		mount $TYPEFSOPS -o "$MOUNTOPTIONS",ro "$DEVICE" "$MOUNTPOINT" ||
+		{
+			echo -e `$GT"Error while mount device in read-only mode"`
+			exit 1
+		}
+
+		[[ "$FROMFS" ==  "AUTO" ]] &&
+			FROMFS="`mount | awk -- '($1 == "'"$DEVICE"'") {print $5}'`"
+	fi
 fi
 
 [ -z "$INODETABLE" ] && INODETABLE="$TMPDIR/inodetable"
@@ -562,6 +614,10 @@ fi
 			'reiserfs')
 			( which "debugreiserfs" >/dev/null 2>&1 ) &&
 			    LABEL="`debugreiserfs "$DEVICE" 2>/dev/null | awk -- '/^LABEL:/ {sub(/^LABEL: /, ""); print; exit;}'`"
+			;;
+			'ntfs-3g')
+			( which "ntfslabel" >/dev/null 2>&1 ) &&
+			    LABEL="`ntfslabel "$DEVICE"`"
 			;;
 		esac
 	}
@@ -599,6 +655,11 @@ HANDLER()
 	[[ "$RMINODETABLE" == "Y" ]] && rm -f "$INODETABLE" ||
 		PRINT "`$GT"Inode table was saved. See {INODETABLE}."`"
 
+	[[ "$FROMFS" == "ntfs-3g" ]] && [ -f "$RESCUELIST" ] ||
+		PRINT "`$GT"See {RESCUELIST} for list of files not aligned with block boundaries."`"
+
+	[ "$LOOPDEVICE" ] && losetup -d "$LOOPDEVICE"
+
 	rmdir "$TMPDIR"
 
 	exit 1
@@ -634,7 +695,14 @@ Inode table: {INODETABLE}
 First step which destroy old filesystem: {FIRSTDESTROYSTEP}
 Use anyfs kernel module or anyfuse FUSE module: {USE_ANY_FS_OR_FUSE}"`"
 
-echo
+[ "$LOOPDEVICE" ] &&
+	PRINT "`$GT"Loop Device: {LOOPDEVICE}"`"
+
+[[ "$FROMFS" == "ntfs-3g" ]] &&
+{
+	PRINT "`$GT"Rescue List: {RESCUELIST}
+Rescue Directory: {RESCUEDIR}"`"
+}
 
 RMINODETABLE="Y"
 [[ "$FROMFS" == "any" ]] && RMINODETABLE="N"
@@ -668,12 +736,90 @@ if [[ "$FROMFS" == "any" ]]; then
 	echo -e "`$GT"O.K. anyfs already has inode table"`"
 	echo -e "${BOLD}${BROWN}`$GT"Skip"`${CLEAR}"
 else
-	build_it "$MOUNTPOINT" "$INODETABLE" ||
+	BUILD_IT_OPTIONS=""
+	BUILD_IT_OUTPUT="/dev/stdout"
+
+	[[ "$FROMFS" == "ntfs-3g" ]] && 
+	{
+		BUILD_IT_OPTIONS="-s"
+		BUILD_IT_OUTPUT="$RESCUELIST"
+	}
+
+	build_it $BUILD_IT_OPTIONS "$MOUNTPOINT" "$INODETABLE" >"$BUILD_IT_OUTPUT" ||
 	{
 		echo -e "`$GT"Error while building inode table"`"
 		HANDLER
 	}
 	echo -e "${BOLD}${GREEN}`$GT"Done"`${CLEAR}"
+fi
+
+if [[ "$FROMFS" == "ntfs-3g" ]]; then
+
+	echo
+	PRINT "`$GT"{BOLD}Step{CLEAR} {UNDER}1a{CLEAR}. {BOLD}{CYAN}Rescue (copy) files not aligned with block boundaries{CLEAR}."`"
+
+	RESCUELIST_ENTRIES="`cat "$RESCUELIST" | wc -l`"
+	if (( $RESCUELIST_ENTRIES )); then
+		mkdir "$RESCUEDIR"
+
+		RESCUE_SIZE="`cat "$RESCUELIST"| tr '\n' '\0' | xargs -0 du -bc | awk 'END {print $1}'`"
+		RESCUE_SIZE=$[$RESCUE_SIZE/1024 + 4*$RESCUELIST_ENTRIES]
+
+		TOTAL_SIZE="`df -kP "$MOUNTPOINT" | awk 'END {print $3}'`"
+		DISK_FREE="`df -kP "$RESCUEDIR" | awk 'END {print $4}'`"
+
+		if (( $RESCUE_SIZE > $TOTAL_SIZE*3/4 )); then
+			PRINT "`$GT""\
+"Seems more than 75% space on the filesystem is files not aligned 
+with block boundaries. 
+So seems it will easier to use cp && mkfs && cp for converting this filesystem.
+{BOLD}Please, check if the filesystem is encrypted or compressed.{CLEAR}"`"
+			
+			HANDLER
+		fi
+
+		if (( $RESCUE_SIZE > $DISK_FREE )); then
+			PRINT "`$GT""\
+"Sorry, not enough space on filesystem with temporary directory to rescue 
+all files not aligned with block boundaries. 
+Use {UNDER}'--tmpdir'{CLEAR} option to point other temporary directory."`"
+
+			if (( $RESCUE_SIZE > $TOTAL_SIZE/2 )); then
+				PRINT "`$GT""\
+"More than 50% space on the filesystem is files not aligned 
+with block boundaries.
+{BOLD}Please, check if the filesystem (or some files/directories) is 
+	encrypted or compressed.{CLEAR}"`"
+			elif (( $RESCUE_SIZE > $TOTAL_SIZE/4 )); then
+				PRINT "`$GT""\
+"More than 25% space on the filesystem is files not aligned 
+with block boundaries.
+{BOLD}Please, check if some files/directories is encrypted or compressed.{CLEAR}"`"
+			fi
+
+			HANDLER
+		fi
+
+		while read file; do
+			RELPATH="${file#$MOUNTPOINT}"
+			RELDIRPATH="${RELPATH%/*}"
+
+			FULLRESCUEPATH="$RESCUEDIR/$RELPATH"
+			FULLRESCUEDIRPATH="$RESCUEDIR/$RELDIRPATH"
+
+			mkdir -p "$FULLRESCUEDIRPATH"
+			cp -fp "$file" "$FULLRESCUEPATH" ||
+			{
+				echo -e "`$GT"Error while copy file"`"
+				HANDLER
+			}
+		done < "$RESCUELIST"
+
+		echo -e "${BOLD}${GREEN}`$GT"Done"`${CLEAR}"
+	else
+		echo -e "`$GT"O.K. Rescue list is empty"`"
+		echo -e "${BOLD}${BROWN}`$GT"Skip"`${CLEAR}"
+	fi
 fi
 
 [[ "$TOFS" == "any" ]] && [[ "$RMINODETABLE" == "Y" ]] && RMINODETABLE="n"
@@ -709,6 +855,8 @@ HANDLER()
 
 	[[ "$RMINODETABLE" == "Y" ]] && rm -f "$INODETABLE" ||
 		PRINT "`$GT"Inode table was saved. See {INODETABLE}."`"
+
+	[ "$LOOPDEVICE" ] && losetup -d "$LOOPDEVICE"
 
 	rmdir "$TMPDIR"
 
@@ -877,7 +1025,59 @@ else
 	echo -e "${BOLD}${GREEN}`$GT"Done"`${CLEAR}"
 fi
 
-if [[ "$WASMOUNTED" == "Y" ]]; then
+if [[ "$FROMFS" == "ntfs-3g" ]]; then
+
+	echo
+	PRINT "`$GT"{BOLD}Step{CLEAR} {UNDER}5a{CLEAR}. {BOLD}{CYAN}Move rescued files to new filesystem{CLEAR}."`"
+
+	if (( $RESCUELIST_ENTRIES )); then
+		if [[ "$TOFS" == "any" ]]; then
+			PRINT "`$GT""\
+"Cannot move files to read-only anyfs filesystem.
+{UNDER}Please, see{CLEAR} {RESCUEDIR} {UNDER}directory for rescued files.{CLEAR}"`"
+			echo -e "${BOLD}${BROWN}`$GT"Skip"`${CLEAR}"
+		else
+			{
+				MOUNTOPTIONS="rw"
+				[ -b "$DEVICE" ] || MOUNTOPTIONS="rw,loop"
+				[[ "$TOFS" == "any" ]] && MOUNTOPTIONS="$MOUNTOPTIONS,inodetable=$INODETABLE"
+				mount -t "$TOFS" -o "$MOUNTOPTIONS" "$DEVICE" "$MOUNTPOINT" ||
+				{
+					echo
+					echo -e "`$GT"Error while mounting new fs"`"
+					HANDLER
+				}
+			}
+
+			while read file; do
+				RELPATH="${file#$MOUNTPOINT}"
+				RELDIRPATH="${RELPATH%/*}"
+
+				FULLRESCUEPATH="$RESCUEDIR/$RELPATH"
+				FULLRESCUEDIRPATH="$RESCUEDIR/$RELDIRPATH"
+
+				mv -f "$FULLRESCUEPATH" "$file" ||
+				{
+					echo -e "`$GT"Error while move file"`"
+					HANDLER
+				}
+				rmdir --ignore-fail-on-non-empty -p "$FULLRESCUEDIRPATH"
+			done < "$RESCUELIST"
+
+			rm -f "$RESCUELIST"
+
+			if [[ "$WASMOUNTED" != "Y" ]]; then
+				umount "$MOUNTPOINT"
+			fi
+
+			echo -e "${BOLD}${GREEN}`$GT"Done"`${CLEAR}"
+		fi
+	else
+		echo -e "`$GT"O.K. Rescue list is empty"`"
+		echo -e "${BOLD}${BROWN}`$GT"Skip"`${CLEAR}"
+	fi
+
+elif [[ "$WASMOUNTED" == "Y" ]]; then
 	MOUNTOPTIONS="rw"
 	[ -b "$DEVICE" ] || MOUNTOPTIONS="rw,loop"
 	[[ "$TOFS" == "any" ]] && MOUNTOPTIONS="$MOUNTOPTIONS,inodetable=$INODETABLE"
@@ -890,6 +1090,8 @@ PRINT "`$GT"Inode table was saved. See {INODETABLE}."`"
 FSATTAB="`cat /etc/fstab | awk -- '( $1 == "'"$DEVICE"'" ) {print $3; exit;}'`"
 [ "$FSATTAB" ] && [[ "$FSATTAB" != "$TOFS" ]] &&
 	PRINT "`$GT"Don't forget change filesystem of the device in {BOLD}/etc/fstab{CLEAR}"`"
+
+[ "$LOOPDEVICE" ] && losetup -d "$LOOPDEVICE"
 
 [ -d "$TMPDIR" ] && rmdir "$TMPDIR"
 

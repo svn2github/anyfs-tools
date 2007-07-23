@@ -269,7 +269,7 @@ int fill_anyinodeinfo(struct any_inode *inode, const char *path,
 		};
 
 		fr_length = 0;
-		numfrags = 1;
+		numfrags = 0;
 		for (i=0; i < numblocks; i++) {
 			block = get_bmap(fd, i, &r);
 			if (r<0) {
@@ -308,6 +308,7 @@ int fill_anyinodeinfo(struct any_inode *inode, const char *path,
 		inode->i_info.file_frags->fr_frags[numfrags].
 			fr_length = (fr_length +ibs-1)/ibs;
 
+		numfrags++;
 		if ( (numfrags == 1) && !fr_start && print_sparse_files )
 		{
 			printf("%s\n", path);

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-05-18 20:36+0400\n"
+"POT-Creation-Date: 2007-07-22 01:58+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,179 +16,197 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../scripts/anyconvertfs:68
+#: ../scripts/anyconvertfs:72
 msgid "Cannot find {UTIL}. {MESG}"
 msgstr ""
 
-#: ../scripts/anyconvertfs:74
+#: ../scripts/anyconvertfs:78
 msgid "It is necessary to work."
 msgstr ""
 
-#: ../scripts/anyconvertfs:79
+#: ../scripts/anyconvertfs:83
 msgid "usage:"
 msgstr ""
 
-#: ../scripts/anyconvertfs:204
+#: ../scripts/anyconvertfs:208
 msgid "Sorry, seems {BOLD}any{CLEAR} module hasn't installed"
 msgstr ""
 
-#: ../scripts/anyconvertfs:205 ../scripts/anyconvertfs:215
-#: ../scripts/anyconvertfs:222 ../scripts/anyconvertfs:237
-#: ../scripts/anyconvertfs:582 ../scripts/anyconvertfs:690
+#: ../scripts/anyconvertfs:209 ../scripts/anyconvertfs:219
+#: ../scripts/anyconvertfs:226 ../scripts/anyconvertfs:241
+#: ../scripts/anyconvertfs:633 ../scripts/anyconvertfs:832
 msgid "Exit"
 msgstr ""
 
-#: ../scripts/anyconvertfs:214
+#: ../scripts/anyconvertfs:218
 msgid "Sorry, seems {BOLD}fuse{CLEAR} kernel module hasn't installed"
 msgstr ""
 
-#: ../scripts/anyconvertfs:221
+#: ../scripts/anyconvertfs:225
 msgid "Sorry, seems {BOLD}anyfuse{CLEAR} FUSE module hasn't installed"
 msgstr ""
 
-#: ../scripts/anyconvertfs:234
+#: ../scripts/anyconvertfs:238
 msgid ""
 "Sorry, you must have {BOLD}anyfs{CLEAR} kernel module or\n"
 "  {BOLD}anyfuse{CLEAR} FUSE module with {BOLD}fuse{CLEAR} kernel module"
 msgstr ""
 
-#: ../scripts/anyconvertfs:266
+#: ../scripts/anyconvertfs:270
 msgid "{DEVICE} is not block device. Use {UNDER}'-f'{CLEAR} option."
 msgstr ""
 
-#: ../scripts/anyconvertfs:292
+#: ../scripts/anyconvertfs:296
 msgid ""
 "{BLOCKSIZE} is bad blocksize. It must be power of 2 and not less than 512."
 msgstr ""
 
-#: ../scripts/anyconvertfs:298
+#: ../scripts/anyconvertfs:302
 msgid "{BLOCKSIZE} is too small. Minimal blocksize in Linux is {MINBLOCKSIZE}"
 msgstr ""
 
-#: ../scripts/anyconvertfs:304
+#: ../scripts/anyconvertfs:308
 msgid "{BLOCKSIZE} is too big. Maximal blocksize in Linux is {MAXBLOCKSIZE}"
 msgstr ""
 
-#: ../scripts/anyconvertfs:334
+#: ../scripts/anyconvertfs:338
 msgid ""
 "Not supported destination filesystem: {TOFS}\n"
 "I can convert to ext2/ext3/xfs/any only"
 msgstr ""
 
-#: ../scripts/anyconvertfs:343
+#: ../scripts/anyconvertfs:347
 msgid "Sorry {TOFS} doesn't support labels."
 msgstr ""
 
-#: ../scripts/anyconvertfs:351
+#: ../scripts/anyconvertfs:355
 msgid ""
 "{BLOCKSIZE} is too small for the filesystem. Minimal blocksize for {TOFS} is "
 "{MINBLOCKSIZE}."
 msgstr ""
 
-#: ../scripts/anyconvertfs:357
+#: ../scripts/anyconvertfs:361
 msgid ""
 "{BLOCKSIZE} is too big for the filesystem. Maximal blocksize for {TOFS} is "
 "{MAXBLOCKSIZE}."
 msgstr ""
 
-#: ../scripts/anyconvertfs:361
+#: ../scripts/anyconvertfs:365
 msgid "It is neccessary for converting to"
 msgstr ""
 
-#: ../scripts/anyconvertfs:365
+#: ../scripts/anyconvertfs:369
 msgid ""
 "Sorry, you are not root.\n"
 "But I would use mount."
 msgstr ""
 
-#: ../scripts/anyconvertfs:373
+#: ../scripts/anyconvertfs:377
 msgid "{TMPDIR} is not directory"
 msgstr ""
 
-#: ../scripts/anyconvertfs:382
+#: ../scripts/anyconvertfs:386
 msgid "Access denied to {TMPDIR}."
 msgstr ""
 
-#: ../scripts/anyconvertfs:390
+#: ../scripts/anyconvertfs:394
 msgid "Temporary directory cannot be at convert device"
 msgstr ""
 
-#: ../scripts/anyconvertfs:408
+#: ../scripts/anyconvertfs:412
+msgid ""
+"{DEVICE} was mounted and I cannot umount it\n"
+"for convert it from ntfs-3g"
+msgstr ""
+
+#: ../scripts/anyconvertfs:427
 msgid ""
 "{INODETABLE} inodetable was specified. But filesystem mounted \n"
 "as {MOUNTEDFS}, not {UNDER}anyfs{CLEAR}"
 msgstr ""
 
-#: ../scripts/anyconvertfs:422
+#: ../scripts/anyconvertfs:441
 msgid ""
 "anyfs mounted with specified relative path to inodetable: {MOUNTEDIT}\n"
 "Please use {UNDER}--inodetable{CLEAR} option to specify inodetable"
 msgstr ""
 
-#: ../scripts/anyconvertfs:432
+#: ../scripts/anyconvertfs:451
 msgid ""
 "In options of mounted anyfs specified {MOUNTEDITFILE} inodetable file\n"
 "And you specify {INODETABLEFILE}. I don't think that it is the same file."
 msgstr ""
 
-#: ../scripts/anyconvertfs:447
+#: ../scripts/anyconvertfs:466
 msgid ""
 "anyfs was mounted with {MOUNTEDIT} inode table\n"
 "But you specify {INODETABLE}"
 msgstr ""
 
-#: ../scripts/anyconvertfs:466
+#: ../scripts/anyconvertfs:485
 msgid ""
 "{FROMFS} source filesystem was specified but {DEVICE}\n"
 "mounted as {MOUNTEDFS} filesystem"
 msgstr ""
 
-#: ../scripts/anyconvertfs:477
+#: ../scripts/anyconvertfs:496
 msgid "Error while unmount anyfs"
 msgstr ""
 
-#: ../scripts/anyconvertfs:484
+#: ../scripts/anyconvertfs:503
 msgid "Error while remount device in read-only mode"
 msgstr ""
 
-#: ../scripts/anyconvertfs:493
+#: ../scripts/anyconvertfs:512
 msgid ""
 "Can't mount anyfs without inodetable. Use {BOLD}--inodetable{CLEAR} option"
 msgstr ""
 
-#: ../scripts/anyconvertfs:501
+#: ../scripts/anyconvertfs:520
 msgid "{INODETABLE} is not regular file"
 msgstr ""
 
-#: ../scripts/anyconvertfs:510
+#: ../scripts/anyconvertfs:529
 msgid ""
 "{INODETABLE} inodetable and {FROMFS} source filesystem was specified.\n"
 "But {UNDER}--inodetable{CLEAR} is option for converting from {UNDER}anyfs"
 "{CLEAR}"
 msgstr ""
 
-#: ../scripts/anyconvertfs:527
+#: ../scripts/anyconvertfs:549
+msgid "Error while search free loop device for mount ntfs-3g in blkdev mode"
+msgstr ""
+
+#: ../scripts/anyconvertfs:556
+msgid "Error while setup loop device for mount ntfs-3g in blkdev mode"
+msgstr ""
+
+#: ../scripts/anyconvertfs:573
 msgid "Error while mount device in read-only mode"
 msgstr ""
 
-#: ../scripts/anyconvertfs:572
+#: ../scripts/anyconvertfs:623
 msgid "{LABEL} label would be truncated to {MAXLABELLEN} length."
 msgstr ""
 
-#: ../scripts/anyconvertfs:600 ../scripts/anyconvertfs:711
-#: ../scripts/anyconvertfs:888
+#: ../scripts/anyconvertfs:651 ../scripts/anyconvertfs:853
+#: ../scripts/anyconvertfs:1084
 msgid "Inode table was saved. See {INODETABLE}."
 msgstr ""
 
-#: ../scripts/anyconvertfs:609
+#: ../scripts/anyconvertfs:654
+msgid "See {RESCUELIST} for list of files not aligned with block boundaries."
+msgstr ""
+
+#: ../scripts/anyconvertfs:665
 msgid "Device is busy."
 msgstr ""
 
-#: ../scripts/anyconvertfs:621 ../scripts/anyconvertfs:623
+#: ../scripts/anyconvertfs:677 ../scripts/anyconvertfs:679
 msgid "Never"
 msgstr ""
 
-#: ../scripts/anyconvertfs:626
+#: ../scripts/anyconvertfs:682
 msgid ""
 "Converting of {DEVICE} from {FROMFS} to {TOFS}\n"
 "New filesystem label: {LABEL}\n"
@@ -202,71 +220,130 @@ msgid ""
 "Use anyfs kernel module or anyfuse FUSE module: {USE_ANY_FS_OR_FUSE}"
 msgstr ""
 
-#: ../scripts/anyconvertfs:642
+#: ../scripts/anyconvertfs:694
+msgid "Loop Device: {LOOPDEVICE}"
+msgstr ""
+
+#: ../scripts/anyconvertfs:698
+msgid ""
+"Rescue List: {RESCUELIST}\n"
+"Rescue Directory: {RESCUEDIR}"
+msgstr ""
+
+#: ../scripts/anyconvertfs:705
 msgid "Dry run {BOLD}{GREEN}successful{CLEAR}"
 msgstr ""
 
-#: ../scripts/anyconvertfs:650
+#: ../scripts/anyconvertfs:713
 msgid "Sleep {SECS} seconds..."
 msgstr ""
 
-#: ../scripts/anyconvertfs:659
+#: ../scripts/anyconvertfs:722
 msgid ""
 "Please, {BOLD}attentively{CLEAR} check information above,\n"
 "and then press {UNDER}Enter{CLEAR}"
 msgstr ""
 
-#: ../scripts/anyconvertfs:665
+#: ../scripts/anyconvertfs:728
 msgid ""
 "{BOLD}Step{CLEAR} {UNDER}1{CLEAR}. {BOLD}{CYAN}Building inode table{CLEAR} "
 "(with {BOLD}build_it{CLEAR})."
 msgstr ""
 
-#: ../scripts/anyconvertfs:668
+#: ../scripts/anyconvertfs:731
 msgid "O.K. anyfs already has inode table"
 msgstr ""
 
-#: ../scripts/anyconvertfs:669 ../scripts/anyconvertfs:786
-#: ../scripts/anyconvertfs:811 ../scripts/anyconvertfs:837
-#: ../scripts/anyconvertfs:869
+#: ../scripts/anyconvertfs:732 ../scripts/anyconvertfs:817
+#: ../scripts/anyconvertfs:930 ../scripts/anyconvertfs:955
+#: ../scripts/anyconvertfs:981 ../scripts/anyconvertfs:1013
+#: ../scripts/anyconvertfs:1034 ../scripts/anyconvertfs:1073
 msgid "Skip"
 msgstr ""
 
-#: ../scripts/anyconvertfs:673
+#: ../scripts/anyconvertfs:745
 msgid "Error while building inode table"
 msgstr ""
 
-#: ../scripts/anyconvertfs:676 ../scripts/anyconvertfs:804
-#: ../scripts/anyconvertfs:829 ../scripts/anyconvertfs:855
-#: ../scripts/anyconvertfs:877
+#: ../scripts/anyconvertfs:748 ../scripts/anyconvertfs:814
+#: ../scripts/anyconvertfs:948 ../scripts/anyconvertfs:973
+#: ../scripts/anyconvertfs:999 ../scripts/anyconvertfs:1021
+#: ../scripts/anyconvertfs:1069
 msgid "Done"
 msgstr ""
 
-#: ../scripts/anyconvertfs:683
+#: ../scripts/anyconvertfs:754
+msgid ""
+"{BOLD}Step{CLEAR} {UNDER}1a{CLEAR}. {BOLD}{CYAN}Rescue (copy) files not "
+"aligned \n"
+"with block boundaries{CLEAR}."
+msgstr ""
+
+#: ../scripts/anyconvertfs:768
+msgid ""
+"Seems more than 75% space on the filesystem is files not aligned \n"
+"with block boundaries. \n"
+"So seems it will easier to use cp && mkfs && cp for converting this "
+"filesystem.\n"
+"{BOLD}Please, check if the filesystem is encrypted or compressed.{CLEAR}"
+msgstr ""
+
+#: ../scripts/anyconvertfs:778
+msgid ""
+"Sorry, not enough space on filesystem with temporary directory to rescue \n"
+"all files not aligned with block boundaries. \n"
+"Use {UNDER}'--tmpdir'{CLEAR} option to point other temporary directory."
+msgstr ""
+
+#: ../scripts/anyconvertfs:784
+msgid ""
+"More than 50% space on the filesystem is files not aligned \n"
+"with block boundaries.\n"
+"{BOLD}Please, check if the filesystem (or some files/directories) is \n"
+"\tencrypted or compressed.{CLEAR}"
+msgstr ""
+
+#: ../scripts/anyconvertfs:790
+msgid ""
+"More than 25% space on the filesystem is files not aligned \n"
+"with block boundaries.\n"
+"{BOLD}Please, check if some files/directories is encrypted or compressed."
+"{CLEAR}"
+msgstr ""
+
+#: ../scripts/anyconvertfs:809
+msgid "Error while copy file"
+msgstr ""
+
+#: ../scripts/anyconvertfs:816 ../scripts/anyconvertfs:1072
+msgid "O.K. Rescue list is empty"
+msgstr ""
+
+#: ../scripts/anyconvertfs:825
 msgid "Error while unmount device"
 msgstr ""
 
-#: ../scripts/anyconvertfs:719
+#: ../scripts/anyconvertfs:863
 msgid ""
 "{BOLD}Step{CLEAR} {UNDER}2{CLEAR}. {BOLD}{CYAN}Noops (check if enough space) "
 "reblock anyfs{CLEAR} (with {BOLD}reblock{CLEAR})."
 msgstr ""
 
-#: ../scripts/anyconvertfs:724
+#: ../scripts/anyconvertfs:868
 msgid ""
 "{UTIL} returned {BOLD}{RED}Not Enough Space{CLEAR}\n"
 "O.K. I try to be helpful and now.."
 msgstr ""
 
-#: ../scripts/anyconvertfs:728
+#: ../scripts/anyconvertfs:872
 msgid "Mounting anyfs..."
 msgstr ""
 
-#: ../scripts/anyconvertfs:737 ../scripts/anyconvertfs:746
+#: ../scripts/anyconvertfs:881 ../scripts/anyconvertfs:890
 msgid "Error while mount anyfs filesystem"
 msgstr ""
 
-#: ../scripts/anyconvertfs:752
+#: ../scripts/anyconvertfs:896
 msgid ""
 "So, device was mounted as anyfs to {MOUNTPOINT}\n"
 "At anyfs you can remove and move files and directories,\n"
@@ -274,7 +351,7 @@ msgid ""
 "You CANNOT create or copy regular files from other filesystems."
 msgstr ""
 
-#: ../scripts/anyconvertfs:758
+#: ../scripts/anyconvertfs:902
 msgid ""
 "{BOLD}Now I would run 'bash' at this filesystem.\n"
 "Please, remove not needed files, or move its to other filesystems.\n"
@@ -282,91 +359,112 @@ msgid ""
 "When it would done, print 'exit'. And I try run {UTIL}{BOLD} again.{CLEAR}"
 msgstr ""
 
-#: ../scripts/anyconvertfs:763
+#: ../scripts/anyconvertfs:907
 msgid ""
 "{UNDER}Do NOT close the console.\n"
 "Do NOT unmount the anyfs filesystem.{CLEAR}"
 msgstr ""
 
-#: ../scripts/anyconvertfs:772
+#: ../scripts/anyconvertfs:916
 msgid "Unmounting anyfs..."
 msgstr ""
 
-#: ../scripts/anyconvertfs:775
+#: ../scripts/anyconvertfs:919
 msgid "Error while unmount anyfs filesystem"
 msgstr ""
 
-#: ../scripts/anyconvertfs:778
+#: ../scripts/anyconvertfs:922
 msgid "Retry"
 msgstr ""
 
-#: ../scripts/anyconvertfs:785
+#: ../scripts/anyconvertfs:929
 msgid "Good. Filesystem already has {BLOCKSIZE} blocksize"
 msgstr ""
 
-#: ../scripts/anyconvertfs:799
+#: ../scripts/anyconvertfs:943
 msgid "Error while reblock (no operation)"
 msgstr ""
 
-#: ../scripts/anyconvertfs:808
+#: ../scripts/anyconvertfs:952
 msgid ""
 "{BOLD}Step{CLEAR} {UNDER}3{CLEAR}. {BOLD}{CYAN}Reblock anyfs{CLEAR} (with "
 "{BOLD}reblock{CLEAR})."
 msgstr ""
 
-#: ../scripts/anyconvertfs:816 ../scripts/anyconvertfs:862
+#: ../scripts/anyconvertfs:960 ../scripts/anyconvertfs:1006
 msgid ""
 "It's your {BOLD}last chance{CLEAR} to save the old filesystem.\n"
 "Press {UNDER}Ctrl+C{CLEAR} to {BOLD}cancel{CLEAR} converting."
 msgstr ""
 
-#: ../scripts/anyconvertfs:826
+#: ../scripts/anyconvertfs:970
 msgid "Error while reblock"
 msgstr ""
 
-#: ../scripts/anyconvertfs:833
+#: ../scripts/anyconvertfs:977
 msgid ""
 "{BOLD}Step{CLEAR} {UNDER}4{CLEAR}. {BOLD}{CYAN}Noops (check if enough space) "
 "build new filesystem{CLEAR} (with {BUILD_FS})."
 msgstr ""
 
-#: ../scripts/anyconvertfs:836
+#: ../scripts/anyconvertfs:980
 msgid "O.K. Inode table already built"
 msgstr ""
 
-#: ../scripts/anyconvertfs:850
+#: ../scripts/anyconvertfs:994
 msgid "Error while build new fs (no operation)"
 msgstr ""
 
-#: ../scripts/anyconvertfs:859
+#: ../scripts/anyconvertfs:1003
 msgid ""
 "{BOLD}Step{CLEAR} {UNDER}5{CLEAR}. {BOLD}{CYAN}Build new filesystem{CLEAR} "
 "(with {BUILD_FS})."
 msgstr ""
 
-#: ../scripts/anyconvertfs:874
+#: ../scripts/anyconvertfs:1018
 msgid "Error while build new fs"
 msgstr ""
 
-#: ../scripts/anyconvertfs:892
+#: ../scripts/anyconvertfs:1027
+msgid ""
+"{BOLD}Step{CLEAR} {UNDER}5a{CLEAR}. {BOLD}{CYAN}Move rescued files to new "
+"filesystem{CLEAR}."
+msgstr ""
+
+#: ../scripts/anyconvertfs:1031
+msgid ""
+"Cannot move files to read-only anyfs filesystem.\n"
+"{UNDER}Please, see{CLEAR} {RESCUEDIR} {UNDER}directory for rescued files."
+"{CLEAR}"
+msgstr ""
+
+#: ../scripts/anyconvertfs:1043
+msgid "Error while mounting new fs"
+msgstr ""
+
+#: ../scripts/anyconvertfs:1057
+msgid "Error while move file"
+msgstr ""
+
+#: ../scripts/anyconvertfs:1088
 msgid "Don't forget change filesystem of the device in {BOLD}/etc/fstab{CLEAR}"
 msgstr ""
 
-#: ../scripts/anyconvertfs:896
+#: ../scripts/anyconvertfs:1094
 msgid "Successful"
 msgstr ""
 
-#: ../src/anysurrect/filesystem_info_descr.c:761
+#: ../src/anysurrect/filesystem_info_descr.c:754
 #: ../src/build_e2fs/build_e2fs.c:888
 msgid "Illegal number for blocks per group"
 msgstr ""
 
-#: ../src/anysurrect/filesystem_info_descr.c:766
+#: ../src/anysurrect/filesystem_info_descr.c:759
 #: ../src/build_e2fs/build_e2fs.c:893
 msgid "blocks per group must be multiple of 8"
 msgstr ""
 
-#: ../src/anysurrect/filesystem_info_descr.c:776
+#: ../src/anysurrect/filesystem_info_descr.c:769
 #: ../src/build_e2fs/build_e2fs.c:903
 #, c-format
 msgid "invalid inode ratio %s (min %d/max %d)"
@@ -397,18 +495,18 @@ msgstr ""
 #: ../src/anysurrect/anysurrect.c:1125 ../src/anysurrect/anysurrect.c:1141
 #: ../src/anysurrect/frags_funcs.c:49 ../src/anysurrect/frags_funcs.c:88
 #: ../src/anysurrect/frags_funcs.c:124 ../src/anysurrect/frags_funcs.c:149
-#: ../src/anysurrect/frags_funcs.c:412 ../src/build_xfs/build_xfs.c:3029
-#: ../src/build_xfs/build_xfs.c:3123 ../src/build_xfs/build_xfs.c:3294
-#: ../src/build_xfs/build_xfs.c:3621 ../src/build_xfs/build_xfs.c:3833
-#: ../src/build_xfs/build_xfs.c:4029 ../src/build_e2fs/build_e2fs.c:2156
+#: ../src/anysurrect/frags_funcs.c:412 ../src/build_xfs/build_xfs.c:3030
+#: ../src/build_xfs/build_xfs.c:3124 ../src/build_xfs/build_xfs.c:3295
+#: ../src/build_xfs/build_xfs.c:3622 ../src/build_xfs/build_xfs.c:3834
+#: ../src/build_xfs/build_xfs.c:4030 ../src/build_e2fs/build_e2fs.c:2156
 #: ../src/anyfuse/anyfuse.c:190 ../src/anyfuse/anyfuse.c:223
 #: ../src/anyfuse/anyfuse.c:342 ../src/anyfuse/anyfuse.c:389
-#: ../src/reblock.c:579 ../lib/new_inode.c:57 ../lib/new_inode.c:74
-#: ../lib/new_inode.c:186 ../src/anysurrect/anysurreqt/surrect.cpp:307
+#: ../src/reblock.c:579 ../lib/new_inode.c:51 ../lib/new_inode.c:67
+#: ../lib/new_inode.c:176 ../src/anysurrect/anysurreqt/surrect.cpp:307
 #: ../src/anysurrect/anysurreqt/surrect.cpp:377
 #: ../src/anysurrect/anysurreqt/surrect.cpp:536
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1440
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1464
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1446
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1470 ../src/anysurrect/anysurreqt/cut_surrect.cpp:115
 #, c-format
 msgid "Not enough memory\n"
 msgstr ""
@@ -429,47 +527,47 @@ msgid "Illegal mode for directory umask. It must be 3 octal digits.\n"
 msgstr ""
 
 #: ../src/anysurrect/anysurrect.c:829 ../src/anysurrect/anysurrect.c:906
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1042
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1120
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1043
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1121
 #, c-format
 msgid "can't find %s surrecter function\n"
 msgstr ""
 
 #: ../src/anysurrect/anysurrect.c:1032 ../src/anyfuse/anyfuse.c:678
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1260
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1266
 #, c-format
 msgid "Error opening file\n"
 msgstr ""
 
 #: ../src/anysurrect/anysurrect.c:1067
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1362
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1368
 #, c-format
 msgid "Sorry, too large device.\n"
 msgstr ""
 
 #: ../src/anysurrect/anysurrect.c:1080
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1376
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1382
 #, c-format
 msgid "Error creating root inode\n"
 msgstr ""
 
 #: ../src/anysurrect/anysurrect.c:1090 ../src/build_xfs/build_xfs.c:2104
 #: ../src/build_e2fs/build_e2fs.c:1040 ../src/anyfuse/anyfuse.c:698
-#: ../src/reblock.c:515 ../src/anysurrect/anysurreqt/surrect.cpp:1392
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1669
+#: ../src/reblock.c:515 ../src/anysurrect/anysurreqt/surrect.cpp:1398
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1675 ../src/anysurrect/anysurreqt/cut_surrect.cpp:508
 #, c-format
 msgid "Error while reading inode table: %s\n"
 msgstr ""
 
 #: ../src/anysurrect/anysurrect.c:1091 ../src/build_xfs/build_xfs.c:2105
 #: ../src/build_e2fs/build_e2fs.c:1041 ../src/anyfuse/anyfuse.c:699
-#: ../src/reblock.c:516 ../src/anysurrect/anysurreqt/surrect.cpp:1393
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1670
+#: ../src/reblock.c:516 ../src/anysurrect/anysurreqt/surrect.cpp:1399
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1676 ../src/anysurrect/anysurreqt/cut_surrect.cpp:509
 msgid "bad format"
 msgstr ""
 
 #: ../src/anysurrect/anysurrect.c:1098
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1400
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1406
 #, c-format
 msgid ""
 "Specified input inode table has %lu blocksize,\n"
@@ -487,15 +585,15 @@ msgid "search through all blocks: "
 msgstr ""
 
 #: ../src/anysurrect/anysurrect.c:1169 ../src/reblock.c:600
-#: ../src/build_it.c:764 ../lib/release_fssys.c:625
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1603
+#: ../src/build_it.c:770 ../lib/release_fssys.c:625
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1609 ../src/anysurrect/anysurreqt/cut_surrect.cpp:442
 #, c-format
 msgid "Error while writing inode table: %s\n"
 msgstr ""
 
 #: ../src/anysurrect/anysurrect.c:1170 ../src/reblock.c:601
-#: ../src/build_it.c:765 ../lib/release_fssys.c:626
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1604
+#: ../src/build_it.c:771 ../lib/release_fssys.c:626
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1610 ../src/anysurrect/anysurreqt/cut_surrect.cpp:443
 msgid "format error"
 msgstr ""
 
@@ -766,162 +864,162 @@ msgstr ""
 msgid "rt extent size %s too small, minimum %d\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2338
+#: ../src/build_xfs/build_xfs.c:2339
 #, c-format
 msgid "illegal inode size %d\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2343
+#: ../src/build_xfs/build_xfs.c:2344
 #, c-format
 msgid "allowable inode size with %d byte blocks is %d\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2347
+#: ../src/build_xfs/build_xfs.c:2348
 #, c-format
 msgid "allowable inode size with %d byte blocks is between %d and %d\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2355
+#: ../src/build_xfs/build_xfs.c:2356
 #, c-format
 msgid "log stripe unit specified, using v2 logs\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2373
+#: ../src/build_xfs/build_xfs.c:2374
 #, c-format
 msgid "no device name given in argument list\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2393
+#: ../src/build_xfs/build_xfs.c:2394
 #, c-format
 msgid "%s: Use the -f option to force overwrite.\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2404
+#: ../src/build_xfs/build_xfs.c:2405
 msgid "internal log"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2406
+#: ../src/build_xfs/build_xfs.c:2407
 msgid "volume log"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2408
+#: ../src/build_xfs/build_xfs.c:2409
 #, c-format
 msgid "no log subvolume or internal log\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2415
+#: ../src/build_xfs/build_xfs.c:2416
 msgid "volume rt"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2417
+#: ../src/build_xfs/build_xfs.c:2418
 msgid "none"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2420
+#: ../src/build_xfs/build_xfs.c:2421
 #, c-format
 msgid ""
 "size %s specified for data subvolume is too large, maximum is %lld blocks\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2427
+#: ../src/build_xfs/build_xfs.c:2428
 #, c-format
 msgid "can't get size of data subvolume\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2432
+#: ../src/build_xfs/build_xfs.c:2433
 #, c-format
 msgid "size %lld of data subvolume is too small, minimum %d blocks\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2439
+#: ../src/build_xfs/build_xfs.c:2440
 #, c-format
 msgid "can't have both external and internal logs\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2443
+#: ../src/build_xfs/build_xfs.c:2444
 #, c-format
 msgid "data and log sector sizes must be equal for internal logs\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2449
+#: ../src/build_xfs/build_xfs.c:2450
 #, c-format
 msgid ""
 "Warning: the data subvolume sector size %u is less than the sector size \n"
 "reported by the device (%u).\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2455
+#: ../src/build_xfs/build_xfs.c:2456
 #, c-format
 msgid ""
 "Warning: the log subvolume sector size %u is less than the sector size\n"
 "reported by the device (%u).\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2461
+#: ../src/build_xfs/build_xfs.c:2462
 #, c-format
 msgid ""
 "Warning: the realtime subvolume sector size %u is less than the sector size\n"
 "reported by the device (%u).\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2475
+#: ../src/build_xfs/build_xfs.c:2476
 #, c-format
 msgid ""
 "size %s specified for log subvolume is too large, maximum is %lld blocks\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2482
+#: ../src/build_xfs/build_xfs.c:2483
 #, c-format
 msgid "size specified for non-existent log subvolume\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2485
+#: ../src/build_xfs/build_xfs.c:2486
 #, c-format
 msgid "size %lld too large for internal log\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2512
+#: ../src/build_xfs/build_xfs.c:2513
 #, c-format
 msgid ""
 "size %s specified for rt subvolume is too large, maximum is %lld blocks\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2520
+#: ../src/build_xfs/build_xfs.c:2521
 #, c-format
 msgid "size specified for non-existent rt subvolume\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2537
+#: ../src/build_xfs/build_xfs.c:2538
 #, c-format
 msgid "agsize (%lld) not a multiple of fs blk size (%d)\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2565
+#: ../src/build_xfs/build_xfs.c:2566
 #, c-format
 msgid ""
 "%s: Specified data stripe unit %d is not the same as the volume stripe unit %"
 "d\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2571
+#: ../src/build_xfs/build_xfs.c:2572
 #, c-format
 msgid ""
 "%s: Specified data stripe width %d is not the same as the volume stripe "
 "width %d\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2616
+#: ../src/build_xfs/build_xfs.c:2617
 #, c-format
 msgid "agsize rounded to %lld, swidth = %d\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2623
+#: ../src/build_xfs/build_xfs.c:2624
 #, c-format
 msgid ""
 "Allocation group size (%lld) is not a multiple of the stripe unit (%d)\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2645
+#: ../src/build_xfs/build_xfs.c:2646
 #, c-format
 msgid ""
 "Warning: AG size is a multiple of stripe width.  This can cause performance\n"
@@ -930,39 +1028,39 @@ msgid ""
 "an AG size that is one stripe unit smaller, for example %llu.\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2670
+#: ../src/build_xfs/build_xfs.c:2671
 #, c-format
 msgid ""
 "%s: Stripe unit(%d) or stripe width(%d) is not a multiple of the block size(%"
 "d)\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2685
+#: ../src/build_xfs/build_xfs.c:2686
 #, c-format
 msgid "log stripe unit (%d) must be a multiple of the block size (%d)\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2698
+#: ../src/build_xfs/build_xfs.c:2699
 #, c-format
 msgid "log stripe unit (%d bytes) is too large (maximum is 256KiB)\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2701
+#: ../src/build_xfs/build_xfs.c:2702
 #, c-format
 msgid "log stripe unit adjusted to 32KiB\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2725
+#: ../src/build_xfs/build_xfs.c:2726
 #, c-format
 msgid "internal log size %lld too large, must fit in allocation group\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2732
+#: ../src/build_xfs/build_xfs.c:2733
 #, c-format
 msgid "log ag number %d too large, must be less than %lld\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2762
+#: ../src/build_xfs/build_xfs.c:2763
 #, c-format
 msgid ""
 "meta-data=%-22s isize=%-6d agcount=%lld, agsize=%lld blks\n"
@@ -975,197 +1073,197 @@ msgid ""
 "realtime =%-22s extsz=%-6d blocks=%lld, rtextents=%lld\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2884
+#: ../src/build_xfs/build_xfs.c:2885
 #, c-format
 msgid "Remapping of inodes to XFS Inode Numbers\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2889
+#: ../src/build_xfs/build_xfs.c:2890
 msgid "Remap inodes: "
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2917
+#: ../src/build_xfs/build_xfs.c:2918
 #, c-format
 msgid "Cannot allocate inode: not enough space\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:2941
+#: ../src/build_xfs/build_xfs.c:2942
 #, c-format
 msgid "%s: root inode created in AG %u, not AG 0\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:3016
+#: ../src/build_xfs/build_xfs.c:3017
 #, c-format
 msgid "Starting building XFS inodes\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:3036 ../src/build_e2fs/build_e2fs.c:1758
+#: ../src/build_xfs/build_xfs.c:3037 ../src/build_e2fs/build_e2fs.c:1758
 msgid "building inodes: "
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:3045
+#: ../src/build_xfs/build_xfs.c:3046
 #, c-format
 msgid "inode #%d (#%llu)\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:3096
+#: ../src/build_xfs/build_xfs.c:3097
 #, c-format
 msgid "symlink #%d (#%llu) has too long size\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:3098
+#: ../src/build_xfs/build_xfs.c:3099
 #, c-format
 msgid "its size %llu will truncate to %u\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:3100
+#: ../src/build_xfs/build_xfs.c:3101
 #, c-format
 msgid "link \"%s\" "
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:3102
+#: ../src/build_xfs/build_xfs.c:3103
 #, c-format
 msgid "truncated to \"%s\"\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:3110
+#: ../src/build_xfs/build_xfs.c:3111
 #, c-format
 msgid "Long Link\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:3136
+#: ../src/build_xfs/build_xfs.c:3137
 #, c-format
 msgid "Cannot find free block for long link: Not enough space\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:3167
+#: ../src/build_xfs/build_xfs.c:3168
 #, c-format
 msgid "Short Link\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:3175
+#: ../src/build_xfs/build_xfs.c:3176
 #, c-format
 msgid "Regular File\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:3251
+#: ../src/build_xfs/build_xfs.c:3252
 #, c-format
 msgid "multiple blocks directory with XD2D blocks -- %d\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:3253
+#: ../src/build_xfs/build_xfs.c:3254
 #, c-format
 msgid "\tlast XD2D blocks -- %d\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:3261
+#: ../src/build_xfs/build_xfs.c:3262
 #, c-format
 msgid "\twith multiple block leaf (count = %d, lastlen = %d)\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:3280 ../src/build_xfs/build_xfs.c:3353
-#: ../src/build_xfs/build_xfs.c:3419 ../src/build_xfs/build_xfs.c:3527
-#: ../src/build_xfs/build_xfs.c:3562
+#: ../src/build_xfs/build_xfs.c:3281 ../src/build_xfs/build_xfs.c:3354
+#: ../src/build_xfs/build_xfs.c:3420 ../src/build_xfs/build_xfs.c:3528
+#: ../src/build_xfs/build_xfs.c:3563
 #, c-format
 msgid ""
 "Cannot find free block for multiple block directory\n"
 "       with multiple leaf block: Not enough space\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:3603
+#: ../src/build_xfs/build_xfs.c:3604
 #, c-format
 msgid "\twith single block leaf (leaflen = %d)\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:3609 ../src/build_xfs/build_xfs.c:3680
-#: ../src/build_xfs/build_xfs.c:3741
+#: ../src/build_xfs/build_xfs.c:3610 ../src/build_xfs/build_xfs.c:3681
+#: ../src/build_xfs/build_xfs.c:3742
 #, c-format
 msgid ""
 "Cannot find free block for multiple block directory\n"
 "       with single leaf block: Not enough space\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:3817
+#: ../src/build_xfs/build_xfs.c:3818
 #, c-format
 msgid "single block directory (ulen=%d, leaflen=%d)\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:3823
+#: ../src/build_xfs/build_xfs.c:3824
 #, c-format
 msgid "Cannot find free block for single block directory: Not enough space\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:3938
+#: ../src/build_xfs/build_xfs.c:3939
 #, c-format
 msgid "Short (local) Directory\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:3999
+#: ../src/build_xfs/build_xfs.c:4000
 #, c-format
 msgid "Device\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:4023
+#: ../src/build_xfs/build_xfs.c:4024
 #, c-format
 msgid "Filling free XFS inodes\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:4197
+#: ../src/build_xfs/build_xfs.c:4198
 #, c-format
 msgid "%s: Growing the data section failed\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:4232
+#: ../src/build_xfs/build_xfs.c:4233
 #, c-format
 msgid "%s: filesystem failed to initialize\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:4242
+#: ../src/build_xfs/build_xfs.c:4243
 #, c-format
 msgid "Starting building XFS BTrees\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:4250
+#: ../src/build_xfs/build_xfs.c:4251
 msgid "building btrees at each AG: "
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:4344 ../src/build_xfs/build_xfs.c:4400
-#: ../src/build_xfs/build_xfs.c:4486 ../src/build_xfs/build_xfs.c:4569
+#: ../src/build_xfs/build_xfs.c:4345 ../src/build_xfs/build_xfs.c:4401
+#: ../src/build_xfs/build_xfs.c:4487 ../src/build_xfs/build_xfs.c:4570
 #, c-format
 msgid "Cannot find free block for INO btree: not enough space\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:5568
+#: ../src/build_xfs/build_xfs.c:5569
 #, c-format
 msgid "Cannot specify both -%c %s and -%c %s\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:5579
+#: ../src/build_xfs/build_xfs.c:5580
 #, c-format
 msgid "Illegal value %s for -%s option\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:5596
+#: ../src/build_xfs/build_xfs.c:5597
 #, c-format
 msgid "-%c %s option requires a value\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:5609
+#: ../src/build_xfs/build_xfs.c:5610
 #, c-format
 msgid "option respecified\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:5618
+#: ../src/build_xfs/build_xfs.c:5619
 #, c-format
 msgid "unknown option -%c %s\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:5657
+#: ../src/build_xfs/build_xfs.c:5658
 #, c-format
 msgid "blocksize not available yet.\n"
 msgstr ""
 
-#: ../src/build_xfs/build_xfs.c:5683
+#: ../src/build_xfs/build_xfs.c:5684
 #, c-format
 msgid ""
 "Usage: %s\n"
@@ -1775,32 +1873,32 @@ msgstr ""
 msgid "Reblock return %d\n"
 msgstr ""
 
-#: ../src/build_it.c:61
+#: ../src/build_it.c:62
 #, c-format
-msgid "Usage: %s [-qvVn] directory inode_table\n"
+msgid "Usage: %s [-qvVns] directory inode_table\n"
 msgstr ""
 
-#: ../src/build_it.c:138
+#: ../src/build_it.c:127
 #, c-format
 msgid "No permission to use FIBMAP ioctl; must have root privileges\n"
 msgstr ""
 
-#: ../src/build_it.c:189
+#: ../src/build_it.c:178
 #, c-format
 msgid "Cannot unpack ReiserFS file\n"
 msgstr ""
 
-#: ../src/build_it.c:198
+#: ../src/build_it.c:187
 #, c-format
 msgid "Cannot unpack Reiser4 file\n"
 msgstr ""
 
-#: ../src/build_it.c:212
+#: ../src/build_it.c:201
 #, c-format
 msgid "Cannot perform fdatasync\n"
 msgstr ""
 
-#: ../src/build_it.c:265
+#: ../src/build_it.c:254
 #, c-format
 msgid ""
 "Blocksize returned by statfs lesser than returned FIGETBSZ\n"
@@ -1810,7 +1908,14 @@ msgid ""
 "Filesystem type: %x\n"
 msgstr ""
 
-#: ../src/build_it.c:288
+#: ../src/build_it.c:264
+#, c-format
+msgid ""
+"\n"
+"Please, use blkdev option for FUSE-filesystems\n"
+msgstr ""
+
+#: ../src/build_it.c:285
 #, c-format
 msgid ""
 "Blocksize returned by statfs greater than returned FIGETBSZ, and\n"
@@ -1821,35 +1926,35 @@ msgid ""
 "Filesystem type: %x\n"
 msgstr ""
 
-#: ../src/build_it.c:694
+#: ../src/build_it.c:700
 #, c-format
 msgid "\"%s\" -- Is not directory\n"
 msgstr ""
 
-#: ../src/build_it.c:701
+#: ../src/build_it.c:707
 #, c-format
 msgid "start count inodes\n"
 msgstr ""
 
-#: ../src/build_it.c:706
+#: ../src/build_it.c:712
 msgid "count inodes: "
 msgstr ""
 
-#: ../src/build_it.c:719
+#: ../src/build_it.c:725
 #, c-format
 msgid "founded %d inodes\n"
 msgstr ""
 
-#: ../src/build_it.c:720 ../src/build_it.c:726
+#: ../src/build_it.c:726 ../src/build_it.c:732
 #, c-format
 msgid "creating inode table\n"
 msgstr ""
 
-#: ../src/build_it.c:746
+#: ../src/build_it.c:752
 msgid "creating inode table: "
 msgstr ""
 
-#: ../src/build_it.c:758
+#: ../src/build_it.c:764
 #, c-format
 msgid "writing inode table\n"
 msgstr ""
@@ -1920,37 +2025,37 @@ msgid ""
 "Release blocks from %lu to %lu\n"
 msgstr ""
 
-#: ../lib/super.c:423
+#: ../lib/super.c:404
 #, c-format
 msgid "bad inode table head: %s\n"
 msgstr ""
 
-#: ../lib/super.c:467
+#: ../lib/super.c:448
 #, c-format
 msgid "fail read inode table\n"
 msgstr ""
 
-#: ../lib/super.c:549
+#: ../lib/super.c:530
 #, c-format
 msgid "bad data head: %s\n"
 msgstr ""
 
-#: ../lib/super.c:603
+#: ../lib/super.c:584
 #, c-format
 msgid "fail read reg info\n"
 msgstr ""
 
-#: ../lib/super.c:612
+#: ../lib/super.c:593
 #, c-format
 msgid "bad reg head: %s\n"
 msgstr ""
 
-#: ../lib/super.c:622
+#: ../lib/super.c:603
 #, c-format
 msgid "fail malloc\n"
 msgstr ""
 
-#: ../lib/super.c:666
+#: ../lib/super.c:647
 #, c-format
 msgid "unexpected end of file\n"
 msgstr ""
@@ -2245,35 +2350,35 @@ msgstr ""
 msgid "Inode Number"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:656
+#: ../src/anysurrect/anysurreqt/surrect.cpp:656 ../src/anysurrect/anysurreqt/cut_surrect.cpp:235
 msgid "FIFO"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:659
-msgid "Symbolic Device"
+#: ../src/anysurrect/anysurreqt/surrect.cpp:659 ../src/anysurrect/anysurreqt/cut_surrect.cpp:238
+msgid "Character Device"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:662
+#: ../src/anysurrect/anysurreqt/surrect.cpp:662 ../src/anysurrect/anysurreqt/cut_surrect.cpp:241
 msgid "Directory"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:666
+#: ../src/anysurrect/anysurreqt/surrect.cpp:666 ../src/anysurrect/anysurreqt/cut_surrect.cpp:245
 msgid "Block Device"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:670
+#: ../src/anysurrect/anysurreqt/surrect.cpp:670 ../src/anysurrect/anysurreqt/cut_surrect.cpp:249
 msgid "Regular File"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:674
+#: ../src/anysurrect/anysurreqt/surrect.cpp:674 ../src/anysurrect/anysurreqt/cut_surrect.cpp:253
 msgid "Symbolic Link"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:677
+#: ../src/anysurrect/anysurreqt/surrect.cpp:677 ../src/anysurrect/anysurreqt/cut_surrect.cpp:256
 msgid "Socket"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:680
+#: ../src/anysurrect/anysurreqt/surrect.cpp:680 ../src/anysurrect/anysurreqt/cut_surrect.cpp:259
 msgid "Unknown"
 msgstr ""
 
@@ -2285,108 +2390,108 @@ msgstr ""
 msgid "I need in write access to the file"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:763
-msgid "Cannot create special device"
+#: ../src/anysurrect/anysurreqt/surrect.cpp:764
+msgid "Cannot create special file"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:764
-#: ../src/anysurrect/anysurreqt/surrect.cpp:774
-#: ../src/anysurrect/anysurreqt/surrect.cpp:802
-#: ../src/anysurrect/anysurreqt/surrect.cpp:870
+#: ../src/anysurrect/anysurreqt/surrect.cpp:765
+#: ../src/anysurrect/anysurreqt/surrect.cpp:775
+#: ../src/anysurrect/anysurreqt/surrect.cpp:803
+#: ../src/anysurrect/anysurreqt/surrect.cpp:871
 msgid "I need in write access to the directory"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:773
+#: ../src/anysurrect/anysurreqt/surrect.cpp:774
 msgid "Cannot make directory"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:798
+#: ../src/anysurrect/anysurreqt/surrect.cpp:799
 #, c-format
 msgid "cannot open '%s' for write: %s\n"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:800
+#: ../src/anysurrect/anysurreqt/surrect.cpp:801
 msgid "write error"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:801
+#: ../src/anysurrect/anysurreqt/surrect.cpp:802
 msgid "Cannot create regular file"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:812
+#: ../src/anysurrect/anysurreqt/surrect.cpp:813
 msgid "Cannot open device"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:813
+#: ../src/anysurrect/anysurreqt/surrect.cpp:814
 msgid "I need in read access to the device"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:842
+#: ../src/anysurrect/anysurreqt/surrect.cpp:843
 msgid "Cannot read from device"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:843
+#: ../src/anysurrect/anysurreqt/surrect.cpp:844
 msgid "Error in inode table?"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:851
+#: ../src/anysurrect/anysurreqt/surrect.cpp:852
 msgid "Cannot write to the file"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:852
+#: ../src/anysurrect/anysurreqt/surrect.cpp:853
 msgid "Not enough space?"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:869
-msgid "Cannot create symbolyc link"
+#: ../src/anysurrect/anysurreqt/surrect.cpp:870
+msgid "Cannot create symbolic link"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1261
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1267
 msgid "Cannot open file"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1262
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1268
 msgid "Error opening file"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1359
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1365
 msgid "Too large device"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1360
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1366
 msgid "Sorry, too large device."
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1389
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1395
 msgid "Error open inode table"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1390
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1396
 msgid "Error while reading inode table"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1427
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1451
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1433
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1457
 msgid "Too small device"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1428
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1452
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1434
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1458
 msgid "Too small device for this blocksize"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1605
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1611 ../src/anysurrect/anysurreqt/cut_surrect.cpp:444
 msgid "Write Error"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1606
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1612 ../src/anysurrect/anysurreqt/cut_surrect.cpp:445
 msgid "Error while writing inode table."
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1671
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1677 ../src/anysurrect/anysurreqt/cut_surrect.cpp:510
 msgid "Open Error"
 msgstr ""
 
-#: ../src/anysurrect/anysurreqt/surrect.cpp:1672
+#: ../src/anysurrect/anysurreqt/surrect.cpp:1678 ../src/anysurrect/anysurreqt/cut_surrect.cpp:511
 msgid "Error while reading inode table."
 msgstr ""

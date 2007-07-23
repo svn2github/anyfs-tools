@@ -33,8 +33,8 @@ void progress_init(struct progress_struct *progress,
 	if (getenv("ANYFSTOOLS_SKIP_PROGRESS"))
 		progress->progress = 0;
 
-	fputs(label, stdout);
-	fflush(stdout);
+	fputs(label, stderr);
+	fflush(stderr);
 }
 
 void progress_update(struct progress_struct *progress, uint32_t val)
@@ -48,22 +48,22 @@ void progress_update(struct progress_struct *progress, uint32_t val)
 		return;
 
 	for (i = 0; i < progress->len; i++)
-		fputc('\b', stdout);
+		fputc('\b', stderr);
 
 	if (progress->max)
-		progress->len = printf("%.2f%% (%i/%i)", (float)val / progress->pr, val, progress->max);
+		progress->len = fprintf(stderr, "%.2f%% (%i/%i)", (float)val / progress->pr, val, progress->max);
 	else
-		progress->len = printf("%i", val);
+		progress->len = fprintf(stderr, "%i", val);
 
 	progress->updated = val;
 	progress->next_update += progress->pr / 100;
-	fflush (stdout);
+	fflush (stderr);
 }
 
 void progress_close(struct progress_struct *progress)
 {
 	if (progress->max)
-		fputs(_(" done   \n"), stdout);
+		fputs(_(" done   \n"), stderr);
 	else fputs("\n", stdout);
 }
 
