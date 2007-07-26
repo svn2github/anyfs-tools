@@ -129,18 +129,18 @@ struct any_file_fragment {
 };
 
 struct any_file_frags {
-	uint32_t	fr_nfrags;
-	struct any_file_fragment	*fr_frags;
+	uint32_t			fr_nfrags;
+	struct any_file_fragment*	fr_frags;
 };
 
 struct any_dirent {
-	char*	d_name;
-	uint32_t	d_inode;
+	char*			d_name;
+	uint32_t		d_inode;
 	struct any_dirent	*d_next;
 };
 
 struct any_dir {
-	uint32_t			d_ndirents;
+	uint32_t		d_ndirents;
 	struct any_dirent*	d_dirent;
 	void*			d_data;
 };

@@ -1,6 +1,7 @@
 /*
  *	anysurrect.c
- *      CopyRight (C) 2006, Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+ *      CopyRight (C) 2006, 2007 
+ *      	Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
  */
 
 #define _LARGEFILE64_SOURCE
@@ -113,8 +114,9 @@ static void usage(void)
 {
 	fprintf(stderr, _(
 "Usage: %s [-b blocksize] [-i input_inode_table] [-p path_prefix]\n"
-"\t[-u file_umask] [-U dir_umask] [-fqvV] [-g plug-ins]\n"
-"\t[-e] [-t list_of_types] [-T list_of_types] [-l] device inode_table\n"),
+"\t[-u file_umask] [-U dir_umask] [-fqvV] [-hH] [-g plug-ins]\n"
+"\t[-e] [-t list_of_types] [-T list_of_types] [-l] device inode_table\n"
+"\t[-- [module module_options [--]] ...]\n"),
 			program_name);
 	exit(1);
 }
@@ -556,7 +558,8 @@ _("Illegal mode for directory umask. It must be 3 octal digits.\n"));
 	list_types2 = strdup(list_types2);
 	libs = strdup(libs);
 
-	if ( ( optind >= (argc-1) ) && !show_version_only && !list_all_types)
+	if ( ( optind >= (argc-1) ) && !show_version_only && !list_all_types
+			&& !mod_usages )
 		usage();
 
 	if (!quiet || show_version_only)

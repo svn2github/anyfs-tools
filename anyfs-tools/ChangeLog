@@ -1,8 +1,11 @@
-* 30.12.06      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+* 27.07.07      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
 	- Fix anyfs building with kernel version >=2.6.19
 	- Some other building fix
 	- Fix new (from v0.84.10) i/o buffer bug in anysurrect.
-	- Yet optimize anysurrect.
+	- Extremally optimize anysurrect.
+	- Add -s option to build_it.
+	- Add support of converting from ntfs-3g by anyconvertfs.
+	- 0.84.12 Release
 
 * 16.12.06      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
 	- Fix anyfs building with kernel version >=2.6.18

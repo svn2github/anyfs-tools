@@ -1,4 +1,4 @@
-.TH anysurrect-plugins 3 "17 Dec 2006" "Version 0.84.11"
+.TH anysurrect-plugins 3 "27 July 2007" "Version 0.84.12"
 .SH "НАЗВАНИЕ"
 anysurrect-plugins \- плагины для anysurrect позволяют распознавать \
 и восстанавливать дополнительные форматы помимо "вшитых" в него самого. \
@@ -84,11 +84,17 @@ anysurrect-plugins \- плагины для anysurrect позволяют рас
 .sp
 .BI "char* " "<file_format>" "_surrect();"
 .br
+.BI "void* " "<file_format>" "_parseopts(const int " argc, " const char* " argv[] ");"
+.br
+.BI "void* " "<file_format>" "_usage();"
+.br
 .BI "const char* " "<file_format>" "_indicator=""" "<short_format_name>" """;"
 .br
 .BI "const int " "<file_format>" "_text=1;"
 .br 
 .BI "const mode_t " "<file_format>" "_mode=" "<mode>" ";
+.br
+.BI "const char* " "<file_format>" "_opts=" "<module_name>" ";
 
 .SH "ОПИСАНИЕ"
 
@@ -110,6 +116,23 @@ anysurrect-plugins \- плагины для anysurrect позволяют рас
 .B fd_seek()
 (см. ниже) должен при этом указывать на конец найденного файла. \
 В случае неудачи -- функция должна возвратить NULL.
+.TP
+.BI "void* " "<file_format>" "_parseopts(const int " argc, " const char* " argv[] ");"
+Функция для разбора опций модуля, вызываемая если найдены опции передаваемые
+соответствующему модулю (см.
+.IB "<file_format>" "_opts"
+)
+При этом номер первой опции модуля передаётся в глобальной переменной
+.BR optind 
+(она устанавливается библиотечной функцией
+.BR getopt )
+Ожидается что после разбора функция установит соответсвующее значение
+.BR optind
+для указания окончания опций этого модуля.
+.TP
+.BI "void* " "<file_format>" "_usage();"
+Функция справки модуля. Вызывается при указании anysurrect'у опции 
+.BR \-H .
 .TP
 .BI "const char* " "<file_format>" "_indicator=""" "<short_format_name>" """;"
 Короткое имя для индикатора в строке прогресса. Если данного объявления \
@@ -148,6 +171,10 @@ anysurrect-plugins \- плагины для anysurrect позволяют рас
 вашего типа. Так, например, для файлов формата ELF32 используется \
 следующее объявление:
 .BI "const mode_t " "executable_ELF32" "_mode=" "0777" ";"
+.TP
+.BI "const char* " "<file_format>" "_opts=" "<module_name>" ";
+Короткое название модуля для передачи ему опций из командной строки
+.B anysurrect
 
 .SH "ФУНКЦИИ ЧТЕНИЯ ФАЙЛА"
 При написании модуля обработчика файла, вам не нужно использовать \

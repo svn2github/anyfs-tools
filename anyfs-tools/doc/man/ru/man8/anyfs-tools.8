@@ -1,14 +1,15 @@
-.TH anyfs-tools 8 "20 Nov 2006" "Version 0.84.9"
+.TH anyfs-tools 8 "27 July 2006" "Version 0.84.12"
 .SH "НАЗВАНИЕ"
 anyfs-tools \- unix-way набор инструментов для восстановления и конвертирования\
  файловых систем.
 .SH "СИНТАКСИС"
 .nf
-.BI "build_it [\-qvVn] " "directory inode_table"
+.BI "build_it [\-qvVns] " "directory inode_table"
 
 .BI "anysurrect [\-b " blocksize "] [\-i " input_inode_table "]"
-.BI "	[\-p " path_prefix "] [\-u " file_umask "] [\-U " dir_umask "] [\-fqvV] "
-.BI "	[\-g " plug-ins "] [\-e] [\-t" " list_of_types" "] [\-l] " "device inode_table"
+.BI "	[\-p " path_prefix "] [\-u " file_umask "] [\-U " dir_umask "] [\-fqvV] [\-hH] "
+.BI "	[\-g " plug-ins "] [\-e] [\-t" " list_of_types" "] [\-T" " list_of_types" "] "
+.BI "	[\-l] " "device inode_table " "[-- [" "module module_options " "[--]] ...]"
 
 .BI "reblock [\-nqvV] " "inode_table device blocksize"
 
@@ -26,7 +27,7 @@ anyfs-tools \- unix-way набор инструментов для восста�
 .BI "   [\-n " subopt [ =value "]] [\-q] [\-r " subopt [ =value "]]"
 .BI "   [\-s " subopt [ =value "]] [\-N] [\-L " label "] " "inode_table devicename "
 
-.BI "anyconvertfs [\-\-tmpdir " directory "] [\-\-" blocksize "] [\-f] [\-\-dry]"
+.BI "anyconvertfs [\-\-tmpdir " directory "] [\-\-blocksize " blocksize "] [\-f] [\-\-dry]" 
 .BI "   [\-\-inodetable " inodetable "] [\-\-color|\-\-no\-color] [\-\-label" " label" "] "
 .BI "   [--dontstop] [--pause " seconds "] [--use-anyfs|--use-anyfuse] [\-\-] " 
 .IB "    device " "[" source_fs "]" " destination_fs"

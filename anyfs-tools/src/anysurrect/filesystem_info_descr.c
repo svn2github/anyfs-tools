@@ -1,6 +1,7 @@
 /*
  *	filesystem_info_descr.c
- *      CopyRight (C) 2006, Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+ *      CopyRight (C) 2006, 2007
+ *      	Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
  *
  *      Some code from e2fsprogs
  *      Copyright (C) 1994, 1995, 1996 Theodore Ts'o
