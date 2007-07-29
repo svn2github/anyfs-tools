@@ -1,13 +1,21 @@
-.TH anysurrect 8 "13 Mar 2007" "Version 0.84.6"
+.TH anysurrect 8 "26 July 2007" "Version 0.84.12"
 .SH "NAME"
 anysurrect \- search files on device and saves obtained information
 to external inode table file.
 .SH "SYNOPSIS"
 .nf
 .BI "anysurrect [\-b " blocksize "] [\-i " input_inode_table "]"
-.BI "	[\-p " path_prefix "] [\-u " file_umask "] [\-U " dir_umask "] [\-fqvV] "
+.BI "	[\-p " path_prefix "] [\-u " file_umask "] [\-U " dir_umask "] [\-fqvV] [\-hH] "
 .BI "	[\-g " plug-ins "] [\-e] [\-t" " list_of_types" "] [\-T" " list_of_types" "] "
-.BI "	[\-l] " "device inode_table"
+.BI "	[\-l] " "device inode_table " "[-- [" "module module_options " "[--]] ...]"
+.fi
+
+
+.I filesystem_info_ext2fs_group_info:
+module synopsis:
+.nf
+.BI "ext2fs [\-g " blocks-per-group "] [ \-i " bytes-per-inode "] [ -N " number-of-inodes "] " 
+.BI "   [\-h] [--]"
 .fi
 
 .SH "DESCRIPTION"
@@ -94,11 +102,16 @@ very high. Because you may only hope on using of 2-stage recovering,
 when at the first stage it recovers non-fragmented files, and at the second
 stage -- fragmented, fragments of which parted by recovered non-fragmented
 files.
-(with \-i option it does such searching).
+(with 
+.B \-i
+option it does such searching).
 But in general the rate of fragmented file on partition is NOT so high
 for serious disturbs.
 Recovering of fragmented files may be with more success realized
-by searching by filesystem system information (see \-e, \-T options description).
+by searching by filesystem system information (see 
+.BR \-e , 
+.BR \-T 
+options description).
 	
 .SH "OPTIONS"
 .TP
@@ -145,6 +158,15 @@ Print founded files types, its beginning block and size.
 .B \-V
 Print the version number and exit.
 .TP
+.B \-h
+Print options list.
+.TP
+.B \-H
+Print all modules options list (use with
+.BR \-e
+option).
+.BR \-e ).
+.TP
 .BI \-g " plug-ins"
 From 0.83.2 version
 .B anysurrect
@@ -160,14 +182,24 @@ option.
 .B \-e
 The same as
 .br
-.BI \-t " ""filesystem_info_ext2fs_direct_blocks_links filesystem_info_ext2fs_double_indirect_blocks_links filesystem_info_ext2fs_indirect_blocks_links filesystem_info_ext2fs_inode_table"""
+.BI \-t " ""filesystem_info_ext2fs_direct_blocks_links \
+filesystem_info_ext2fs_double_indirect_blocks_links \
+filesystem_info_ext2fs_indirect_blocks_links \
+filesystem_info_ext2fs_inode_table \
+filesystem_info_ext2fs_group_info"""
 .br
 So anysurrect tries use information from founded system blocks,
-and calls surrecters from \-T list to find other files.
-Recognized this way files will moved to /filesystem_files directory.
+and calls surrecters from 
+.B \-T 
+list to find other files.
+Recognized this way files will moved to 
+.IR /filesystem_files 
+directory.
 If file has known size (one maybe accessed in inode table), but 
 any surrecters doesn't define the type of the file, then
-the file moves to /filesystem_file/UNKNOWN directory.
+the file moves to 
+.IR /filesystem_file/UNKNOWN 
+directory.
 For the best result of recovering from EXT2FS/EXT3FS
 use recovering with 2 stages:
 .br
@@ -199,6 +231,44 @@ Device (or simple file, device image) for file recovering.
 .TP
 .I inode_table
 File for saving formed external inode table.
+.TP
+.BI \-\-
+The end of the main module options
+(further expected the next module name)
+.SH "filesystem_info_ext2fs_group_info MODULE OPTIONS"
+
+The module searches blocks groups on ext2fs filesystem,
+i.e. it's system information -- superblock, inode tables, inode
+and block allocation maps.
+
+Besides it tries to use information from inode tables.
+By default the module tries to find the first superblock to know
+filesystem parameters from it. But you may force this values
+with options below. Options means accords to 
+.BR mke2fs(8)
+options.
+
+.TP
+.BI \-g " blocks-per-group"
+Blocks Group size in blocks.
+
+.TP
+.BI \-i " bytes-per-inode"
+Byte/inode rate.
+
+.TP
+.BI \-N " number-of-inodes"
+Number of inodes on filesystem.
+
+.TP
+.BI \-h
+Print module options.
+
+.TP
+.BI \-\-
+The end of the module options
+(further expected the next module name)
+
 
 .SH "USAGE EXAMPLES"
 Recover from /dev/hda1 to inode.table:
@@ -225,6 +295,17 @@ $ anusurrect -i inode.table -p "/ANYSURRECT/" /dev/hda3 inode.table2
 
 Note: the last slash in path prefix is necessary. Otherwise there will
 directories as "ANYSURRECTarchieve", "ANYSURRECTimage" in root directory.
+
+The
+.I filesystem_info_ext2fs_group_info 
+module options list you can list with command:
+.br
+$ anysurrect -eH
+
+The ext3fs FS recovering with defining it's
+parameters:
+.br
+$ anysurrect -b 4096 -e /dev/sda10 sda10.it -- ext2fs -i 4194304
 
 .SH "AUTHOR"
 Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>

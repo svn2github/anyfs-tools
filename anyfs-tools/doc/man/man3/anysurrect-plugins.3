@@ -1,4 +1,4 @@
-.TH anysurrect-plugins 3 "17 Dec 2006" "Version 0.84.11"
+.TH anysurrect-plugins 3 "27 July 2007" "Version 0.84.12"
 .SH "NAME"
 anysurrect-plugins \- anysurrect plug-ins allows you to recognize and
 recover additional file formats besides formats which includes anysurrect.
@@ -84,11 +84,17 @@ format recognizers new functions programming.
 .sp
 .BI "char* " "<file_format>" "_surrect();"
 .br
+.BI "void* " "<file_format>" "_parseopts(const int " argc, " const char* " argv[] ");"
+.br
+.BI "void* " "<file_format>" "_usage();"
+.br
 .BI "const char* " "<file_format>" "_indicator=""" "<short_format_name>" """;"
 .br
 .BI "const int " "<file_format>" "_text=1;"
 .br 
 .BI "const mode_t " "<file_format>" "_mode=" "<mode>" ";
+.br
+.BI "const char* " "<file_format>" "_opts=" "<module_name>" ";
 
 .SH "DESCRIPTION"
 
@@ -111,6 +117,25 @@ for MIDI-files. Reading pointer set by
 .B fd_seek()
 function (see below) must point to end of founded file.
 In case of unsuccessful -- function must return NULL.
+.TP
+.BI "void* " "<file_format>" "_parseopts(const int " argc, " const char* " argv[] ");"
+Function for parse module options, called if founded according options
+(see.
+.IB "<file_format>" "_opts"
+)
+At that first module option number writes to global variable
+.BR optind 
+(it sets with
+.BR getopt 
+library function)
+Expected that after parsing funcrion sets according value for
+.BR optind
+to point the end of module options.
+.TP
+.BI "void* " "<file_format>" "_usage();"
+The module usage function. It called with using 
+.BR \-H 
+option in anysurrect command.
 .TP
 .BI "const char* " "<file_format>" "_indicator=""" "<short_format_name>" """;"
 Short name for indicator in progress string. If this declaration is leaved, 
@@ -146,6 +171,11 @@ By default recovered files has access mode mask 0666.
 This optionally declaration may to change access mode for you file types.
 So, for example, ELF32 file format use the next declaration:
 .BI "const mode_t " "executable_ELF32" "_mode=" "0777" ";"
+.TP
+.BI "const char* " "<file_format>" "_opts=" "<module_name>" ";
+Short module name to passing to its options through
+.B anysurrect
+command.
 
 .SH "READ FILE FUNCTIONS"
 Writing file processor module, you should not direct use 

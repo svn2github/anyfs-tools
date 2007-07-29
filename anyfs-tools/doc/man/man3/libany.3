@@ -1,4 +1,4 @@
-.TH libany 3 "17 Dec 2006" "Version 0.84.11"
+.TH libany 3 "27 July 2007" "Version 0.84.12"
 .SH "NAME"
 libany \- anyfs-tools library.
 
@@ -22,7 +22,7 @@ libany \- anyfs-tools library.
 .SH "DESCRIPTION"
 .B libany 
 library used by
-.B anyfs-tools .
+.BR anyfs-tools .
 
 .SH "INODE TABLE STRUCTURES"
 Structures to keeps inode table in memory declared in
@@ -109,6 +109,8 @@ Directory has the next description:
 struct any_dir {
         uint32_t              d_ndirents; /* count of entries */
         struct any_dirent*    d_dirent;   /* first directory entry */
+        void*                 d_data;     /* link to additional data
+					  	(used in GUI) */
 };
 .fi
 
@@ -199,7 +201,7 @@ i.e. inode table and map may change its location in the memory)
 and any pointers on inodes calculated before the call with expression like
 .I (it->si_inode_table + ino)
 or
-.I &(it->si_inode_table[ino])
+.IR &(it->si_inode_table[ino])
 will needed to update.
 
 Returns 0 if successful or exit from program with ENOMEM status.
@@ -219,7 +221,7 @@ If there was input/output error errno variable keeps more detailed error code.
 Write 
 .B it
 inode table to the 
-.B itfilename 
+.BR itfilename 
 file.
 
 If 
@@ -323,7 +325,8 @@ The next functions declared in
 .nf
 .BI "int fill_block_bitmap(struct any_sb_info *" info ", "
 .BI "        unsigned long *" block_bitmap "," 
-.BI "        any_blk_t " dev_size ");"
+.BI "        any_blk_t " dev_size ","
+.BI "        int " check_intersects ");"
 .fi
 Fills blocks map, sets blocks of regular files,
 according to information from
@@ -337,7 +340,12 @@ Map before the call must be allocated and filled with zeroes.
 Besides the functions set the zero block as system.
 
 The function returns 0 if successful or -1, if in the inode table was founded
-files, with shared blocks.
+files, with shared blocks
+(set last 
+.IR check_intersect
+parameter to disable check for block intersects, it used
+in
+.BR anysurrect ).
 
 It means that the function must never find already set bit in the bitmap
 (possibly, set by itself as used block with other inode).
@@ -581,6 +589,35 @@ progress line to
 value.
 
 The function returns cursor and write new progress value.
+
+.TP
+.BI "int if_progress_update(struct progress_struct *" progress \
+                 ", uint32_t " val ");"
+Return 1 if 
+.B progress
+progress line will updated with updating
+its value to
+.BR val .
+
+Function used in
+.B anysurrect
+utility to decide if need return cursor to necessary position
+for progress updating, which changed with printing 
+type of the working surrecter indicator.
+
+.TP
+.BI "int if_progress_updated(struct progress_struct *" progress \
+                 ", uint32_t " val ");"
+Return 1 if 
+.B progress
+progress line was updated with updating
+its value to
+.BR val .
+
+Function used in
+.B anysurrect
+utility to decide if need print new value of type of the working surrecter indicator
+after progress line updating.
 
 .TP
 .BI "void progress_close(struct progress_struct *" progress ");"

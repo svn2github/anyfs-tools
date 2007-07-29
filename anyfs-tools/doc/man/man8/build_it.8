@@ -1,10 +1,10 @@
-.TH build_it 8 "20 Nov 2006" "Version 0.84.9"
+.TH build_it 8 "27 July 2007" "Version 0.84.12"
 .SH "NAME"
 build_it \- reads directory entries to obtain information about the
 physical location of files on a block device along with file access permissions
 and saves the data to external inode table file.
 .SH "SYNOPSIS"
-.BI "build_it [\-qvVn] " "directory inode_table"
+.BI "build_it [\-qvVns] " "directory inode_table"
 
 .SH "DESCRIPTION"
 
@@ -35,23 +35,33 @@ So you can run its without root permissions.
 The 
 .B build_it
 utility has been tested on the following filesystems:
-.BR EXT2FS/EXT3FS , " XFS" , " ReiserFS" , " VFAT" , " JFS" , " ISO9660" , " NTFS" .
+.BR EXT2FS/EXT3FS , " XFS" , " ReiserFS" , " VFAT" , " JFS" , " ISO9660" , " ntfs-3g" .
 
-The best results were obtained from those systems with full FIBMAP support.
-Currently, the 
-.BR NTFS
-driver does not have any 
+The best results were obtained from those systems with full 
 .BR FIBMAP 
 support.
-I requested this support:
+Currently, in
+.BR NTFS
+driver has
+.BR FIBMAP 
+support in FUSE
+.BR ntfs-3g
+driver begining from 0.20061212-BETA version.
+At that if you need mount filesystem with
+.BR blkdev
+option.
+Please, read
+.BR losetup(8)
+if you need to mount FS image (not block device).
 
-http://forum.linux-ntfs.org/viewtopic.php?t=58
-
-If  you  interested in recovering files or data from
+Bear in mind, that all enough small files on
 .B NTFS
-filesystems, or converting it to other filesystems using the
-.B anyfs_tools
-toolset, then you may wish to support this request in the above forum.
+keeps in packed format and it reflects in inode table
+as sparse-files. Also as sparse files reflects
+all crypted/compressed at filesystem level files.
+Look 
+.BR \-s 
+option description.
 
 For
 .BR ReiserFS "(and " Reiser4 )
@@ -76,6 +86,13 @@ Print the version number and exit.
 .TP
 .B \-n
 Don't unpack ReiserFS and Reiser4 files.
+.TP
+.B \-s
+Print to stdout all sparse-files list.
+It used by 
+.BR anyconvertfs(8) 
+utility to form rescue-list with converting from 
+.BR ntfs-3g .
 .TP
 .I directory
 Directory, usually root_directory/mount_point of filesystem, 

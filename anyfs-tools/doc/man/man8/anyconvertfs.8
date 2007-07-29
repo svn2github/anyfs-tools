@@ -1,9 +1,9 @@
-.TH anyconvertfs 8 "20 Nov 2006" "Version 0.84.9"
+.TH anyconvertfs 8 "27 July 2007" "Version 0.84.12"
 .SH "NAME"
 anyconvertfs \- converts filesystem.
 .SH "SYNOPSIS"
 .nf
-.BI "anyconvertfs [\-\-tmpdir " directory "] [\-\-" blocksize "] [\-f] [\-\-dry]" 
+.BI "anyconvertfs [\-\-tmpdir " directory "] [\-\-blocksize " blocksize "] [\-f] [\-\-dry]" 
 .BI "   [\-\-inodetable " inodetable "] [\-\-color|\-\-no\-color] [\-\-label" " label" "] "
 .BI "   [--dontstop] [--pause " seconds "] [--use-anyfs|--use-anyfuse] [\-\-] " 
 .IB "    device " "[" source_fs "]" " destination_fs"
@@ -31,6 +31,12 @@ Step 1. Building inode table (with build_it).
 .br
 The step may be skipped, if you convert from anyfs using existing
 inode table only.
+
+Step 1a. Rescue (copy) files not aligned with block boundaries.
+.br
+This step executed only with converting from
+.B ntfs-3g 
+for copy compressed/crypted at filesystem level files.
 
 Step 2. Noops (check if enough space) reblock anyfs (with reblock).
 .br
@@ -64,8 +70,20 @@ anyconvertfs don't demand unmount the filesystem --
 it mounts the filesystem anyway. If FS already was mounted, it uses it,
 and gets mounting option with `mount`.
 
+Step 5a. Move rescued files to new filesystem.
+.br
+The step also as 1a executedonly with converting
+from
+.BR ntfs-3g .
+
+anyconvertfs doesn't demand to unmount filesystem
+so as it will mount it self, so if filesystem
+was mounted it will know mount options
+(exception in case convertion from
+.BR ntfs-3g ).
+
 Also, if filesystem already was mounted, anyconvertfs
-would mount the new filesystem at the same mount point.
+would mount the new filesystem at the same mount point
 	
 .SH "OPTIONS"
 .TP
@@ -123,6 +141,14 @@ Device (or image) for FS converting.
 Source filesystem. By default the script would try mount the device
 without option -t to know source filesystem,
 or will know filesystem from `mount`, if the device was mounted already.
+But
+.BR ntfs-3g
+in any case you need to specify as source filesystem, so as
+the script will see it as
+.BR fuse
+or
+.BR fuseblk
+filesystem.
 .TP
 .I destination_fs
 Destination filesystem. At the moment supported ext2/ext3/xfs/any.
@@ -240,5 +266,5 @@ http://anyfs-tools.sourceforge.net
 .BR reblock(8),
 .BR build_e2fs(8),
 .BR build_xfs(8),
-.BR anyfs(8)
+.BR anyfs(8),
 .BR anyfuse(8)
