@@ -1,3 +1,7 @@
+* 02.08.07      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Fix bug in build_xfs with very long extent lists.
+	- 0.84.12b Release
+
 * 27.07.07      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
 	- Fix anyfs building with kernel version >=2.6.19
 	- Some other building fix
