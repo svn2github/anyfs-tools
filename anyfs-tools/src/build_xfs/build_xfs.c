@@ -818,9 +818,14 @@ uint64_t write_extentlist(
 
 		int numrecs_max_at_inode = (isize - ((char*)p_inode - (char*)inode) - 4)/16;
 
+		if (verbose>=3)                         
+			printf ("numrecs_max_at_inode=%d\n", numrecs_max_at_inode);
+
 		while( nblock > numrecs_max_at_inode )
 		{
 			level++;
+			if (verbose>=4)                         
+				printf ("nblock=%d, level=%d\n", nblock, level);
 
 			uint32_t bmap_blocks0 = nblock;
 
@@ -833,6 +838,9 @@ uint64_t write_extentlist(
 			int n = bmap_blocks0;
 			int numrecs_0 = floorf( (float)n/bmap_blocks );
 			int numrecs_1 = numrecs_0+1;
+
+			if (verbose>=4)                         
+				printf ("numrecs_0=%d, numrecs_1=%d\n", numrecs_0, numrecs_1);
 
 			ASSERT(bmap_blocks==1 || numrecs_0 >= (numrecs_max/2));
 			ASSERT(numrecs_1 <= (numrecs_max+1));
@@ -893,6 +901,12 @@ uint64_t write_extentlist(
 
 			for (j=0; j < bmap_blocks0; j++)
 			{
+				if (verbose>=4)                         
+					printf ("j=%lu/%u, nrec_inblock=%d, numrecs_val=%d, numrecs_rest=%d\n", 
+							j, bmap_blocks0,
+							nrec_inblock, numrecs_val,
+							numrecs_rest);
+
 				if (nrec_inblock==numrecs_val)
 				{
 					uint64_t leftsib_val = b;
@@ -940,6 +954,8 @@ uint64_t write_extentlist(
 					INT_SET(*numrecs, ARCH_CONVERT, numrecs_val);
 					INT_SET(*leftsib, ARCH_CONVERT, XFS_BLKNO(leftsib_val));
 					INT_SET(*rightsib, ARCH_CONVERT, NULLFSBLOCK);
+
+					bp2 = bp2_s;
 				}
 
 				if (!nrec_inblock)
