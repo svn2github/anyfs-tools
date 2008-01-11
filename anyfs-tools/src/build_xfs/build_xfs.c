@@ -643,7 +643,7 @@ uint64_t write_extentlist(
 		uint32_t nblock = 0;
 		uint32_t nrec_inblock = 0;
 
-		int n = frags->fr_nfrags;
+		int n = frags->fr_nfrags - nullfrags;
 		int numrecs_0 = floorf( (float)n/bmap_blocks );
 		int numrecs_1 = numrecs_0+1;
 
@@ -660,7 +660,7 @@ uint64_t write_extentlist(
 
 		uint32_t level = 0;
 
-		uint32_t b = find_first_zero_bit(
+		uint64_t b = find_first_zero_bit(
 				xfs_block_bitmap,
 				dblocks);
 
@@ -749,7 +749,7 @@ uint64_t write_extentlist(
 				uint64_t *leftsib = (uint64_t *)bp;
 				bp = (void*) (leftsib+1);
 
-				uint64_t *rightsib = (uint64_t *)bp;
+				rightsib = (uint64_t *)bp;
 				bp = (void*) (rightsib+1);
 
 				nblock++;
@@ -813,9 +813,6 @@ uint64_t write_extentlist(
 		ASSERT(!numrecs_rest);
 		ASSERT(nblock==bmap_blocks);
 
-		if (!noaction)
-			pwrite64(xfs_fd, bbuf, blocksize, b*blocksize);
-
 		int numrecs_max_at_inode = (isize - ((char*)p_inode - (char*)inode) - 4)/16;
 
 		if (verbose>=3)                         
@@ -857,6 +854,9 @@ uint64_t write_extentlist(
 
 			blocks = malloc(sizeof(struct blockskeys)*bmap_blocks);
 
+			if (!noaction)
+				pwrite64(xfs_fd, bbuf, blocksize, b*blocksize);
+			
 			b = find_first_zero_bit(
 					xfs_block_bitmap,
 					dblocks);
@@ -942,7 +942,7 @@ uint64_t write_extentlist(
 					uint64_t *leftsib = (uint64_t *)bp;
 					bp = (void*) (leftsib+1);
 
-					uint64_t *rightsib = (uint64_t *)bp;
+					rightsib = (uint64_t *)bp;
 					bp = (void*) (rightsib+1);
 
 					nblock++;
@@ -3057,7 +3057,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 
 		for (i=0; i<info->si_inodes; i++) {
 			if ( !info->si_inode_table[i].i_links_count ) continue;
-				
+
 			if (verbose>=2)
 				fprintf(stderr, _("inode #%d (#%llu)\n"), i, 
 						(unsigned long long) inode_map[i]);
@@ -3475,6 +3475,9 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 
 									if (j<(links_at_level[l-1]-1)) forw = n_address - dirblkfsbs;
 									if (j>0) backw = n_address + dirblkfsbs;
+
+									assert( sizeof(leafhdr->info.forw) == sizeof(forw) );
+									assert( sizeof(leafhdr->info.back) == sizeof(backw) );
 
 									INT_SET(leafhdr->info.forw, ARCH_CONVERT, forw);
 									INT_SET(leafhdr->info.back, ARCH_CONVERT, backw);
@@ -4615,6 +4618,8 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 								int bb_level = ( j<(links_at_level[l-1]-1) ) ? height+1-l :
 									height+1-l + 1;
 
+								assert( sizeof(block->bb_leftsib) == sizeof(backw) );
+
 								INT_SET(block->bb_magic, ARCH_CONVERT, XFS_IBT_MAGIC);
 								INT_SET(block->bb_level, ARCH_CONVERT, bb_level);
 								INT_SET(block->bb_numrecs, ARCH_CONVERT, bb_numrecs);
@@ -4646,7 +4651,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 
 			uint32_t num_blocks = 0;
 
-			uint32_t b;
+			uint64_t b;
 			uint32_t start = 0;
 			uint32_t end = 0xFFFFFFFE;
 
@@ -5078,7 +5083,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 								n_address,
 								bno);
 
-						uint32_t backw=bno;
+						uint64_t backw=bno;
 						if (!j) backw=0;
 
 						if (l>1 || j<(links_at_level[l-1]-1))
@@ -5123,6 +5128,8 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 								nlinks[l-1][0];
 							int bb_level = ( j<(links_at_level[l-1]-1) ) ? height+1-l :
 								height+1-l + 1;
+
+							assert( sizeof(block->bb_leftsib) == sizeof(backw) );
 
 							INT_SET(block->bb_magic, ARCH_CONVERT, XFS_ABTB_MAGIC);
 							INT_SET(block->bb_level, ARCH_CONVERT, bb_level);
@@ -5413,7 +5420,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 								n_address,
 								bno);
 
-						uint32_t backw=bno;
+						uint64_t backw=bno;
 						if (!j) backw=0;
 
 						if (l>1 || j<(links_at_level[l-1]-1))
@@ -5458,6 +5465,8 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 								nlinks[l-1][0];
 							int bb_level = ( j<(links_at_level[l-1]-1) ) ? height+1-l :
 								height+1-l + 1;
+
+							assert( sizeof(block->bb_leftsib) == sizeof(backw) );
 
 							INT_SET(block->bb_magic, ARCH_CONVERT, XFS_ABTC_MAGIC);
 							INT_SET(block->bb_level, ARCH_CONVERT, bb_level);
