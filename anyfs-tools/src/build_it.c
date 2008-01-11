@@ -14,6 +14,7 @@
 
 #include "any.h"
 #include "super.h"
+#include "new_inode.h"
 
 #include <sys/types.h>
 #include <dirent.h>
@@ -47,19 +48,28 @@ const char * program_name = "build_it";
 
 struct progress_struct progress;
 
+mode_t dir_umask = 0002;
+
 int verbose = 0;
 int quiet = 0;
 int unpack = 1;
 int print_sparse_files = 0;
+
+int absolute_address = 0;
+int other_filesystems = 0;
+int full_path = 0;
 
 long fs_type = 0;
 
 const char *path;
 const char *inode_table;
 
+struct hd_geometry hd_geom;
+dev_t hd_geom_st_dev = 0;
+
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [-qvVns] directory inode_table\n"),
+	fprintf(stderr, _("Usage: %s [-qvVnsafp] directory inode_table\n"),
 			program_name);
 	exit(1);
 }
@@ -85,8 +95,18 @@ void fill_anyinode_by_statinfo(struct any_inode *any_inode,
 	any_inode->i_links_count = stat_info->st_nlink;
 }
 
+struct hd_geometry {
+	unsigned char heads;
+	unsigned char sectors;
+	unsigned short cylinders;
+	unsigned long start;
+};
+
+
 #define FIBMAP     _IO(0x00,1)  /* bmap access */
 #define FIGETBSZ   _IO(0x00,2)  /* get the block size used for bmap */
+
+#define HDIO_GETGEO             0x0301  /* get device geometry */
 
 #ifndef REISERFS_SUPER_MAGIC
 #define REISERFS_SUPER_MAGIC 0x52654973
@@ -133,10 +153,27 @@ static unsigned long get_bmap(int fd, unsigned long block, int *err)
 	return b;
 }
 
+static int get_geometry(int fd, struct hd_geometry *hdg)
+{
+	int     ret;
+	int 	err = 0;
+
+	ret = ioctl(fd, HDIO_GETGEO, hdg); /* FIBMAP takes a pointer to an integer */
+	if (ret < 0) {
+		if (errno == EPERM) {
+			fprintf(stderr, _("No permission to use HDIO_GETGEO ioctl\n"));
+			exit(1);
+		}
+		perror("HDIO_GETGEO");
+		err = -errno;
+	}
+	return err;
+}
+
 int BS;
 
 int fill_anyinodeinfo(struct any_inode *inode, const char *path, 
-		struct stat64 *stat_info) {
+		struct stat64 *stat_info, struct hd_geometry hd_geom) {
 	
 	int r = 0;
 	int err;
@@ -249,7 +286,14 @@ int fill_anyinodeinfo(struct any_inode *inode, const char *path,
 		}
 
 		int ibs = BS/bs;
+		int mbs = 1;
 		if (ibs<1) 
+		{
+			ibs = 1; 
+			mbs = bs/BS;
+		}
+
+		if (ibs<1 && !absolute_address) 
 		{
 			fprintf(stderr, _("Blocksize returned by statfs lesser than returned FIGETBSZ\n"
 					"Please, send information about this filesystem to undefer@gmail.com\n"
@@ -293,9 +337,10 @@ int fill_anyinodeinfo(struct any_inode *inode, const char *path,
 				}
 
 				inode->i_info.file_frags->fr_frags[numfrags].
-					fr_start = fr_start/ibs;
+					fr_start = fr_start/ibs*mbs +
+					( absolute_address && fr_start ? hd_geom.start : 0);
 				inode->i_info.file_frags->fr_frags[numfrags].
-					fr_length = (fr_length +ibs-1)/ibs;
+					fr_length = (fr_length +ibs-1)/ibs*mbs;
 					
 				fr_start = block;
 				fr_length = 0;
@@ -304,9 +349,10 @@ int fill_anyinodeinfo(struct any_inode *inode, const char *path,
 			fr_length++;
 		}
 		inode->i_info.file_frags->fr_frags[numfrags].
-			fr_start = fr_start/ibs;
+			fr_start = fr_start/ibs*mbs +
+			( absolute_address && fr_start ? hd_geom.start : 0);
 		inode->i_info.file_frags->fr_frags[numfrags].
-			fr_length = (fr_length +ibs-1)/ibs;
+			fr_length = (fr_length +ibs-1)/ibs*mbs;
 
 		numfrags++;
 		if ( (numfrags == 1) && !fr_start && print_sparse_files )
@@ -330,6 +376,7 @@ int fill_anyinodeinfo(struct any_inode *inode, const char *path,
 }
 
 int count_inodes(const char *path, struct hard_link **phl, dev_t st_dev, 
+		struct hd_geometry hd_geom,
 		struct any_sb_info *info, uint32_t dirino, int root,
 		int gress)
 {
@@ -368,7 +415,34 @@ int count_inodes(const char *path, struct hard_link **phl, dev_t st_dev,
 	}
 	
 	if ( stat_info.st_dev != st_dev  ) {
-		goto fail;
+		if (!other_filesystems)
+			goto fail;
+
+		int st_major = stat_info.st_dev >> 8;
+		int major = st_dev >> 8;
+
+		if (st_major != major)
+			goto fail;
+
+		if (absolute_address)
+		{
+			char dev[1024];
+
+			snprintf(dev, 1024, "/tmp/anyfs_device_%d", getpid());
+
+			mknod (dev, S_IFBLK | 0660, stat_info.st_dev);
+			int fd = open (dev, O_RDONLY);
+			r = get_geometry(fd, &hd_geom);
+			if (r<0) {
+				goto fail;
+			}
+
+			close(fd);
+			unlink(dev);
+
+			st_dev = stat_info.st_dev;
+		}
+
 	}
 
 	while ( ( dirent = readdir(dir) ) ) {
@@ -413,7 +487,7 @@ int count_inodes(const char *path, struct hard_link **phl, dev_t st_dev,
 						&stat_info);
 			}
 			
-			err = count_inodes(name, phl, st_dev, info, any_ino, 0,
+			err = count_inodes(name, phl, st_dev, hd_geom, info, any_ino, 0,
 					gress+r);
 			if (err<0) {
 				r = err;
@@ -491,7 +565,7 @@ int count_inodes(const char *path, struct hard_link **phl, dev_t st_dev,
 
 						err = fill_anyinodeinfo( 
 								info->si_inode_table+any_ino, 
-								name, &stat_info);
+								name, &stat_info, hd_geom);
 
 						if (err<0) {
 							r = err;
@@ -525,7 +599,7 @@ int count_inodes(const char *path, struct hard_link **phl, dev_t st_dev,
 
 					err = fill_anyinodeinfo( 
 							info->si_inode_table+any_ino, 
-							name, &stat_info);
+							name, &stat_info, hd_geom);
 
 					if (err<0) {
 						r = err;
@@ -618,7 +692,7 @@ static void PRS(int argc, const char *argv[])
 	int show_version_only = 0;
 
 	while ((c = getopt (argc, (char**) argv,
-		     "qvVns")) != EOF) {
+		     "qvVnsafp")) != EOF) {
 		switch (c) {
 		case 'q':
 			quiet = 1;
@@ -635,6 +709,15 @@ static void PRS(int argc, const char *argv[])
 		case 's':
 			print_sparse_files = 1;
 			break;
+		case 'a':
+			absolute_address = 1;
+			break;
+		case 'f':
+			other_filesystems = 1;
+			break;
+		case 'p':
+			full_path = 1;
+			break;
 		default:
 			usage();
 		}
@@ -646,6 +729,12 @@ static void PRS(int argc, const char *argv[])
 	if (!quiet || show_version_only)
 		fprintf (stderr, "build_it %s (%s)\n", ANYFSTOOLS_VERSION,
 				ANYFSTOOLS_DATE);
+
+	if (other_filesystems && !absolute_address)
+	{
+		fprintf (stderr, "-f option may be used only with -a option\n");
+		exit(0);
+	}
 
 	if (show_version_only) {
 		exit(0);
@@ -667,6 +756,7 @@ int main(int argc, const char *argv[])
 	
 	struct hard_link *hl = NULL;
 	dev_t st_dev;
+	uint32_t rootdir = 1;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -685,6 +775,22 @@ int main(int argc, const char *argv[])
 	}
 
 	st_dev = stat_info.st_dev;
+
+	{
+		char dev[1024];
+
+		snprintf(dev, 1024, "/tmp/anyfs_device_%d", getpid());
+
+		mknod (dev, S_IFBLK | 0660, stat_info.st_dev);
+		int fd = open (dev, O_RDONLY);
+		r = get_geometry(fd, &hd_geom);
+		if (r<0) {
+			goto out;
+		}
+
+		close(fd);
+		unlink(dev);
+	}
 	
 	err = statfs(path, &statfs_info);
 	if (err<0) {
@@ -702,6 +808,32 @@ int main(int argc, const char *argv[])
 		goto out;
 	}
 
+	if (full_path)
+	{
+		err = chdir(path);
+		if (err<0) {
+			r = -errno;
+			perror("chdir");
+			goto out;
+		}
+
+		path = malloc(1024);
+		path = getcwd((char*) path, 1024);
+		if (!path) {
+			r = -errno;
+			perror("getcwd");
+			goto out;
+		}
+
+		r = mkpathino((char*) path, rootdir, info, &rootdir);
+		if (r) {
+			fprintf (stderr, 
+				_("Error while mkpathino root directory\n") );
+			goto out;
+		}
+	}
+
+
 #if 0
 	if (verbose)
 		printf (_("start count inodes\n"));
@@ -711,7 +843,7 @@ int main(int argc, const char *argv[])
 	else
 		progress_init(&progress, _("count inodes: "), 0);
 
-	c = count_inodes(path, &hl, st_dev, NULL, 1, 1, 0);
+	c = count_inodes(path, &hl, st_dev, hd_geom, NULL, 1, 1, 0);
 	if (c<0) {
 		r = c;
 		goto out;
@@ -736,9 +868,14 @@ int main(int argc, const char *argv[])
 		+ statfs_info.f_bfree/1024 + 256;
 	if ( !statfs_info.f_files )
 		ac = statfs_info.f_blocks/1024 + 256;
+
+	if (other_filesystems) c = 0;
 #endif
 
 	BS = statfs_info.f_bsize;
+
+	if (absolute_address)
+		BS=512;
 
 	r = alloc_it(&info, BS, ac);
 	if (r<0) goto out;
@@ -752,10 +889,15 @@ int main(int argc, const char *argv[])
 		progress_init(&progress, _("creating inode table: "),
 				c);
 	
-	c = count_inodes(path, &hl, st_dev, info, 1, 1, 0);
+	c = count_inodes(path, &hl, st_dev, hd_geom, info, rootdir, 1, 0);
 	if (c<0) {
 		r = c;
 		goto free_out;
+	}
+
+	if (full_path)
+	{
+		free((void*) path);
 	}
 	
 	progress_close(&progress);
