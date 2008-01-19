@@ -5,6 +5,7 @@ anyconvertfs \- converts filesystem.
 .nf
 .BI "anyconvertfs [\-\-tmpdir " directory "] [\-\-blocksize " blocksize "] [\-f] [\-\-dry]" 
 .BI "   [\-\-inodetable " inodetable "] [\-\-color|\-\-no\-color] [\-\-label" " label" "] "
+.BI "   [\-\-debug] [\-\-dont\-delete\-it] [\-\-success\-delete\-it]"
 .BI "   [--dontstop] [--pause " seconds "] [--use-anyfs|--use-anyfuse] [\-\-] " 
 .IB "    device " "[" source_fs "]" " destination_fs"
 .fi
@@ -112,6 +113,20 @@ Disable color highlight (by default if output to pipe or file).
 .BI \-\-label " label"
 New filesystem label. By default the script would try to save
 the old filesystem label.
+.TP
+.BI \-\-debug
+Debug mode. Prints the general convert commands with its options
+(build_it, reblock, build_xfs, build_e2fs)
+.TP
+.BI \-\-dont-delete-it
+Removes inode table NEVER.
+By default it removes inode table in case if convertion process was break
+on step before first step which destroy the old filesystem.
+.TP
+.BI \-\-success-delete-it
+Removes inode table if the last convertion step was success.
+By default it removes inode table in case if converting process was break
+on step before first step which destroy the old filesystem.
 .TP
 .BI \-\-dontstop
 Don't stop. By default the script suggests attentively check

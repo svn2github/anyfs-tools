@@ -1,3 +1,13 @@
+* 19.01.08      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Fix the bug in build_xfs with wrong distributions of blocks on leaves 
+		of BNO, CNT trees.
+	- Fix the bug in build_it of the prevision release.
+	- 0.84.12d Release
+
+* 12.01.08      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Add -a, -f, -p options to build_it
+	- 0.84.12c Release
+
 * 02.08.07      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
 	- Fix bug in build_xfs with very long extent lists.
 	- 0.84.12b Release

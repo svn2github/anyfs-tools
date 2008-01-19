@@ -366,7 +366,7 @@ int read_it(struct any_sb_info ** it, char itfilename[])
 		char wd[1024];
 		getcwd(wd, 1024);
 		info->si_itfilename =
-			concat_strings(2, wd, itfilename);
+			concat_strings(3, wd, "/", itfilename);
 	}
 
 

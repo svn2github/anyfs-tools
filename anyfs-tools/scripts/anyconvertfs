@@ -5,7 +5,7 @@
 # License GPL
 
 SCRIPT="anyconvertfs"
-VERSION="v0.84.9"
+VERSION="v0.84.12d"
 if [ "${0:0:1}" != '/' ]; then F0=$PWD/$0; else F0=$0; fi
 export TEXTDOMAIN="anyfs-tools"
 export TEXTDOMAINDIR="${F0%%$SCRIPT}../share/locale"
@@ -82,6 +82,7 @@ usage ()
     echo -e "${BOLD}$SCRIPT ${WHITE}$VERSION${CLEAR}"
     echo -e "${BOLD}${BROWN}`$GT"usage:"`${CLEAR}""\n$ ${BOLD}$SCRIPT [--tmpdir${CLEAR} ${UNDER}directory${CLEAR}${BOLD}] [--blocksize${CLEAR} ${UNDER}blocksize${CLEAR}${BOLD}] [-f] [--dry]"
     echo -e "\t[--inodetable${CLEAR} ${UNDER}inodetable${CLEAR}${BOLD}] [--color|--no-color] [--label${CLEAR} ${UNDER}label${CLEAR}${BOLD}]"
+    echo -e "\t[--debug] [--dont-delete-it] [--success-delete-it]"
     echo -e "\t[--dontstop] [--pause${CLEAR} ${UNDER}seconds${CLEAR}${BOLD}] [--use-anyfs|--use-anyfuse] [--] "
     echo -e "\t ${CLEAR}${UNDER}device${CLEAR} ${BOLD}[${CLEAR}${UNDER}source_fs${CLEAR}${BOLD}] ${CLEAR}${UNDER}destination_fs${CLEAR}"
 
@@ -101,6 +102,8 @@ LABEL="AUTO"
 DONTSTOP="N"
 PAUSE=7
 USE_ANY_FS_OR_FUSE="AUTO"
+DEBUG="N"
+DELETE_IT="AUTO"
 
 END="0"
 while [[ "$END" == '0' ]]; do
@@ -120,6 +123,18 @@ while [[ "$END" == '0' ]]; do
 		'--blocksize')
 			BLOCKSIZE="$2"
 			shift 2
+			;;
+		'--debug')
+			DEBUG="Y"
+			shift 1
+			;;
+		'--dont-delete-it')
+			DELETE_IT="NEVER"
+			shift 1
+			;;
+		'--success-delete-it')
+			DELETE_IT="SUCCESS"
+			shift 1
 			;;
 		'-f')
 			FORCE="Y"
@@ -652,7 +667,12 @@ HANDLER()
 		rmdir "$MOUNTPOINT"
 	fi
 
-	[[ "$RMINODETABLE" == "Y" ]] && rm -f "$INODETABLE" ||
+	[[ ("$DELETE_IT" == "AUTO" && "$RMINODETABLE" == "Y") || 
+		"$DELETE_IT" == "SUCCESS" || 
+		"$DELETE_IT" == "NEVER" ]] || RMINODETABLE="N"
+
+	[[ "$RMINODETABLE" == "Y" ]] && 
+		rm -f "$INODETABLE" ||
 		PRINT "`$GT"Inode table was saved. See {INODETABLE}."`"
 
 	[[ "$FROMFS" == "ntfs-3g" ]] && [ -f "$RESCUELIST" ] ||
@@ -745,6 +765,8 @@ else
 		BUILD_IT_OUTPUT="$RESCUELIST"
 	}
 
+	[[ "$DEBUG" == "Y" ]] &&
+		echo "[DEBUG] build_it $BUILD_IT_OPTIONS \"$MOUNTPOINT\" \"$INODETABLE\" >\"$BUILD_IT_OUTPUT\""
 	build_it $BUILD_IT_OPTIONS "$MOUNTPOINT" "$INODETABLE" >"$BUILD_IT_OUTPUT" ||
 	{
 		echo -e "`$GT"Error while building inode table"`"
@@ -853,6 +875,10 @@ HANDLER()
 		rmdir "$MOUNTPOINT"
 	fi
 
+	[[ ("$DELETE_IT" == "AUTO" && "$RMINODETABLE" == "Y") || 
+		"$DELETE_IT" == "SUCCESS" || 
+		"$DELETE_IT" == "NEVER" ]] || RMINODETABLE="N"
+
 	[[ "$RMINODETABLE" == "Y" ]] && rm -f "$INODETABLE" ||
 		PRINT "`$GT"Inode table was saved. See {INODETABLE}."`"
 
@@ -934,6 +960,9 @@ if (( $BLOCKSIZE == $NOWBLOCKSIZE )); then
 	echo -e "${BOLD}${BROWN}`$GT"Skip"`${CLEAR}"
 else
 	while true; do
+		[[ "$DEBUG" == "Y" ]] &&
+			echo "[DEBUG] reblock -n \"$INODETABLE\" \"$DEVICE\" \"$BLOCKSIZE\""
+
 		reblock -n "$INODETABLE" "$DEVICE" "$BLOCKSIZE" ||
 		{
 			RETVAL=$?
@@ -968,6 +997,9 @@ Press {UNDER}Ctrl+C{CLEAR} to {BOLD}cancel{CLEAR} converting."`"
 		RMINODETABLE="N"
 	}
 
+	[[ "$DEBUG" == "Y" ]] &&
+		echo "[DEBUG] reblock \"$INODETABLE\" \"$DEVICE\" \"$BLOCKSIZE\""
+
 	reblock "$INODETABLE" "$DEVICE" "$BLOCKSIZE" ||
 	{
 		echo
@@ -985,6 +1017,8 @@ if [[ "$TOFS" == "any" ]]; then
 	echo -e "${BOLD}${BROWN}`$GT"Skip"`${CLEAR}"
 else
 	while true; do
+		[[ "$DEBUG" == "Y" ]] &&
+			echo "[DEBUG] $BUILD_FS $LABELOPT $LABEL $BUILD_FS_OPS $BUILD_FS_NOOPERATION \"$INODETABLE\" \"$DEVICE\""
 		$BUILD_FS $LABELOPT $LABEL $BUILD_FS_OPS $BUILD_FS_NOOPERATION "$INODETABLE" "$DEVICE" ||
 		{
 			RETVAL=$?
@@ -1016,6 +1050,9 @@ RMINODETABLE="N"
 if [[ "$TOFS" == "any" ]]; then
 	echo -e "${BOLD}${BROWN}`$GT"Skip"`${CLEAR}"
 else
+	[[ "$DEBUG" == "Y" ]] &&
+		echo "[DEBUG] $BUILD_FS $LABELOPT $LABEL $BUILD_FS_OPS \"$INODETABLE\" \"$DEVICE\""
+
 	$BUILD_FS $LABELOPT $LABEL $BUILD_FS_OPS "$INODETABLE" "$DEVICE" ||
 	{
 		echo
@@ -1083,6 +1120,10 @@ elif [[ "$WASMOUNTED" == "Y" ]]; then
 	[[ "$TOFS" == "any" ]] && MOUNTOPTIONS="$MOUNTOPTIONS,inodetable=$INODETABLE"
 	mount -t "$TOFS" -o "$MOUNTOPTIONS" "$DEVICE" "$MOUNTPOINT"
 fi
+
+[[ ("$DELETE_IT" == "AUTO" && "$RMINODETABLE" == "Y") || 
+	"$DELETE_IT" == "NEVER" ]] || RMINODETABLE="N"
+[[ "$DELETE_IT" == "SUCCESS" ]] && RMINODETABLE="Y"
 
 [[ "$RMINODETABLE" == "Y" ]] && rm -f "$INODETABLE" ||
 PRINT "`$GT"Inode table was saved. See {INODETABLE}."`"

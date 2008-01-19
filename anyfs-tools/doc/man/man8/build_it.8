@@ -4,7 +4,7 @@ build_it \- reads directory entries to obtain information about the
 physical location of files on a block device along with file access permissions
 and saves the data to external inode table file.
 .SH "SYNOPSIS"
-.BI "build_it [\-qvVns] " "directory inode_table"
+.BI "build_it [\-qvVnsafp] " "directory inode_table"
 
 .SH "DESCRIPTION"
 
@@ -93,6 +93,29 @@ It used by
 .BR anyconvertfs(8) 
 utility to form rescue-list with converting from 
 .BR ntfs-3g .
+.TP
+.B \-a
+Use absolute addressing on the entire drive, not its separate partition.
+Keep in mind when using this option, that then to mount output inode table
+you must specify the entire disk (for example, /dev/hda), and not 
+the separate partition (as /dev/hda1, /dev/hdb7).
+In addition, it means setting inode table blocksize to sector size (512 bytes),
+because measure units of partition offsets in partition table is sectors.
+.TP
+.B \-f
+Process other filesystems located on the partiotions of the same device as 
+the specified directory filesystem. So if /dev/hda1 mounted on /mnt/root, 
+/dev/hda3 on /mnt/root/home and /dev/hdb1 on /mnt/root/usr, and you
+specify /mnt/root as the
+.I directory,
+to inode table will also include all the contents of /mnt/home, 
+but the contents of /mnt/usr was still will not be included to it.
+Use the option only with -a.
+.TP
+.B \-p
+Add to inode table also all parent directories from the specified
+.I directory
+to the root directory.
 .TP
 .I directory
 Directory, usually root_directory/mount_point of filesystem, 

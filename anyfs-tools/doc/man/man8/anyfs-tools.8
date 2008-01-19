@@ -4,7 +4,7 @@ anyfs-tools \- toolset for recovering and converting filesystems and recovering
 data from a block device.
 .SH "SYNOPSIS"
 .nf
-.BI "build_it [\-qvVns] " "directory inode_table"
+.BI "build_it [\-qvVnsafp] " "directory inode_table"
 
 .BI "anysurrect [\-b " blocksize "] [\-i " input_inode_table "]"
 .BI "	[\-p " path_prefix "] [\-u " file_umask "] [\-U " dir_umask "] [\-fqvV] [\-hH] "
@@ -29,6 +29,7 @@ data from a block device.
 
 .BI "anyconvertfs [\-\-tmpdir " directory "] [\-\-blocksize " blocksize "] [\-f] [\-\-dry]" 
 .BI "   [\-\-inodetable " inodetable "] [\-\-color|\-\-no\-color] [\-\-label" " label" "] "
+.BI "   [\-\-debug] [\-\-dont\-delete\-it] [\-\-success\-delete\-it]"
 .BI "   [--dontstop] [--pause " seconds "] [--use-anyfs|--use-anyfuse] [\-\-] " 
 .IB "    device " "[" source_fs "]" " destination_fs"
 .fi

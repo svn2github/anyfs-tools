@@ -267,7 +267,7 @@ msgstr ""
 "Временная директория: {TMPDIR}\n"
 "Таблица инф.узлов: {INODETABLE}\n"
 "Первый шаг, который уничтожит старую ФС: {FIRSTDESTROYSTEP}\n"
-"Использовать anyfs модуль ядра или anyfuse молуль FUSE : {USE_ANY_FS_OR_FUSE}"
+"Использовать anyfs модуль ядра или anyfuse модуль FUSE : {USE_ANY_FS_OR_FUSE}"
 
 #: ../scripts/anyconvertfs:694
 msgid "Loop Device: {LOOPDEVICE}"
