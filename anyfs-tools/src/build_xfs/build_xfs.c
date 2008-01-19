@@ -4372,11 +4372,12 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 					int recs_at_block_0 = floorf( (float)n/leaves );
 					int recs_at_block_1 = recs_at_block_0+1;
 
-					//int n0 = recs_at_block_0*leaves;
-					int n1 = recs_at_block_1*leaves;
+					int n0 = recs_at_block_0*leaves;
+					//int n1 = recs_at_block_1*leaves;
 
-					int l0 = n1-n;
-					/*int l1 = n-n0;*/
+					//int l0 = n1-n;
+					//int l1 = n-n0;
+					int l0 = leaves-(n-n0);
 
 					int j=0;
 
@@ -4887,14 +4888,15 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 				int recs_at_block_0 = floorf( (float)n/leaves );
 				int recs_at_block_1 = recs_at_block_0+1;
 
+				int n0 = recs_at_block_0*leaves;
+				//int n1 = recs_at_block_1*leaves;
+
+				//int l0 = n1-n;
+				//int l1 = n-n0;
+				int l0 = leaves-(n-n0);
+
 				ASSERT(recs_at_block_0 >= (recs_at_block/2));
-				ASSERT(recs_at_block_1 <= recs_at_block);
-
-				//int n0 = recs_at_block_0*leaves;
-				int n1 = recs_at_block_1*leaves;
-
-				int l0 = n1-n;
-				/*int l1 = n-n0;*/
+				ASSERT( (n==n0) || (recs_at_block_1 <= recs_at_block) );
 
 				int j=0;
 
@@ -5228,14 +5230,15 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 				int recs_at_block_0 = floorf( (float)n/leaves );
 				int recs_at_block_1 = recs_at_block_0+1;
 
+				int n0 = recs_at_block_0*leaves;
+				//int n1 = recs_at_block_1*leaves;
+
+				//int l0 = n1-n;
+				//int l1 = n-n0;
+				int l0 = leaves-(n-n0);
+
 				ASSERT(recs_at_block_0 >= (recs_at_block/2));
-				ASSERT(recs_at_block_1 <= recs_at_block);
-
-				//int n0 = recs_at_block_0*leaves;
-				int n1 = recs_at_block_1*leaves;
-
-				int l0 = n1-n;
-				/*int l1 = n-n0;*/
+				ASSERT( (n==n0) || (recs_at_block_1 <= recs_at_block) );
 
 				int j=0;
 

@@ -775,22 +775,6 @@ int main(int argc, const char *argv[])
 	}
 
 	st_dev = stat_info.st_dev;
-
-	{
-		char dev[1024];
-
-		snprintf(dev, 1024, "/tmp/anyfs_device_%d", getpid());
-
-		mknod (dev, S_IFBLK | 0660, stat_info.st_dev);
-		int fd = open (dev, O_RDONLY);
-		r = get_geometry(fd, &hd_geom);
-		if (r<0) {
-			goto out;
-		}
-
-		close(fd);
-		unlink(dev);
-	}
 	
 	err = statfs(path, &statfs_info);
 	if (err<0) {
