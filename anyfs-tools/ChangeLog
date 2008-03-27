@@ -1,3 +1,7 @@
+* 28.03.08      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Fix anyfs building with kernel version >=2.6.23
+	- 0.84.12e Release
+
 * 19.01.08      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
 	- Fix the bug in build_xfs with wrong distributions of blocks on leaves 
 		of BNO, CNT trees.

@@ -20,7 +20,11 @@ struct file_operations any_file_operations = {
 	.write          = generic_file_write,
 #endif
 	.mmap           = generic_file_mmap,
+#ifdef KERNEL_2_6_23_PLUS
+	.splice_read	= generic_file_splice_read,
+#else
 	.sendfile       = generic_file_sendfile,
+#endif
 };
 
 static int return_EOPNOTSUPP(void)

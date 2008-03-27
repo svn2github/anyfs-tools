@@ -30,6 +30,9 @@
 #  if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19)
 #    define KERNEL_2_6_19_PLUS
 #  endif
+#  if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,23)
+#    define KERNEL_2_6_23_PLUS
+#  endif
 #endif
 
 #define ANY_SUPER_MAGIC	0x414e59 /*ANY*/

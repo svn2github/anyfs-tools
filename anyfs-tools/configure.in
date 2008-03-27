@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(anyfs-tools, 0.84.12d, undefer@gmail.com)
+AC_INIT(anyfs-tools, 0.84.12e, undefer@gmail.com)
 #AM_INIT_AUTOMAKE(anyfs-tools, 0.84.5c)
 AC_CONFIG_SRCDIR([src/reblock.c], [include/any.h])
 AC_CONFIG_HEADER([include/config.h])
