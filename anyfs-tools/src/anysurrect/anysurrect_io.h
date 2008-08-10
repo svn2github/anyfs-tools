@@ -1,6 +1,6 @@
 /*
  *	anysurrect_io.h
- *      CopyRight (C) 2006-2007, Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+ *      CopyRight (C) 2006-2008, Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
  */
 
 #ifdef __cplusplus
@@ -521,6 +521,18 @@ static inline int read_belong(uint32_t *value)
 	return 0;
 }
 
+static inline int read_belong64(uint64_t *value)
+{
+	int res=0;
+	res=fd_read(value, 8);
+	if (!res) return 1;
+		
+#if	BYTE_ORDER==LITTLE_ENDIAN
+	*value = bswap_64(*value);
+#endif
+	return 0;
+}
+
 static inline int read_leshort(uint16_t *value)
 {
 	int res=0;
@@ -541,6 +553,18 @@ static inline int read_lelong(uint32_t *value)
 		
 #if	BYTE_ORDER==BIG_ENDIAN
 	*value = bswap_32(*value);
+#endif
+	return 0;
+}
+
+static inline int read_lelong64(uint64_t *value)
+{
+	int res=0;
+	res=fd_read(value, 8);
+	if (!res) return 1;
+		
+#if	BYTE_ORDER==BIG_ENDIAN
+	*value = bswap_64(*value);
 #endif
 	return 0;
 }

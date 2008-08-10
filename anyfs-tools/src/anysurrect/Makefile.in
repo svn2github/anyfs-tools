@@ -23,7 +23,8 @@ OBJS = anysurrect.o anysurrect_malloc.o frags_funcs.o \
        cd-image_files_descr.o \
        archieve3_files_descr.o \
        gzip/gzip.o gzip/unzip.o gzip/inflate.o gzip/util.o\
-       gzip/unlzw.o gzip/unpack.o gzip/unlzh.o
+       gzip/unlzw.o gzip/unpack.o gzip/unlzh.o \
+       quick_time_based_files_descr.o
 
 all: anysurrect
 

@@ -1,6 +1,6 @@
 /*
  *	anysurrect.c
- *      CopyRight (C) 2006, 2007 
+ *      CopyRight (C) 2006-2008
  *      	Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
  */
 
@@ -316,8 +316,8 @@ void anysurrect_frags_list(struct frags_list *l_file_frags_list,
 			if (mes) { 
 				mode_t mode = *modes2[type];
 				char* dupmes = strdup(mes);
-				if (verbose) printf("file %s, block=%ld, size=%llx\n",
-						mes, get_block(), fd_seek(0, SEEK_CUR));
+				if (verbose) printf("file %s, block=%ld, size=%lld (0x%llx)\n",
+						mes, get_block(), fd_seek(0, SEEK_CUR), fd_seek(0, SEEK_CUR));
 				if ( fd_seek(0, SEEK_CUR) == size ) goodsize = 1;
 				anysurrect_file(info, dupmes, mode);
 				free(dupmes);
@@ -345,8 +345,8 @@ void anysurrect_frags_list(struct frags_list *l_file_frags_list,
 
 		mode_t mode = *modes2[ind_type];
 		char* dupmes = strdup("UNKNOWN");
-		if (verbose) printf("file %s, block=%ld, size=%llx\n",
-				mes, get_block(), fd_seek(0, SEEK_CUR));
+		if (verbose) printf("file %s, block=%ld, size=%lld (0x%llx)\n",
+				mes, get_block(), fd_seek(0, SEEK_CUR), fd_seek(0, SEEK_CUR));
 		if ( fd_seek(0, SEEK_CUR) == size ) goodsize = 1;
 		anysurrect_file(info, dupmes, mode);
 		free(dupmes);
@@ -420,8 +420,8 @@ void anysurrect_fromblock(struct any_sb_info *info)
 			if (mes) { 
 				mode_t mode = *modes[type];
 				char* dupmes = strdup(mes);
-				if (verbose) printf("file %s, block=%ld, size=%llx\n",
-						mes, get_block(), fd_seek(0, SEEK_CUR));
+				if (verbose) printf("file %s, block=%ld, size=%lld (0x%llx)\n",
+						mes, get_block(), fd_seek(0, SEEK_CUR), fd_seek(0, SEEK_CUR));
 				max_size = max_t(any_size_t, max_size, fd_seek(0, SEEK_CUR) );
 				anysurrect_file(info, dupmes, mode);
 				free(dupmes);

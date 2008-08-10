@@ -1,6 +1,7 @@
 /*
  *	anysurrect.h
- *      CopyRight (C) 2006, Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+ *      CopyRight (C) 2006-2008, 
+ *      	Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
  */
 
 #ifndef	_ANYSURRECT_H
@@ -38,6 +39,12 @@
 
 #define SKIP_BELONG(name) SKIP_LONG(name)
 #define SKIP_LELONG(name) SKIP_LONG(name)
+
+#define SKIP_LONG64(name) \
+	SKIP_STRING(name, 8)
+
+#define SKIP_BELONG64(name) SKIP_LONG64(name)
+#define SKIP_LELONG64(name) SKIP_LONG64(name)
 
 #define MALLOC(len) ({ 					\
 	char* m=(char*)malloc(len);				\
@@ -96,15 +103,33 @@
 	anysurrect_free(val, LIST_STRING_MALLOC_BUFFER);	\
 })
 
+#define READ_BELONG64(name) ({				\
+	uint64_t	val;				\
+	int res = read_belong64(&val);			\
+	if (res) RETURN (ERROR_VALUE);			\
+	val;						\
+})
+
+#define COND_BELONG64(name, CONDITION) ({		\
+	uint64_t	val;				\
+	int res = read_belong64(&val);			\
+	if (res) RETURN (ERROR_VALUE);			\
+	if (!(CONDITION)) RETURN (ERROR_VALUE);		\
+	val;						\
+})
+
+#define EX_BELONG64(name, value)			\
+	COND_BELONG64(name, val==value)
+
 #define READ_BELONG(name) ({				\
-	uint32_t	val;					\
+	uint32_t	val;				\
 	int res = read_belong(&val);			\
 	if (res) RETURN (ERROR_VALUE);			\
 	val;						\
 })
 
 #define COND_BELONG(name, CONDITION) ({			\
-	uint32_t	val;					\
+	uint32_t	val;				\
 	int res = read_belong(&val);			\
 	if (res) RETURN (ERROR_VALUE);			\
 	if (!(CONDITION)) RETURN (ERROR_VALUE);		\
@@ -131,6 +156,24 @@
 
 #define EX_BESHORT(name, value)				\
 	COND_BESHORT(name, val==value)
+
+#define READ_LELONG64(name) ({				\
+	uint64_t	val;				\
+	int res = read_lelong64(&val);			\
+	if (res) RETURN (ERROR_VALUE);			\
+	val;						\
+})
+
+#define COND_LELONG64(name, CONDITION) ({		\
+	uint64_t	val;				\
+	int res = read_lelong64(&val);			\
+	if (res) RETURN (ERROR_VALUE);			\
+	if (!(CONDITION)) RETURN (ERROR_VALUE);		\
+	val;						\
+})
+
+#define EX_LELONG64(name, value)				\
+	COND_LELONG64(name, val==value)
 
 #define READ_LELONG(name) ({				\
 	uint32_t	val;					\
