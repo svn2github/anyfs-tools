@@ -18,6 +18,12 @@ anysurrect-plugins \- плагины для anysurrect позволяют рас
 .br
 .BI "SKIP_LESHORT(const char *" "name" ");"
 .sp
+.BI "SKIP_LONG64(const char *" "name" ");"
+.br
+.BI "SKIP_BELONG64(const char *" "name" ");"
+.br
+.BI "SKIP_LELONG64(const char *" "name" ");"
+.sp
 .BI "SKIP_LONG(const char *" "name" ");"
 .br
 .BI "SKIP_BELONG(const char *" "name" ");"
@@ -32,6 +38,12 @@ anysurrect-plugins \- плагины для anysurrect позволяют рас
 .BI ", {const char " "string_1" "[" "len" "+1], const char " 
 .IB "string_2" "[" "len" "+1], ..., NULL} );"
 .sp
+.BI "uint32_t READ_BELONG64(const char *" "name" ");"
+.br
+.BI "uint32_t COND_BELONG64(const char *" "name" ", " "CONDITION" ");"
+.br
+.BI "EX_BELONG64(const char *" "name" ", uint32_t " "value" ");"
+.sp
 .BI "uint32_t READ_BELONG(const char *" "name" ");"
 .br
 .BI "uint32_t COND_BELONG(const char *" "name" ", " "CONDITION" ");"
@@ -43,6 +55,12 @@ anysurrect-plugins \- плагины для anysurrect позволяют рас
 .BI "uint16_t COND_BESHORT(const char *" "name" ", " "CONDITION" ");"
 .br
 .BI "EX_BESHORT(const char *" "name" ", uint16_t " "value" ");"
+.sp
+.BI "uint32_t READ_LELONG64(const char *" "name" ");"
+.br
+.BI "uint32_t COND_LELONG64(const char *" "name" ", " "CONDITION" ");"
+.br
+.BI "EX_LELONG64(const char *" "name" ", uint32_t " "value" ");"
 .sp
 .BI "uint32_t READ_LELONG(const char *" "name" ");"
 .br
@@ -71,10 +89,14 @@ anysurrect-plugins \- плагины для anysurrect позволяют рас
 .BI "int read_beshort(uint16_t *" "value" ");"
 .br
 .BI "int read_belong(uint32_t *" "value" ");"
+.br
+.BI "int read_belong64(uint32_t *" "value" ");"
 .sp
 .BI "int read_leshort(uint16_t *" "value" ");"
 .br
 .BI "int read_lelong(uint32_t *" "value" ");"
+.br
+.BI "int read_lelong64(uint32_t *" "value" ");"
 .sp
 .BI "any_off_t fd_seek(any_off_t " "offset" ", int " "whence" ");"
 .br
@@ -237,6 +259,15 @@ anysurrect-plugins \- плагины для anysurrect позволяют рас
 в Big Endian формате). \
 Возвращает 0 при удаче и 1 -- при неудаче.
 .TP
+.BI "int read_belong64(uint64_t *" "value" ");"
+Считывает значение типа
+.B uint64_t
+(8 байт) в буфер, на который указывает
+.IR value ,
+считая что старший байт на диске хранится впереди (т.е. значение сохранено \
+в Big Endian формате). \
+Возвращает 0 при удаче и 1 -- при неудаче.
+.TP
 .BI "int read_leshort(uint16_t *" "value" ");"
 Считывает значение типа
 .B uint16_t
@@ -254,13 +285,22 @@ anysurrect-plugins \- плагины для anysurrect позволяют рас
 считая что младший байт на диске хранится впереди (т.е. значение сохранено \
 в Little Endian формате). \
 Возвращает 0 при удаче и 1 -- при неудаче.
+.TP
+.BI "int read_lelong64(uint64_t *" "value" ");"
+Считывает значение типа
+.B uint64_t
+(8 байт) в буфер, на который указывает
+.IR value ,
+считая что младший байт на диске хранится впереди (т.е. значение сохранено \
+в Little Endian формате). \
+Возвращает 0 при удаче и 1 -- при неудаче.
 
 .SH "МАКРОСЫ ЧТЕНИЯ ФАЙЛА"
 Макросы для чтения файла были созданы для упрощения программирования \
 обработчиков форматов и увеличения читабельности их кода. \
 Любой из этих макросов может НЕ возвратить управления следующей инструкции \
 функции в связи с неудачей, невыполнением указанного условия. При этом \
-этом функция возвратит значение
+функция возвратит значение
 .BR ERROR_VALUE .
 .TP
 .BI "const char *" "name"

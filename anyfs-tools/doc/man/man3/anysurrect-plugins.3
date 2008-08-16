@@ -18,6 +18,12 @@ format recognizers new functions programming.
 .br
 .BI "SKIP_LESHORT(const char *" "name" ");"
 .sp
+.BI "SKIP_LONG64(const char *" "name" ");"
+.br
+.BI "SKIP_BELONG64(const char *" "name" ");"
+.br
+.BI "SKIP_LELONG64(const char *" "name" ");"
+.sp
 .BI "SKIP_LONG(const char *" "name" ");"
 .br
 .BI "SKIP_BELONG(const char *" "name" ");"
@@ -32,6 +38,12 @@ format recognizers new functions programming.
 .BI ", {const char " "string_1" "[" "len" "+1], const char " 
 .IB "string_2" "[" "len" "+1], ..., NULL} );"
 .sp
+.BI "uint32_t READ_BELONG64(const char *" "name" ");"
+.br
+.BI "uint32_t COND_BELONG64(const char *" "name" ", " "CONDITION" ");"
+.br
+.BI "EX_BELONG64(const char *" "name" ", uint32_t " "value" ");"
+.sp
 .BI "uint32_t READ_BELONG(const char *" "name" ");"
 .br
 .BI "uint32_t COND_BELONG(const char *" "name" ", " "CONDITION" ");"
@@ -43,6 +55,12 @@ format recognizers new functions programming.
 .BI "uint16_t COND_BESHORT(const char *" "name" ", " "CONDITION" ");"
 .br
 .BI "EX_BESHORT(const char *" "name" ", uint16_t " "value" ");"
+.sp
+.BI "uint32_t READ_LELONG64(const char *" "name" ");"
+.br
+.BI "uint32_t COND_LELONG64(const char *" "name" ", " "CONDITION" ");"
+.br
+.BI "EX_LELONG64(const char *" "name" ", uint32_t " "value" ");"
 .sp
 .BI "uint32_t READ_LELONG(const char *" "name" ");"
 .br
@@ -71,10 +89,14 @@ format recognizers new functions programming.
 .BI "int read_beshort(uint16_t *" "value" ");"
 .br
 .BI "int read_belong(uint32_t *" "value" ");"
+.br
+.BI "int read_belong64(uint32_t *" "value" ");"
 .sp
 .BI "int read_leshort(uint16_t *" "value" ");"
 .br
 .BI "int read_lelong(uint32_t *" "value" ");"
+.br
+.BI "int read_lelong64(uint32_t *" "value" ");"
 .sp
 .BI "any_off_t fd_seek(any_off_t " "offset" ", int " "whence" ");"
 .br
@@ -233,6 +255,15 @@ consider that high byte on disk keeps forward (i.e. value saved
 in Big Endian format).
 Returns 0 if successful and 1 -- if unsuccessful.
 .TP
+.BI "int read_belong64(uint64_t *" "value" ");"
+Reads value of
+.B uint64_t
+type (8 bytes) to buffer, on which points
+.IR value ,
+consider that high byte on disk keeps forward (i.e. value saved
+in Big Endian format).
+Returns 0 if successful and 1 -- if unsuccessful.
+.TP
 .BI "int read_leshort(uint16_t *" "value" ");"
 Reads value of
 .B uint16_t
@@ -246,6 +277,15 @@ Returns 0 if successful and 1 -- if unsuccessful.
 Reads value of
 .B uint32_t
 type (4 bytes) to buffer, on which points
+.IR value ,
+consider that low byte on disk keeps forward (i.e. value saved
+in Little Endian format).
+Returns 0 if successful and 1 -- if unsuccessful.
+.TP
+.BI "int read_lelong64(uint64_t *" "value" ");"
+Reads value of
+.B uint64_t
+type (8 bytes) to buffer, on which points
 .IR value ,
 consider that low byte on disk keeps forward (i.e. value saved
 in Little Endian format).
