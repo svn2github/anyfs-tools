@@ -33,7 +33,7 @@ You also need one or both of these:
 1) Kernel sources (kernel-source package) for anyfs kernel module building.
 2) FUSE >= 2.5.0 for anyfuse module building.
 
-anyfs kernel module building was tested on kernels 2.6.9-2.6.19.
+anyfs kernel module building was tested on kernels 2.6.9-2.6.24.
 The module installs to file
 /lib/modules/<kernel-version>/kernel/fs/any/any.ko
 
