@@ -1,6 +1,6 @@
 /*
  *      surrectlist.conf
- *      CopyRight (C) 2006, Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
+ *      CopyRight (C) 2006-2008 Nikolaj Krivchenkov aka unDEFER <undefer@gmail.com>
  */
 
 /* THIS FILE CONTENT DEFAULT LIST OF FILE TYPES FOR RECOVERING BY ANYSURRECT */
@@ -14,6 +14,8 @@
 "audio_video_AVI "
 @MPEG2C@"audio_video_MPEG12 "
 "audio_video_MPEG12PM "
+
+"quick_time_based "
 	
 "image_JPEG "
 "image_PNG "

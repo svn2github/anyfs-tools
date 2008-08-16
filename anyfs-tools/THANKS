@@ -7,7 +7,7 @@ Alexander Kulakov
 (for many bugreports and feature requests)
 
 Sergey Ermakov
-(for yet bugreports and tests)
+(for more bugreports and tests)
 
 Svyatoslav
 (for bugreports, anyrename-utils, Makefiles corrections and ebuild)
@@ -17,7 +17,7 @@ Kirill A. Korinskiy
 
 Mihail Zenkov
 (BIG BIG BIG THANKS for improving progress bar in anysurrect to raise performance,
-testing and many advices for raising anysurrect performance)
+testing and many recommendations for raising anysurrect performance)
 
 Alexey Boyko
 (for bugreport to build_xfs)
@@ -25,3 +25,6 @@ Alexey Boyko
 Alexey Skvortsov
 (for yet another bugreport to build_xfs and feature requests for anyconvertfs)
 
+Charles McCabe
+(for feature request (quicktime based formats support for anysurrect) and
+some corrections in english)

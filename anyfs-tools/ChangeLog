@@ -1,3 +1,7 @@
+* 10.08.08      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Add quicktime based formats support to anysurrect.
+	- 0.85.0 Release
+
 * 28.03.08      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
 	- Fix anyfs building with kernel version >=2.6.23
 	- 0.84.12e Release
