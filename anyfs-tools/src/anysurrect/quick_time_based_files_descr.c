@@ -24,6 +24,17 @@
 extern char *concat_strings(int n, ...);
 
 /*Quick Time Based file formats*/
+
+#ifdef DEBUG
+struct unknown_box {
+	uint32_t type;
+	char container[5];
+};
+
+struct unknown_box unknown_boxes[1024];
+int num_unknown_boxes;
+#endif
+
 struct ftyp_box {
 	uint32_t major_brand;
 	uint32_t minor_version;
@@ -117,16 +128,16 @@ int sinf_box_level_3()
 			SKIP_STRING("Free space", size - offset);
 			break;
 		default:
-#ifdef	DEBUG
-			{
-				char *type_str = (char *) &type;
-				fprintf(stderr, "Unknown box type '%c%c%c%c' in 'sinf' container\n", 
-						type_str[3], type_str[2],
-						type_str[1], type_str[0]);
-			}
-#endif
 			if ( IS_TYPE_ASCII_ALNUMSPC(type) )
 			{
+#ifdef	DEBUG
+				if (num_unknown_boxes < 1024)
+				{
+					unknown_boxes[num_unknown_boxes].type = type;
+					strcpy(unknown_boxes[num_unknown_boxes].container, "sinf");
+					num_unknown_boxes++;
+				}
+#endif
 				SKIP_STRING("UNKNOWN box", size - offset);
 			}
 			else return ERROR_VALUE;
@@ -207,16 +218,16 @@ int ipro_box_level_2()
 			SKIP_STRING("Free space", size - offset);
 			break;
 		default:
-#ifdef	DEBUG
-			{
-				char *type_str = (char *) &type;
-				fprintf(stderr, "Unknown box type '%c%c%c%c' in 'ipro' container\n", 
-						type_str[3], type_str[2],
-						type_str[1], type_str[0]);
-			}
-#endif
 			if ( IS_TYPE_ASCII_ALNUMSPC(type) )
 			{
+#ifdef	DEBUG
+				if (num_unknown_boxes < 1024)
+				{
+					unknown_boxes[num_unknown_boxes].type = type;
+					strcpy(unknown_boxes[num_unknown_boxes].container, "ipro");
+					num_unknown_boxes++;
+				}
+#endif
 				SKIP_STRING("UNKNOWN box", size - offset);
 			}
 			else return ERROR_VALUE;
@@ -353,16 +364,16 @@ int meta_box_level_1()
 			SKIP_STRING("Free space", size - offset);
 			break;
 		default:
-#ifdef	DEBUG
-			{
-				char *type_str = (char *) &type;
-				fprintf(stderr, "Unknown box type '%c%c%c%c' in 'meta' container\n", 
-						type_str[3], type_str[2],
-						type_str[1], type_str[0]);
-			}
-#endif
 			if ( IS_TYPE_ASCII_ALNUMSPC(type) )
 			{
+#ifdef	DEBUG
+				if (num_unknown_boxes < 1024)
+				{
+					unknown_boxes[num_unknown_boxes].type = type;
+					strcpy(unknown_boxes[num_unknown_boxes].container, "meta");
+					num_unknown_boxes++;
+				}
+#endif
 				SKIP_STRING("UNKNOWN box", size - offset);
 			}
 			else return ERROR_VALUE;
@@ -452,16 +463,16 @@ int mfra_box_level_1()
 			SKIP_STRING("Free space", size - offset);
 			break;
 		default:
-#ifdef	DEBUG
-			{
-				char *type_str = (char *) &type;
-				fprintf(stderr, "Unknown box type '%c%c%c%c' in 'mfra' container\n", 
-						type_str[3], type_str[2],
-						type_str[1], type_str[0]);
-			}
-#endif
 			if ( IS_TYPE_ASCII_ALNUMSPC(type) )
 			{
+#ifdef	DEBUG
+				if (num_unknown_boxes < 1024)
+				{
+					unknown_boxes[num_unknown_boxes].type = type;
+					strcpy(unknown_boxes[num_unknown_boxes].container, "mfra");
+					num_unknown_boxes++;
+				}
+#endif
 				SKIP_STRING("UNKNOWN box", size - offset);
 			}
 			else return ERROR_VALUE;
@@ -546,16 +557,16 @@ int mvex_box_level_2()
 			SKIP_STRING("Free space", size - offset);
 			break;
 		default:
-#ifdef	DEBUG
-			{
-				char *type_str = (char *) &type;
-				fprintf(stderr, "Unknown box type '%c%c%c%c' in 'mvex' container\n", 
-						type_str[3], type_str[2],
-						type_str[1], type_str[0]);
-			}
-#endif
 			if ( IS_TYPE_ASCII_ALNUMSPC(type) )
 			{
+#ifdef	DEBUG
+				if (num_unknown_boxes < 1024)
+				{
+					unknown_boxes[num_unknown_boxes].type = type;
+					strcpy(unknown_boxes[num_unknown_boxes].container, "mvex");
+					num_unknown_boxes++;
+				}
+#endif
 				SKIP_STRING("UNKNOWN box", size - offset);
 			}
 			else return ERROR_VALUE;
@@ -738,16 +749,16 @@ int stbl_box_level_5()
 			SKIP_STRING("Free space", size - offset);
 			break;
 		default:
-#ifdef	DEBUG
-			{
-				char *type_str = (char *) &type;
-				fprintf(stderr, "Unknown box type '%c%c%c%c' in 'stbl' container\n", 
-						type_str[3], type_str[2],
-						type_str[1], type_str[0]);
-			}
-#endif
 			if ( IS_TYPE_ASCII_ALNUMSPC(type) )
 			{
+#ifdef	DEBUG
+				if (num_unknown_boxes < 1024)
+				{
+					unknown_boxes[num_unknown_boxes].type = type;
+					strcpy(unknown_boxes[num_unknown_boxes].container, "stbl");
+					num_unknown_boxes++;
+				}
+#endif
 				SKIP_STRING("UNKNOWN box", size - offset);
 			}
 			else return ERROR_VALUE;
@@ -842,16 +853,16 @@ int dinf_box_level_5()
 			SKIP_STRING("Free space", size - offset);
 			break;
 		default:
-#ifdef	DEBUG
-			{
-				char *type_str = (char *) &type;
-				fprintf(stderr, "Unknown box type '%c%c%c%c' in 'dinf' container\n", 
-						type_str[3], type_str[2],
-						type_str[1], type_str[0]);
-			}
-#endif
 			if ( IS_TYPE_ASCII_ALNUMSPC(type) )
 			{
+#ifdef	DEBUG
+				if (num_unknown_boxes < 1024)
+				{
+					unknown_boxes[num_unknown_boxes].type = type;
+					strcpy(unknown_boxes[num_unknown_boxes].container, "dinf");
+					num_unknown_boxes++;
+				}
+#endif
 				SKIP_STRING("UNKNOWN box", size - offset);
 			}
 			else return ERROR_VALUE;
@@ -992,16 +1003,16 @@ int minf_box_level_4()
 			SKIP_STRING("Free space", size - offset);
 			break;
 		default:
-#ifdef	DEBUG
-			{
-				char *type_str = (char *) &type;
-				fprintf(stderr, "Unknown box type '%c%c%c%c' in 'minf' container\n", 
-						type_str[3], type_str[2],
-						type_str[1], type_str[0]);
-			}
-#endif
 			if ( IS_TYPE_ASCII_ALNUMSPC(type) )
 			{
+#ifdef	DEBUG
+				if (num_unknown_boxes < 1024)
+				{
+					unknown_boxes[num_unknown_boxes].type = type;
+					strcpy(unknown_boxes[num_unknown_boxes].container, "minf");
+					num_unknown_boxes++;
+				}
+#endif
 				SKIP_STRING("UNKNOWN box", size - offset);
 			}
 			else return ERROR_VALUE;
@@ -1104,16 +1115,16 @@ int mdia_box_level_3()
 			SKIP_STRING("Free space", size - offset);
 			break;
 		default:
-#ifdef	DEBUG
-			{
-				char *type_str = (char *) &type;
-				fprintf(stderr, "Unknown box type '%c%c%c%c' in 'mdia' container\n", 
-						type_str[3], type_str[2],
-						type_str[1], type_str[0]);
-			}
-#endif
 			if ( IS_TYPE_ASCII_ALNUMSPC(type) )
 			{
+#ifdef	DEBUG
+				if (num_unknown_boxes < 1024)
+				{
+					unknown_boxes[num_unknown_boxes].type = type;
+					strcpy(unknown_boxes[num_unknown_boxes].container, "mdia");
+					num_unknown_boxes++;
+				}
+#endif
 				SKIP_STRING("UNKNOWN box", size - offset);
 			}
 			else return ERROR_VALUE;
@@ -1194,16 +1205,16 @@ int edts_box_level_3()
 			SKIP_STRING("Free space", size - offset);
 			break;
 		default:
-#ifdef	DEBUG
-			{
-				char *type_str = (char *) &type;
-				fprintf(stderr, "Unknown box type '%c%c%c%c' in 'edts' container\n", 
-						type_str[3], type_str[2],
-						type_str[1], type_str[0]);
-			}
-#endif
 			if ( IS_TYPE_ASCII_ALNUMSPC(type) )
 			{
+#ifdef	DEBUG
+				if (num_unknown_boxes < 1024)
+				{
+					unknown_boxes[num_unknown_boxes].type = type;
+					strcpy(unknown_boxes[num_unknown_boxes].container, "edts");
+					num_unknown_boxes++;
+				}
+#endif
 				SKIP_STRING("UNKNOWN box", size - offset);
 			}
 			else return ERROR_VALUE;
@@ -1303,16 +1314,16 @@ int trak_box_level_2()
 			SKIP_STRING("Free space", size - offset);
 			break;
 		default:
-#ifdef	DEBUG
-			{
-				char *type_str = (char *) &type;
-				fprintf(stderr, "Unknown box type '%c%c%c%c' in 'trak' container\n", 
-						type_str[3], type_str[2],
-						type_str[1], type_str[0]);
-			}
-#endif
 			if ( IS_TYPE_ASCII_ALNUMSPC(type) )
 			{
+#ifdef	DEBUG
+				if (num_unknown_boxes < 1024)
+				{
+					unknown_boxes[num_unknown_boxes].type = type;
+					strcpy(unknown_boxes[num_unknown_boxes].container, "trak");
+					num_unknown_boxes++;
+				}
+#endif
 				SKIP_STRING("UNKNOWN box", size - offset);
 			}
 			else return ERROR_VALUE;
@@ -1417,16 +1428,16 @@ int traf_box_level_2()
 			SKIP_STRING("Free space", size - offset);
 			break;
 		default:
-#ifdef	DEBUG
-			{
-				char *type_str = (char *) &type;
-				fprintf(stderr, "Unknown box type '%c%c%c%c' in 'traf' container\n", 
-						type_str[3], type_str[2],
-						type_str[1], type_str[0]);
-			}
-#endif
 			if ( IS_TYPE_ASCII_ALNUMSPC(type) )
 			{
+#ifdef	DEBUG
+				if (num_unknown_boxes < 1024)
+				{
+					unknown_boxes[num_unknown_boxes].type = type;
+					strcpy(unknown_boxes[num_unknown_boxes].container, "traf");
+					num_unknown_boxes++;
+				}
+#endif
 				SKIP_STRING("UNKNOWN box", size - offset);
 			}
 			else return ERROR_VALUE;
@@ -1515,16 +1526,16 @@ int moof_box_level_1()
 			SKIP_STRING("Free space", size - offset);
 			break;
 		default:
-#ifdef	DEBUG
-			{
-				char *type_str = (char *) &type;
-				fprintf(stderr, "Unknown box type '%c%c%c%c' in 'moof' container\n", 
-						type_str[3], type_str[2],
-						type_str[1], type_str[0]);
-			}
-#endif
 			if ( IS_TYPE_ASCII_ALNUMSPC(type) )
 			{
+#ifdef	DEBUG
+				if (num_unknown_boxes < 1024)
+				{
+					unknown_boxes[num_unknown_boxes].type = type;
+					strcpy(unknown_boxes[num_unknown_boxes].container, "moof");
+					num_unknown_boxes++;
+				}
+#endif
 				SKIP_STRING("UNKNOWN box", size - offset);
 			}
 			else return ERROR_VALUE;
@@ -1640,16 +1651,16 @@ int moov_box_level_1()
 			SKIP_STRING("Free space", size - offset);
 			break;
 		default:
-#ifdef	DEBUG
-			{
-				char *type_str = (char *) &type;
-				fprintf(stderr, "Unknown box type '%c%c%c%c' in 'moov' container\n", 
-						type_str[3], type_str[2],
-						type_str[1], type_str[0]);
-			}
-#endif
 			if ( IS_TYPE_ASCII_ALNUMSPC(type) )
 			{
+#ifdef	DEBUG
+				if (num_unknown_boxes < 1024)
+				{
+					unknown_boxes[num_unknown_boxes].type = type;
+					strcpy(unknown_boxes[num_unknown_boxes].container, "moov");
+					num_unknown_boxes++;
+				}
+#endif
 				SKIP_STRING("UNKNOWN box", size - offset);
 			}
 			else return ERROR_VALUE;
@@ -1869,17 +1880,16 @@ int box_level_0()
 			num_wide++;
 			break;
 		default:
-#ifdef	DEBUG
-			if (num_boxes > 0)
-			{
-				char *type_str = (char *) &type;
-				fprintf(stderr, "Unknown box type '%c%c%c%c' in file container\n", 
-						type_str[3], type_str[2],
-						type_str[1], type_str[0]);
-			}
-#endif
 			if ( IS_TYPE_ASCII_ALNUMSPC(type) )
 			{
+#ifdef	DEBUG
+				if (num_unknown_boxes < 1024)
+				{
+					unknown_boxes[num_unknown_boxes].type = type;
+					strcpy(unknown_boxes[num_unknown_boxes].container, "file");
+					num_unknown_boxes++;
+				}
+#endif
 				SKIP_STRING("UNKNOWN box", size - offset);
 			}
 			else return ERROR_VALUE;
@@ -1894,6 +1904,8 @@ extern _declspec(dllexport)
 char *quick_time_based_surrect()
 {
 	int not_iso_based_media_file = 0;
+
+	num_unknown_boxes = 0;
 
 	num_boxes = 0;
 
@@ -2002,6 +2014,25 @@ char *quick_time_based_surrect()
 	ReturnPath = concat_strings(4, 
 			Root_Directory, Subdirectory, 
 			VA_Directory, File_Format_Directory);
+
+#ifdef	DEBUG
+	{
+		int i;
+		for (i=0; i<num_unknown_boxes; i++)
+		{
+			char *type_str = (char *) &unknown_boxes[i].type;
+			fprintf(stderr, "Unknown box type '%c%c%c%c' in %s container\n", 
+					type_str[3], type_str[2],
+					type_str[1], type_str[0],
+					unknown_boxes[i].container);
+		}
+		if (num_unknown_boxes > 0)
+		{
+			fprintf(stderr, "Please, mail %d lines above to undefer@gmail.com\n",
+					num_unknown_boxes); 
+		}
+	}
+#endif
 
 	return ReturnPath;
 }
