@@ -1,3 +1,8 @@
+* 01.02.09      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	-  Fix anyfs building with kernel version >=2.6.25
+	-  Fix anyfs building with e2fsprogs version >=1.41
+	- 0.85.1 Release
+
 * 17.08.08      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
 	- Fix very much 'unknown box' messages in Quick Time based files
 		surrecter.
