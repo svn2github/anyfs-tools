@@ -33,6 +33,9 @@
 #  if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,23)
 #    define KERNEL_2_6_23_PLUS
 #  endif
+#  if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,25)
+#    define KERNEL_2_6_25_PLUS
+#  endif
 #endif
 
 #define ANY_SUPER_MAGIC	0x414e59 /*ANY*/
@@ -136,5 +139,8 @@ struct any_sb_info {
 
 extern int any_setattr(struct dentry *dentry, struct iattr *attr);
 extern void any_set_inode(struct inode *inode, dev_t rdev);
+#ifdef KERNEL_2_6_25_PLUS
+extern struct inode *any_iget(struct super_block *sb, unsigned long ino);
+#endif
 
 #endif /* _FS_ANY_ANY_H */

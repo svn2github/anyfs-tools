@@ -50,10 +50,16 @@ static struct dentry *any_lookup(struct inode * dir, struct dentry *dentry,
 	}
 	
 	if (dirent) {
+#ifdef KERNEL_2_6_25_PLUS
+		inode = any_iget(dir->i_sb, ino);
+		if (IS_ERR(inode))
+			return ERR_CAST(inode);
+#else
 		inode = iget(dir->i_sb, ino);
-
 		if (!inode)
 			return ERR_PTR(-EACCES);
+#endif
+
 	}
 
 	d_add(dentry, inode);

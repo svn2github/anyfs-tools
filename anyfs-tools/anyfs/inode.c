@@ -157,14 +157,30 @@ void any_set_inode(struct inode *inode, dev_t rdev)
 	    init_special_inode(inode, inode->i_mode, rdev);
 }
 
+#ifdef KERNEL_2_6_25_PLUS
+struct inode *any_iget(struct super_block *sb, unsigned long ino)
+#else
 static void any_read_inode(struct inode * inode)
+#endif
 {
-	struct any_sb_info * info = inode->i_sb->s_fs_info;
+#ifdef KERNEL_2_6_25_PLUS
+	struct inode *inode;
+#endif
+	struct any_sb_info *info;
 	int i;
 	dev_t rdev;
 	/*заполняет структуру inode по inode->i_ino
 	  в том числе заполняет inode->i_op
 	  для определения допустимых операций*/
+
+#ifdef KERNEL_2_6_25_PLUS
+	inode = iget_locked(sb, ino);
+	if (IS_ERR(inode))
+		return ERR_PTR(-ENOMEM);
+	if (!(inode->i_state & I_NEW))
+		return inode;
+#endif
+	info = inode->i_sb->s_fs_info;
 	
 #ifdef	ANYFS_DEBUG
 	printk("anyfs: read inode %ld\n", inode->i_ino);
@@ -208,6 +224,11 @@ static void any_read_inode(struct inode * inode)
 		rdev = info->si_inode_table[inode->i_ino].i_info.device;
 
 	any_set_inode(inode, rdev);
+
+#ifdef KERNEL_2_6_25_PLUS
+	unlock_new_inode(inode);
+	return inode;
+#endif
 }
 
 static int any_write_inode(struct inode * inode, int unused)
@@ -627,7 +648,9 @@ static int any_statfs(struct super_block *sb, struct kstatfs *buf)
 }
 
 static struct super_operations any_sops = {
+#ifndef KERNEL_2_6_25_PLUS
 	.read_inode     = any_read_inode,
+#endif
 	.write_inode    = any_write_inode,
 	.delete_inode   = any_delete_inode,
 	.statfs         = any_statfs,
@@ -687,7 +710,11 @@ static int any_fill_super(struct super_block *s, void *data, int silent)
 	if (!file->f_op->read)
 		goto close_fail;
 
+#ifdef KERNEL_2_6_25_PLUS
+	fullpath = d_path(&file->f_path, buffer, ANY_BUFFER_SIZE);
+#else
 	fullpath = d_path(file->f_dentry, file->f_vfsmnt, buffer, ANY_BUFFER_SIZE);
+#endif
 	if (IS_ERR(fullpath))
 	{
 		ret = PTR_ERR(inode);
@@ -1071,9 +1098,24 @@ static int any_fill_super(struct super_block *s, void *data, int silent)
 	s->s_magic = ANY_SUPER_MAGIC;
 	s->s_op = &any_sops;
 
+#ifdef KERNEL_2_6_25_PLUS
+	root_inode = any_iget(s, 1);
+	if (IS_ERR(root_inode)) {
+		ret = PTR_ERR(inode);
+		goto free4_fail;
+	}
+#else
 	root_inode = iget(s, 1);
+#endif
 
 	s->s_root = d_alloc_root(root_inode);
+#ifdef KERNEL_2_6_25_PLUS
+	if (!s->s_root) {
+		iput(inode);
+		ret = -ENOMEM;
+		goto free4_fail;
+	}
+#endif
 	
 	return 0;
 
