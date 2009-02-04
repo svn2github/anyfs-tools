@@ -76,7 +76,11 @@ typedef uint64_t  any_size_t;
 typedef int64_t any_ssize_t;
 typedef int64_t any_off_t;
 
+#ifdef __GNUC_STDC_INLINE__
+#define inline inline __attribute__((always_inline)) __attribute__((__gnu_inline__))
+#else
 #define inline inline __attribute__((always_inline))
+#endif
 
 /*min_t, max_t Macroses from Linux kernel*/
 #define min_t(type,x,y) \

@@ -1,4 +1,6 @@
 CC=gcc
+AR=ar
+ARFLAGS=cr
 INSTALL=install -c
 prefix=@prefix@
 DESTDIR=@DESTDIR@
@@ -10,8 +12,11 @@ CCFLAGS= -O3 -Wall -Winline --param inline-unit-growth=1000 \
 	 --param large-function-growth=10000 -std=gnu99 -I$(INCLUDE) \
 	 @MPEG2_CFLAGS@ @EXT2FS_CFLAGS@ @CFLAGS@
 LDFLAGS= -rdynamic -L$(LIBANYPATH) -lany @BZ2LIB@ -ldl @MPEG2_LIBS@ @EXT2FS_LIBS@
+LDFLAGSANYSURRECT = -L. -lanysurrect
 
-OBJS = anysurrect.o anysurrect_malloc.o frags_funcs.o \
+OBJS = anysurrect.o 
+OBJSLIBANYSURRECT = \
+       anysurrect_malloc.o frags_funcs.o \
        audio_files_descr.o \
        audio_video_files_descr.o @MPEG2_MODULES@ audio_video3_files_descr.o\
        image_files_descr.o image2_files_descr.o image3_files_descr.o \
@@ -26,10 +31,21 @@ OBJS = anysurrect.o anysurrect_malloc.o frags_funcs.o \
        gzip/unlzw.o gzip/unpack.o gzip/unlzh.o \
        quick_time_based_files_descr.o
 
-all: anysurrect
+ANYSURREQT=@ANYSURREQT@
 
-anysurrect: gzip_o scan_pes_o $(OBJS)
-	$(CC) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS)
+all: libanysurrect.a anysurrect $(ANYSURREQT)
+
+anysurrect: libanysurrect.a $(OBJS)
+	$(CC) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDFLAGSANYSURRECT)
+
+anysurreqt_mod: libanysurrect.a
+	$(MAKE) $(AM_MAKEFLAGS) -C anysurreqt
+
+libanysurrect.a: gzip_o scan_pes_o $(OBJSLIBANYSURRECT)
+	$(AR) $(ARFLAGS) $@ $(OBJSLIBANYSURRECT)
+
+libanysurrect.so: gzip_o scan_pes_o $(OBJLIBANYSURRECT)
+	$(CC) -nostdlib -shared $(CCFLAGS) $(LDFLAGS) -o $@ $(OBJLIBANYSURRECT)
 
 gzip_o:
 	$(MAKE) $(AM_MAKEFLAGS) -C gzip
@@ -57,7 +73,7 @@ uninstall:
 	rmdir --ignore-fail-on-non-empty -p $(INSTALLPATH)/include/anyfs-tools
 
 clean:
-	rm -f *.o *~ anysurrect
+	rm -f *.o *~ anysurrect libanysurrect.a
 	$(MAKE) $(AM_MAKEFLAGS) -C scan_pes clean
 	$(MAKE) $(AM_MAKEFLAGS) -C gzip clean
 

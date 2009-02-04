@@ -635,7 +635,7 @@ static int any_statfs(struct super_block *sb, struct kstatfs *buf)
 	if (sb->s_bdev->bd_part)
 		buf->f_blocks = sb->s_bdev->bd_part->nr_sects >> d;
 	else if ( sb->s_bdev->bd_disk)
-		buf->f_blocks = sb->s_bdev->bd_disk->capacity >> d;
+		buf->f_blocks = get_capacity(sb->s_bdev->bd_disk) >> d;
 	else buf->f_blocks = 0;
 	buf->f_bfree = buf->f_bavail = 0;
 	buf->f_files = info->si_inodes;
