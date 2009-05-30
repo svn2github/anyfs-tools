@@ -10,9 +10,9 @@
 
 #include <stdio.h>
 
-#include "bitops.h"
 #include "block_map.h"
 #include "any.h"
+#include "bitops.h"
 #include "super.h"
 
 extern int verbose;

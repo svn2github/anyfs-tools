@@ -14,8 +14,8 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-#include "bitops.h"
 #include "any.h"
+#include "bitops.h"
 
 int write_it(struct any_sb_info *info, char itfilename[])
 {       
