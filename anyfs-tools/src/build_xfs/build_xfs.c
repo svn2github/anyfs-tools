@@ -79,25 +79,23 @@ char	*dopts[] = {
 	"sunit",
 #define D_SWIDTH	5
 	"swidth",
-#define D_UNWRITTEN	6
-	"unwritten",
-#define D_AGSIZE	7
+#define D_AGSIZE	6
 	"agsize",
-#define D_SU		8
+#define D_SU		7
 	"su",
-#define D_SW		9
+#define D_SW		8
 	"sw",
-#define D_SECTLOG	10
+#define D_SECTLOG	9
 	"sectlog",
-#define D_SECTSIZE	11
+#define D_SECTSIZE	10
 	"sectsize",
-#define D_NOALIGN	12
+#define D_NOALIGN	11
 	"noalign",
-#define D_RTINHERIT	13
+#define D_RTINHERIT	12
 	"rtinherit",
-#define D_PROJINHERIT	14
+#define D_PROJINHERIT	13
 	"projinherit",
-#define D_EXTSZINHERIT	15
+#define D_EXTSZINHERIT	14
 	"extszinherit",
 	NULL
 };
@@ -413,31 +411,47 @@ validate_log_size(__uint64_t logblocks, int blocklog, int min_logblocks)
 	}
 }
 
+static int
+calc_default_imaxpct(
+       int             blocklog,
+       __uint64_t      dblocks)
+{
+       /*
+        * This returns the % of the disk space that is used for
+        * inodes, it changes relatively to the FS size:
+        *  - over  50 TB, use 1%,
+        *  - 1TB - 50 TB, use 5%,
+        *  - under  1 TB, use XFS_DFL_IMAXIMUM_PCT (25%).
+        */
+
+       if (dblocks < TERABYTES(1, blocklog)) {
+               return XFS_DFL_IMAXIMUM_PCT;
+       } else if (dblocks < TERABYTES(50, blocklog)) {
+               return 5;
+       }
+
+       return 1;
+}
+
 void
 calc_default_ag_geometry(
 	int		blocklog,
 	__uint64_t	dblocks,
+	int             multidisk,
 	__uint64_t	*agsize,
 	__uint64_t	*agcount)
 {
-	__uint64_t	blocks;
-	__uint64_t	count = 0;
+	__uint64_t	blocks = 0;
 	int		shift = 0;
 
 	/*
-	 * First handle the extremes - the points at which we will
-	 * always use the maximum AG size, the points at which we
-	 * always use the minimum, and a "small-step" for 16-128Mb.
+         * First handle the high extreme - the point at which we will
+         * always use the maximum AG size.
+         *
+         * This applies regardless of storage configuration.
 	 */
 	if (dblocks >= TERABYTES(32, blocklog)) {
 		blocks = XFS_AG_MAX_BLOCKS(blocklog);
-		goto done;
-	} else if (dblocks < MEGABYTES(16, blocklog)) {
-		blocks = dblocks;
-		count = 1;
-		goto done;
-	} else if (dblocks < MEGABYTES(128, blocklog)) {
-		blocks = MEGABYTES(16, blocklog);
 		goto done;
 	}
 
@@ -446,27 +460,43 @@ calc_default_ag_geometry(
 	 * number of data blocks available, trying to keep the
 	 * number of AGs relatively small (especially compared
 	 * to the original algorithm).  AG count is calculated
-	 * based on the prefered AG size, not vice-versa - the
+	 * based on the preferred AG size, not vice-versa - the
 	 * count can be increased by growfs, so prefer to use
 	 * smaller counts at mkfs time.
-	 * 
-	 * This scales us up smoothly between min/max AG sizes.
+	 * 	
+	 * For a single underlying storage device between 128MB
+         * and 4TB in size, just use 4 AGs, otherwise scale up
+         * smoothly between min/max AG sizes
 	 */
-	if (dblocks > GIGABYTES(512, blocklog))
+	if (!multidisk && dblocks >= MEGABYTES(128, blocklog)) {
+                if (dblocks >= TERABYTES(4, blocklog)) {
+                        blocks = XFS_AG_MAX_BLOCKS(blocklog);
+                        goto done;
+                }
+                shift = 2;
+        } else if (dblocks > GIGABYTES(512, blocklog))
 		shift = 5;
 	else if (dblocks > GIGABYTES(8, blocklog))
 		shift = 4;
 	else if (dblocks >= MEGABYTES(128, blocklog))
 		shift = 3;
+	else if (dblocks >= MEGABYTES(64, blocklog))
+                shift = 2;
+        else if (dblocks >= MEGABYTES(32, blocklog))
+                shift = 1;
 	else
-		ASSERT(0);
-	blocks = dblocks >> shift;
+		shift = 0;
+        /*
+         * If dblocks is not evenly divisible by the number of
+         * desired AGs, round "blocks" up so we don't lose the
+         * last bit of the filesystem. The same principle applies
+         * to the AG count, so we don't lose the last AG!
+         */
+        blocks = (dblocks >> shift) + ((dblocks & xfs_mask32lo(shift)) != 0);
 
 done:
-	if (!count)
-		count = dblocks / blocks + (dblocks % blocks != 0);
 	*agsize = blocks;
-	*agcount = count;
+	*agcount = dblocks / blocks + (dblocks % blocks != 0);
 }
 
 static void
@@ -634,7 +664,7 @@ uint64_t write_extentlist(
 	{
 		/*Long extent list*/
 
-		INT_SET(inode->di_format, ARCH_CONVERT, XFS_DINODE_FMT_BTREE);
+		inode->di_format = XFS_DINODE_FMT_BTREE; // 8-bit nothing to swab
 		if (verbose>=2) fprintf(stderr, "Long extent list\n");
 
 		uint32_t numrecs_max = (blocksize - 24)/16;
@@ -697,11 +727,11 @@ uint64_t write_extentlist(
 
 		ASSERT( ((char*)bp-(char*)bbuf) <= blocksize );
 
-		INT_SET(*magic, ARCH_CONVERT, XFS_BMAP_MAGIC);
-		INT_SET(*plevel, ARCH_CONVERT, level);
-		INT_SET(*numrecs, ARCH_CONVERT, numrecs_val);
-		INT_SET(*leftsib, ARCH_CONVERT, NULLFSBLOCK);
-		INT_SET(*rightsib, ARCH_CONVERT, NULLFSBLOCK);
+		*magic = cpu_to_be32(XFS_BMAP_MAGIC);
+		*plevel = cpu_to_be16(level);
+		*numrecs = cpu_to_be16(numrecs_val);
+		*leftsib = cpu_to_be64(NULLFSBLOCK);
+		*rightsib = cpu_to_be64(NULLFSBLOCK);
 
 		uint64_t startoff = 0;
 		for (j=0; j < frags->fr_nfrags; j++)
@@ -729,7 +759,7 @@ uint64_t write_extentlist(
 
 				set_bit ( b, xfs_block_bitmap );
 
-				INT_SET(*rightsib, ARCH_CONVERT, XFS_BLKNO(b));
+				*rightsib = cpu_to_be64(XFS_BLKNO(b));
 				if (!noaction)
 					pwrite64(xfs_fd, bbuf, blocksize, leftsib_val*blocksize);
 
@@ -756,11 +786,11 @@ uint64_t write_extentlist(
 				nrec_inblock=0;
 				numrecs_val = (nblock<l0)?numrecs_0:numrecs_1;
 
-				INT_SET(*magic, ARCH_CONVERT, XFS_BMAP_MAGIC);
-				INT_SET(*plevel, ARCH_CONVERT, level);
-				INT_SET(*numrecs, ARCH_CONVERT, numrecs_val);
-				INT_SET(*leftsib, ARCH_CONVERT, XFS_BLKNO(leftsib_val));
-				INT_SET(*rightsib, ARCH_CONVERT, NULLFSBLOCK);
+				*magic = cpu_to_be32(XFS_BMAP_MAGIC);
+				*plevel = cpu_to_be16(level);
+				*numrecs = cpu_to_be16(numrecs_val);
+				*leftsib = cpu_to_be64(XFS_BLKNO(leftsib_val));
+				*rightsib = cpu_to_be64(NULLFSBLOCK);
 			}
 
 			nblocks += blockcount;
@@ -792,10 +822,10 @@ uint64_t write_extentlist(
 
 			uint32_t *l = (uint32_t *) bp;
 
-			INT_SET(l[0], ARCH_CONVERT, l0);
-			INT_SET(l[1], ARCH_CONVERT, l1);
-			INT_SET(l[2], ARCH_CONVERT, l2);
-			INT_SET(l[3], ARCH_CONVERT, l3);
+			l[0] = cpu_to_be32(l0);
+			l[1] = cpu_to_be32(l1);
+			l[2] = cpu_to_be32(l2);
+			l[3] = cpu_to_be32(l3);
 
 			bp = (void*) (l+4);
 
@@ -888,11 +918,11 @@ uint64_t write_extentlist(
 			uint64_t *rightsib = (uint64_t *)bp;
 			bp = (void*) (rightsib+1);
 
-			INT_SET(*magic, ARCH_CONVERT, XFS_BMAP_MAGIC);
-			INT_SET(*plevel, ARCH_CONVERT, level);
-			INT_SET(*numrecs, ARCH_CONVERT, numrecs_val);
-			INT_SET(*leftsib, ARCH_CONVERT, NULLFSBLOCK);
-			INT_SET(*rightsib, ARCH_CONVERT, NULLFSBLOCK);
+			*magic = cpu_to_be32(XFS_BMAP_MAGIC);
+			*plevel = cpu_to_be16(level);
+			*numrecs = cpu_to_be16(numrecs_val);
+			*leftsib = cpu_to_be64(NULLFSBLOCK);
+			*rightsib = cpu_to_be64(NULLFSBLOCK);
 
 			uint32_t sizerest = blocksize - ((char*) bp - bbuf);
 			sizerest = sizerest/16*16;
@@ -922,7 +952,7 @@ uint64_t write_extentlist(
 
 					set_bit ( b, xfs_block_bitmap );
 
-					INT_SET(*rightsib, ARCH_CONVERT, XFS_BLKNO(b));
+					*rightsib = cpu_to_be64(XFS_BLKNO(b));
 					if (!noaction)
 						pwrite64(xfs_fd, bbuf, blocksize, leftsib_val*blocksize);
 
@@ -949,11 +979,11 @@ uint64_t write_extentlist(
 					nrec_inblock=0;
 					numrecs_val = (nblock<l0)?numrecs_0:numrecs_1;
 
-					INT_SET(*magic, ARCH_CONVERT, XFS_BMAP_MAGIC);
-					INT_SET(*plevel, ARCH_CONVERT, level);
-					INT_SET(*numrecs, ARCH_CONVERT, numrecs_val);
-					INT_SET(*leftsib, ARCH_CONVERT, XFS_BLKNO(leftsib_val));
-					INT_SET(*rightsib, ARCH_CONVERT, NULLFSBLOCK);
+					*magic = cpu_to_be32(XFS_BMAP_MAGIC);
+					*plevel = cpu_to_be16(level);
+					*numrecs = cpu_to_be16(numrecs_val);
+					*leftsib = cpu_to_be64(XFS_BLKNO(leftsib_val));
+					*rightsib = cpu_to_be64(NULLFSBLOCK);
 
 					bp2 = bp2_s;
 				}
@@ -970,8 +1000,8 @@ uint64_t write_extentlist(
 				uint64_t *child = bp2;
 				bp2 = (void*) (child+1);
 
-				INT_SET((*startoff), ARCH_CONVERT, blocks_r[j].startoff);
-				INT_SET((*child), ARCH_CONVERT, XFS_BLKNO(blocks_r[j].child));
+				(*startoff) = cpu_to_be64(blocks_r[j].startoff);
+				(*child) = cpu_to_be64(XFS_BLKNO(blocks_r[j].child));
 
 				ASSERT(bp<=bp2_s);
 				ASSERT( ((char*)bp2-(char*)bbuf) <= blocksize );
@@ -1010,8 +1040,8 @@ uint64_t write_extentlist(
 		numrecs = (uint16_t *)bp;
 		bp = (void*) (numrecs+1);
 
-		INT_SET(*plevel, ARCH_CONVERT, level);
-		INT_SET(*numrecs, ARCH_CONVERT, numrecs_val);
+		*plevel = cpu_to_be16(level);
+		*numrecs = cpu_to_be16(numrecs_val);
 
 		uint32_t sizerest = (isize - ((char*)p_inode - (char*)inode)) - ((char*) bp - bbuf);
 		sizerest = sizerest/16*16;
@@ -1032,8 +1062,8 @@ uint64_t write_extentlist(
 			ASSERT(bp<=bp2_s);
 			ASSERT( ((char*)bp2-(char*)inode) <= isize );
 
-			INT_SET((*startoff), ARCH_CONVERT, blocks_r[j].startoff);
-			INT_SET((*child), ARCH_CONVERT, XFS_BLKNO(blocks_r[j].child));
+			(*startoff) = cpu_to_be64(blocks_r[j].startoff);
+			(*child) = cpu_to_be64(XFS_BLKNO(blocks_r[j].child));
 		}
 
 		free (blocks_r);
@@ -1079,17 +1109,17 @@ uint64_t write_extentlist(
 
 			uint32_t *l = (uint32_t *) p_inode + 4*(j-nullfrags);
 
-			INT_SET(l[0], ARCH_CONVERT, l0);
-			INT_SET(l[1], ARCH_CONVERT, l1);
-			INT_SET(l[2], ARCH_CONVERT, l2);
-			INT_SET(l[3], ARCH_CONVERT, l3);
+			l[0] = cpu_to_be32(l0);
+			l[1] = cpu_to_be32(l1);
+			l[2] = cpu_to_be32(l2);
+			l[3] = cpu_to_be32(l3);
 
 			startoff += blockcount;
 		}
 	}
 
-	INT_SET(inode->di_nblocks, ARCH_CONVERT, nblocks);
-	INT_SET(inode->di_nextents, ARCH_CONVERT, frags->fr_nfrags - nullfrags);
+	inode->di_nblocks = cpu_to_be64(nblocks);
+	inode->di_nextents = cpu_to_be32(frags->fr_nfrags - nullfrags);
 	return nblocks;
 }
 
@@ -1235,10 +1265,10 @@ void fill_direntry(char *bbuf, void **pbp,
 	ASSERT( ( (char*)bp - bbuf ) <= xfs_dirblocksize );
 	ASSERT( (( (char*)bp - bbuf )%8) == 0 );
 
-	INT_SET(*inumber, ARCH_CONVERT, ino);
-	INT_SET(*namelen, ARCH_CONVERT, strlen(dirent->d_name));
+	*inumber = cpu_to_be64(ino);
+	*namelen = strlen(dirent->d_name); // 8-bit nothing to swab
 	memcpy(name, dirent->d_name, strlen(dirent->d_name));
-	INT_SET(*tag, ARCH_CONVERT, (char*)bbp - bbuf );
+	*tag = cpu_to_be16((char*)bbp - bbuf );
 
 	*pbp = bp;
 }
@@ -1256,8 +1286,8 @@ void fill_unused(char *bbuf, void **pbp, uint32_t unused_len)
 	uint16_t *length = (uint16_t*) bp;
 	bp = (void*) (length+1);
 
-	INT_SET(*freetag, ARCH_CONVERT, 0xFFFF);
-	INT_SET(*length, ARCH_CONVERT, unused_len*8);
+	*freetag = cpu_to_be16(0xFFFF);
+	*length = cpu_to_be16(unused_len*8);
 
 	bp = (char*) bp + (unused_len*8-6);
 
@@ -1267,7 +1297,7 @@ void fill_unused(char *bbuf, void **pbp, uint32_t unused_len)
 	//ASSERT( ( (char*)bp - bbuf ) == blocksize );
 	ASSERT( (( (char*)bp - bbuf )%8) == 0 );
 
-	INT_SET(*tag, ARCH_CONVERT, (char*)bbp - bbuf );
+	*tag = cpu_to_be16((char*)bbp - bbuf );
 
 	*pbp = bp;
 }
@@ -1342,7 +1372,7 @@ main(
 	xfs_agnumber_t		agno;
 	__uint64_t		agsize;
 	int			attrversion;
-	xfs_btree_sblock_t	*block;
+	struct xfs_btree_block	*block;
 	int			blflag;
 	int			blocklog;
 	unsigned int		blocksize;
@@ -1362,7 +1392,6 @@ main(
 	int			dsw;
 	int			dsunit;
 	int			dswidth;
-	int			extent_flagging;
 	int			force_overwrite;
 	struct fsxattr		fsx;
 	int			iaflag;
@@ -1405,6 +1434,7 @@ main(
 	//xfs_alloc_rec_t		*nrec;
 	int			nsflag;
 	int			nvflag;
+	int                     nci;
 	int			Nflag;
 	char			*p;
 	int			qflag;
@@ -1418,6 +1448,7 @@ main(
 	int			sectoralign;
 	int			sectorlog;
 	unsigned int		sectorsize;
+	__uint64_t              sector_mask;
 	int			slflag;
 	int			ssflag;
 	__uint64_t		tmp_agsize;
@@ -1436,6 +1467,9 @@ main(
 	uint32_t i, j;
 	int retval = 0;
 
+	printf ("WARNING! build_xfs in anyfs-tools 0.85.1b temporarily disabled.\n");
+	exit(1);
+
 	progname = basename(argv[0]);
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -1444,7 +1478,7 @@ main(
 	textdomain(NLS_CAT_NAME);
 #endif
 
-	attrversion = 0;
+	attrversion = 2;
 	blflag = bsflag = slflag = ssflag = lslflag = lssflag = 0;
 	blocklog = 0;
 	blocksize = -1;
@@ -1454,10 +1488,11 @@ main(
 	ilflag = imflag = ipflag = isflag = 0;
 	liflag = laflag = lsflag = ldflag = lvflag = 0;
 	loginternal = 1;
-	logversion = 1;
+	logversion = 2;
 	logagno = logblocks = rtblocks = rtextblocks = 0;
-	Nflag = nlflag = nsflag = nvflag = 0;
-	dirblocklog = dirblocksize = dirversion = 0;
+	Nflag = nlflag = nsflag = nvflag = nci = 0;
+        dirblocklog = dirblocksize = 0;
+        dirversion = XFS_DFL_DIR_VERSION;
 	qflag = 0;
 	imaxpct = inodelog = inopblock = isize = 0;
 	iaflag = XFS_IFLAG_ALIGN;
@@ -1465,12 +1500,11 @@ main(
 	dsize = logsize = rtsize = rtextsize = NULL;
 	dsu = dsw = dsunit = dswidth = lalign = lsu = lsunit = 0;
 	nodsflag = norsflag = 0;
-	extent_flagging = 1;
 	force_overwrite = 0;
 	worst_freelist = 0;
-	bzero(&fsx, sizeof(fsx));
+	memset(&fsx, 0, sizeof(fsx));
 
-	bzero(&xi, sizeof(xi));
+	memset(&xi, 0, sizeof(xi));
 	xi.isdirect = 0;
 	xi.isreadonly = LIBXFS_EXCLUSIVELY;
 
@@ -1555,7 +1589,7 @@ main(
 					xi.disfile = atoi(value);
 					if (xi.disfile < 0 || xi.disfile > 1)
 						illegal(value, "d file");
-					if (xi.disfile)
+					if (xi.disfile && !Nflag)
 						xi.dcreat = 1;
 					break;
 				case D_NAME:
@@ -1645,14 +1679,6 @@ main(
 						conflict('d', dopts, D_SWIDTH,
 							 D_NOALIGN);
 					nodsflag = 1;
-					break;
-				case D_UNWRITTEN:
-					if (!value)
-						reqval('d', dopts, D_UNWRITTEN);
-					c = atoi(value);
-					if (c < 0 || c > 1)
-						illegal(value, "d unwritten");
-					extent_flagging = c;
 					break;
 				case D_SECTLOG:
 					if (!value)
@@ -1971,9 +1997,14 @@ main(
 						reqval('n', nopts, N_VERSION);
 					if (nvflag)
 						respec('n', nopts, N_VERSION);
-					dirversion = atoi(value);
-					if (dirversion < 1 || dirversion > 2)
-						illegal(value, "n version");
+					if (!strcasecmp(value, "ci")) {
+                                                nci = 1; /* ASCII CI mode */
+                                        } else {
+                                                dirversion = atoi(value);
+                                                if (dirversion != 2)
+                                                        illegal(value,
+                                                                "n version");
+					}
 					nvflag = 1;
 					break;
 				default:
@@ -2151,7 +2182,7 @@ _("You try to use blocksize %d, although inode table given for %lu blocksize\n"
 
 	sectoralign = 0;
 	xlv_dsunit = xlv_dswidth = 0;
-	if (!nodsflag && !xi.disfile)
+	if (!xi.disfile)
 		get_subvol_stripe_wrapper(dfile, SVTYPE_DATA,
 				&xlv_dsunit, &xlv_dswidth, &sectoralign);
 	if (sectoralign) {
@@ -2176,35 +2207,21 @@ _("You try to use blocksize %d, although inode table given for %lu blocksize\n"
 		logversion = 2;
 	}
 
-	if (!nvflag)
-		dirversion = (nsflag || nlflag) ? 2 : XFS_DFL_DIR_VERSION;
-	switch (dirversion) {
-	case 1:
-		if ((nsflag || nlflag) && dirblocklog != blocklog) {
+	if (nsflag || nlflag) {
+                if (dirblocksize < blocksize ||
+                                        dirblocksize > XFS_MAX_BLOCKSIZE) {
 			fprintf(stderr, _("illegal directory block size %d\n"),
 				dirblocksize);
 			usage();
 		}
 		fprintf(stderr, _("Sorry, build_xfs doesn't support first version of naming\n"));
 		exit(1);
-		break;
-	case 2:
-		if (nsflag || nlflag) {
-			if (dirblocksize < blocksize ||
-			    dirblocksize > XFS_MAX_BLOCKSIZE) {
-				fprintf(stderr,
-					_("illegal directory block size %d\n"),
-					dirblocksize);
-				usage();
-			}
-		} else {
-			if (blocksize < (1 << XFS_MIN_REC_DIRSIZE))
-				dirblocklog = XFS_MIN_REC_DIRSIZE;
-			else
-				dirblocklog = blocklog;
-			dirblocksize = 1 << dirblocklog;
-		}
-		break;
+	} else {
+                if (blocksize < (1 << XFS_MIN_REC_DIRSIZE))
+                        dirblocklog = XFS_MIN_REC_DIRSIZE;
+                else
+                        dirblocklog = blocklog;
+                dirblocksize = 1 << dirblocklog;
 	}
 
 	if (daflag && dasize) {
@@ -2395,12 +2412,17 @@ _("You try to use blocksize %d, although inode table given for %lu blocksize\n"
 	 * Ok, Linux only has a 1024-byte resolution on device _size_,
 	 * and the sizes below are in basic 512-byte blocks,
 	 * so if we have (size % 2), on any partition, we can't get
-	 * to the last 512 bytes.  Just chop it down by a block.
+	 * to the last 512 bytes.  The same issue exists for larger
+         * sector sizes - we cannot write past the last sector.
+         *
+         * So, we reduce the size (in basic blocks) to a perfect
+         * multiple of the sector size, or 1024, whichever is larger.
 	 */
 
-	xi.dsize -= (xi.dsize % 2);
-	xi.rtsize -= (xi.rtsize % 2);
-	xi.logBBsize -= (xi.logBBsize % 2);
+	sector_mask = (__uint64_t)-1 << (MAX(sectorlog, 10) - BBSHIFT);
+        xi.dsize &= sector_mask;
+        xi.rtsize &= sector_mask;
+        xi.logBBsize &= (__uint64_t)-1 << (MAX(lsectorlog, 10) - BBSHIFT);
 
 	if (!force_overwrite) {
 		if (check_overwrite(dfile) ||
@@ -2558,42 +2580,34 @@ _("size %s specified for log subvolume is too large, maximum is %lld blocks\n"),
 		agsize /= blocksize;
 		agcount = dblocks / agsize + (dblocks % agsize != 0);
 
-	} else if (daflag)	/* User-specified AG size */
+	} else if (daflag)	/* User-specified AG count */
 		agsize = dblocks / agcount + (dblocks % agcount != 0);
 	else
-		calc_default_ag_geometry(blocklog, dblocks, &agsize, &agcount);
+		calc_default_ag_geometry(blocklog, dblocks,
+                               xlv_dsunit | xlv_dswidth, &agsize, &agcount);
 
-	/*
-	 * If the last AG is too small, reduce the filesystem size
-	 * and drop the blocks.
-	 */
-	if ( dblocks % agsize != 0 &&
-	     (dblocks % agsize < XFS_AG_MIN_BLOCKS(blocklog))) {
-		dblocks = (xfs_drfsbno_t)((agcount - 1) * agsize);
-		agcount--;
-		ASSERT(agcount != 0);
-	}
-
-	validate_ag_geometry(blocklog, dblocks, agsize, agcount);
-
-	if (!nodsflag && dsunit) {
-		if (xlv_dsunit && xlv_dsunit != dsunit) {
-			fprintf(stderr,
-				_("%s: Specified data stripe unit %d is not "
-				"the same as the volume stripe unit %d\n"),
-				progname, dsunit, xlv_dsunit);
+	if (!nodsflag) {
+                if (dsunit) {
+                        if (xlv_dsunit && xlv_dsunit != dsunit) {
+                                fprintf(stderr,
+                                        _("%s: Specified data stripe unit %d "
+                                        "is not the same as the volume stripe "
+                                        "unit %d\n"),
+                                        progname, dsunit, xlv_dsunit);
+                        }
+                        if (xlv_dswidth && xlv_dswidth != dswidth) {
+                                fprintf(stderr,
+                                        _("%s: Specified data stripe width %d "
+                                        "is not the same as the volume stripe "
+                                        "width %d\n"),
+                                        progname, dswidth, xlv_dswidth);
+                        }
+                } else {
+                        dsunit = xlv_dsunit;
+                        dswidth = xlv_dswidth;
+                        nodsflag = 1;
 		}
-		if (xlv_dswidth && xlv_dswidth != dswidth) {
-			fprintf(stderr,
-				_("%s: Specified data stripe width %d is not "
-				"the same as the volume stripe width %d\n"),
-				progname, dswidth, xlv_dswidth);
-		}
-	} else {
-		dsunit = xlv_dsunit;
-		dswidth = xlv_dswidth;
-		nodsflag = 1;
-	}
+ 	} /* else dsunit & dswidth can't be set if nodsflag is set */
 
 	/*
 	 * If dsunit is a multiple of fs blocksize, then check that is a
@@ -2623,12 +2637,12 @@ _("size %s specified for log subvolume is too large, maximum is %lld blocks\n"),
 			if (tmp_agsize > XFS_AG_MAX_BLOCKS(blocklog))
 				tmp_agsize = ((agsize) / dsunit) * dsunit;
 			if ((tmp_agsize >= XFS_AG_MIN_BLOCKS(blocklog)) &&
-			    (tmp_agsize <= XFS_AG_MAX_BLOCKS(blocklog)) &&
-			    !daflag) {
+			    (tmp_agsize <= XFS_AG_MAX_BLOCKS(blocklog))) {
 				agsize = tmp_agsize;
-				agcount = dblocks/agsize + 
-						(dblocks % agsize != 0);
-				if (dasize || daflag)
+				if (!daflag)
+					agcount = dblocks/agsize + 
+							(dblocks % agsize != 0);
+				if (dasize)
 					fprintf(stderr,
 				_("agsize rounded to %lld, swidth = %d\n"),
 						(long long)agsize, dswidth);
@@ -2693,6 +2707,23 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 	}
 
 	/*
+	 * If the last AG is too small, reduce the filesystem size
+         * and drop the blocks.
+         */
+        if ( dblocks % agsize != 0 &&
+             (dblocks % agsize < XFS_AG_MIN_BLOCKS(blocklog))) {
+                ASSERT(!daflag);
+                dblocks = (xfs_drfsbno_t)((agcount - 1) * agsize);
+                agcount--;
+                ASSERT(agcount != 0);
+        }
+ 
+        validate_ag_geometry(blocklog, dblocks, agsize, agcount);
+ 
+        if (!imflag)
+                imaxpct = calc_default_imaxpct(blocklog, dblocks);
+ 
+        /*
 	 * check that log sunit is modulo fsblksize or default it to dsunit.
 	 */
 
@@ -2721,7 +2752,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 	bsize = 1 << (blocklog - BBSHIFT);
 	mp = &mbuf;
 	sbp = &mp->m_sb;
-	bzero(mp, sizeof(xfs_mount_t));
+	memset(mp, 0, sizeof(xfs_mount_t));
 	sbp->sb_blocklog = (__uint8_t)blocklog;
 	sbp->sb_sectlog = (__uint8_t)sectorlog;
 	sbp->sb_agblklog = (__uint8_t)libxfs_log2_roundup((unsigned int)agsize);
@@ -2731,7 +2762,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 	if (loginternal) {
 		/*
 		 * Readjust the log size to fit within an AG if it was sized
-		 * automaticly.
+		 * automatically.
 		 */
 		if (!logsize) {
 			logblocks = MIN(logblocks,
@@ -2779,17 +2810,16 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 		   "meta-data=%-22s isize=%-6d agcount=%lld, agsize=%lld blks\n"
 		   "         =%-22s sectsz=%-5u attr=%u\n"
 		   "data     =%-22s bsize=%-6u blocks=%llu, imaxpct=%u\n"
-		   "         =%-22s sunit=%-6u swidth=%u blks, unwritten=%u\n"
-		   "naming   =version %-14u bsize=%-6u\n"
+		   "         =%-22s sunit=%-6u swidth=%u blks\n"
+		   "naming   =version %-14u bsize=%-6u ascii-ci=%d\n"
 		   "log      =%-22s bsize=%-6d blocks=%lld, version=%d\n"
 		   "         =%-22s sectsz=%-5u sunit=%d blks\n"
 		   "realtime =%-22s extsz=%-6d blocks=%lld, rtextents=%lld\n"),
 			dfile, isize, (long long)agcount, (long long)agsize,
 			"", sectorsize, attrversion,
-			"", blocksize, (long long)dblocks,
-				imflag ? imaxpct : XFS_DFL_IMAXIMUM_PCT,
-			"", dsunit, dswidth, extent_flagging,
-			dirversion, dirversion == 1 ? blocksize : dirblocksize,
+			"", blocksize, (long long)dblocks, imaxpct,
+			"", dsunit, dswidth,
+			dirversion, dirblocksize, nci,
 			logfile, 1 << blocklog, (long long)logblocks,
 			logversion, "", lsectorsize, lsunit,
 			rtfile, rtextblocks << blocklog,
@@ -3070,40 +3100,40 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 		
 			inode = (xfs_dinode_core_t *)ibuf;
 			
-			INT_SET(inode->di_magic, ARCH_CONVERT, XFS_DINODE_MAGIC);
-			INT_SET(inode->di_mode, ARCH_CONVERT, info->si_inode_table[i].i_mode);
-			INT_SET(inode->di_version, ARCH_CONVERT, 1);
-			INT_SET(inode->di_format, ARCH_CONVERT, XFS_DINODE_FMT_EXTENTS);
-			INT_SET(inode->di_onlink, ARCH_CONVERT, info->si_inode_table[i].i_links_count);
-			INT_SET(inode->di_uid, ARCH_CONVERT, info->si_inode_table[i].i_uid);
-			INT_SET(inode->di_gid, ARCH_CONVERT, info->si_inode_table[i].i_gid);
-			INT_SET(inode->di_nlink, ARCH_CONVERT, info->si_inode_table[i].i_links_count);
-			INT_SET(inode->di_atime.t_sec, ARCH_CONVERT, info->si_inode_table[i].i_atime);
-			INT_SET(inode->di_ctime.t_sec, ARCH_CONVERT, info->si_inode_table[i].i_ctime);
-			INT_SET(inode->di_mtime.t_sec, ARCH_CONVERT, info->si_inode_table[i].i_mtime);
-			INT_SET(inode->di_size, ARCH_CONVERT, info->si_inode_table[i].i_size);
-			INT_SET(inode->di_aformat, ARCH_CONVERT, XFS_DINODE_FMT_EXTENTS);
-			
+			inode->di_magic = cpu_to_be16(XFS_DINODE_MAGIC);
+			inode->di_mode = cpu_to_be16(info->si_inode_table[i].i_mode);
+			inode->di_version = 1; // 8-bit nothing to swab
+			inode->di_format = XFS_DINODE_FMT_EXTENTS; // 8-bit nothing to swab
+			inode->di_onlink = cpu_to_be16(info->si_inode_table[i].i_links_count);
+			inode->di_uid = cpu_to_be32(info->si_inode_table[i].i_uid);
+			inode->di_gid = cpu_to_be32(info->si_inode_table[i].i_gid);
+			inode->di_nlink = cpu_to_be32(info->si_inode_table[i].i_links_count);
+			inode->di_atime.t_sec = cpu_to_be32(info->si_inode_table[i].i_atime);
+			inode->di_ctime.t_sec = cpu_to_be32(info->si_inode_table[i].i_ctime);
+			inode->di_mtime.t_sec = cpu_to_be32(info->si_inode_table[i].i_mtime);
+			inode->di_size = cpu_to_be64(info->si_inode_table[i].i_size);
+			inode->di_aformat = XFS_DINODE_FMT_EXTENTS; // 8-bit nothing to swab
+
 			uint32_t *p_next_unlinked = (uint32_t*) (inode+1);
-			INT_SET(*p_next_unlinked, ARCH_CONVERT, 0xFFFFFFFF);
+			*p_next_unlinked = cpu_to_be32(0xFFFFFFFF);
 
 			void *p_inode = (void*) (p_next_unlinked+1);
 
 			if (i==1)
 			{
-				INT_SET(inode->di_mode, ARCH_CONVERT, 0100000);
-				INT_SET(inode->di_onlink, ARCH_CONVERT, 1);
-				INT_SET(inode->di_nlink, ARCH_CONVERT, 1);
-				INT_SET(inode->di_size, ARCH_CONVERT, 0);
+				inode->di_mode = cpu_to_be16(0100000);
+				inode->di_onlink = cpu_to_be16(1);
+				inode->di_nlink = cpu_to_be32(1);
+				inode->di_size = cpu_to_be64(0);
 				if (!noaction)
 				{
 					pwrite64(xfs_fd, ibuf, isize, (ANYFS_INO(inode_map[1])+1)*isize);
 					pwrite64(xfs_fd, ibuf, isize, (ANYFS_INO(inode_map[1])+2)*isize);
 				}
-				INT_SET(inode->di_mode, ARCH_CONVERT, info->si_inode_table[i].i_mode);
-				INT_SET(inode->di_onlink, ARCH_CONVERT, info->si_inode_table[i].i_links_count);
-				INT_SET(inode->di_nlink, ARCH_CONVERT, info->si_inode_table[i].i_links_count);
-				INT_SET(inode->di_size, ARCH_CONVERT, info->si_inode_table[i].i_size);
+				inode->di_mode = cpu_to_be16(info->si_inode_table[i].i_mode);
+				inode->di_onlink = cpu_to_be16(info->si_inode_table[i].i_links_count);
+				inode->di_nlink = cpu_to_be32(info->si_inode_table[i].i_links_count);
+				inode->di_size = cpu_to_be64(info->si_inode_table[i].i_size);
 			}
 
 			if ( S_ISLNK(info->si_inode_table[i].i_mode) ) {
@@ -3120,7 +3150,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 					size = strlen(info->si_inode_table[i].i_info.symlink);
 				}
 
-				INT_SET(inode->di_size, ARCH_CONVERT, size);
+				inode->di_size = cpu_to_be64(size);
 				if ( (isize - sizeof(xfs_dinode_core_t) - 4)<size )
 				{
 					if (verbose>=2)
@@ -3182,7 +3212,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 					/*Short link*/
 					if (verbose>=2)
 						fprintf(stderr, _("Short Link\n"));
-					INT_SET(inode->di_format, ARCH_CONVERT, XFS_DINODE_FMT_LOCAL);
+					inode->di_format = XFS_DINODE_FMT_LOCAL; // 8-bit nothing to swab
 					memcpy(p_inode, info->si_inode_table[i].i_info.symlink, size);
 				}
 			} else
@@ -3316,13 +3346,13 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 							void *bp = (void*) bbuf;
 
 							xfs_dir2_data_hdr_t *hdr = (xfs_dir2_data_hdr_t *)bp;
-							INT_SET(hdr->magic, ARCH_CONVERT, XFS_DIR2_DATA_MAGIC);
+							hdr->magic = cpu_to_be32(XFS_DIR2_DATA_MAGIC);
 
 							int j;
 							for (j=0; j<XFS_DIR2_DATA_FD_COUNT; j++)
 							{
-								INT_SET(hdr->bestfree[j].offset, ARCH_CONVERT, 0);
-								INT_SET(hdr->bestfree[j].length, ARCH_CONVERT, 0);
+								hdr->bestfree[j].offset = cpu_to_be16(0);
+								hdr->bestfree[j].length = cpu_to_be16(0);
 							}
 
 							bp = (void*) (hdr+1);
@@ -3348,8 +3378,8 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 
 										fill_unused(bbuf, &bp, unused_len);
 
-										INT_SET(hdr->bestfree[0].offset, ARCH_CONVERT, (char*)bbp - bbuf);
-										INT_SET(hdr->bestfree[0].length, ARCH_CONVERT, unused_len*8);
+										hdr->bestfree[0].offset = cpu_to_be16((char*)bbp - bbuf);
+										hdr->bestfree[0].length = cpu_to_be16(unused_len*8);
 
 										//stale++;
 									}
@@ -3378,12 +3408,12 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 									bp = (void*) bbuf;
 
 									hdr = (xfs_dir2_data_hdr_t *)bp;
-									INT_SET(hdr->magic, ARCH_CONVERT, XFS_DIR2_DATA_MAGIC);
+									hdr->magic = cpu_to_be32(XFS_DIR2_DATA_MAGIC);
 
 									for (j=0; j<XFS_DIR2_DATA_FD_COUNT; j++)
 									{
-										INT_SET(hdr->bestfree[j].offset, ARCH_CONVERT, 0);
-										INT_SET(hdr->bestfree[j].length, ARCH_CONVERT, 0);
+										hdr->bestfree[j].offset = cpu_to_be16(0);
+										hdr->bestfree[j].length = cpu_to_be16(0);
 									}
 
 									bp = (void*) (hdr+1);
@@ -3409,8 +3439,8 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 
 								fill_unused(bbuf, &bp, unused_len);
 
-								INT_SET(hdr->bestfree[0].offset, ARCH_CONVERT, (char*)bbp - bbuf);
-								INT_SET(hdr->bestfree[0].length, ARCH_CONVERT, unused_len*8);
+								hdr->bestfree[0].offset = cpu_to_be16((char*)bbp - bbuf);
+								hdr->bestfree[0].length = cpu_to_be16(unused_len*8);
 
 								//stale++;
 							}
@@ -3479,16 +3509,16 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 									assert( sizeof(leafhdr->info.forw) == sizeof(forw) );
 									assert( sizeof(leafhdr->info.back) == sizeof(backw) );
 
-									INT_SET(leafhdr->info.forw, ARCH_CONVERT, forw);
-									INT_SET(leafhdr->info.back, ARCH_CONVERT, backw);
+									leafhdr->info.forw = cpu_to_be32(forw);
+									leafhdr->info.back = cpu_to_be32(backw);
 									if ( l==height )
-										INT_SET(leafhdr->info.magic, ARCH_CONVERT, XFS_DIR2_LEAFN_MAGIC);
+										leafhdr->info.magic = cpu_to_be16(XFS_DIR2_LEAFN_MAGIC);
 									else
-										INT_SET(leafhdr->info.magic, ARCH_CONVERT, XFS_DA_NODE_MAGIC);
-									INT_SET(leafhdr->info.pad, ARCH_CONVERT, 0);
+										leafhdr->info.magic = cpu_to_be16(XFS_DA_NODE_MAGIC);
+									leafhdr->info.pad = 0;
 
-									INT_SET(leafhdr->count, ARCH_CONVERT, nlinks[l][j]);
-									INT_SET(leafhdr->stale, ARCH_CONVERT, height-l);
+									leafhdr->count = cpu_to_be32(nlinks[l][j]);
+									leafhdr->stale = cpu_to_be32(height-l);
 
 									int k;
 									for (k=0; k<nlinks[l][j]; k++)
@@ -3504,8 +3534,8 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 										ASSERT( ( (char*)bp - bbuf ) <= dirblocksize );
 										ASSERT( (( (char*)bp - bbuf )%8) == 0 );
 
-										INT_SET(*hashval, ARCH_CONVERT, (*p_hashlist)->hashval);
-										INT_SET(*address, ARCH_CONVERT, (*p_hashlist)->address);
+										*hashval = cpu_to_be32((*p_hashlist)->hashval);
+										*address = cpu_to_be32((*p_hashlist)->address);
 
 										if ((k+1)==nlinks[l][j])
 											n_hashval = (*p_hashlist)->hashval;
@@ -3561,16 +3591,16 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 							int nvalid = 0;
 							int firstdb = 0;
 
-							INT_SET(freehdr->magic, ARCH_CONVERT, XFS_DIR2_FREE_MAGIC);
+							freehdr->magic = cpu_to_be32(XFS_DIR2_FREE_MAGIC);
 
 							for (j=0; j<blockcount; j++)
 							{
 								int thisfieldsize = 2;
 								if ( (dirblocksize - ((char*) bp - bbuf))<thisfieldsize )
 								{
-									INT_SET(freehdr->firstdb, ARCH_CONVERT, firstdb);
-									INT_SET(freehdr->nvalid, ARCH_CONVERT, nvalid);
-									INT_SET(freehdr->nused, ARCH_CONVERT, nused);
+									freehdr->firstdb = cpu_to_be32(firstdb);
+									freehdr->nvalid = cpu_to_be32(nvalid);
+									freehdr->nused = cpu_to_be32(nused);
 
 									if (!noaction)
 										pwrite64(xfs_fd, bbuf, dirblocksize, b*blocksize);
@@ -3596,22 +3626,22 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 									nused = 0;
 									nvalid = 0;
 
-									INT_SET(freehdr->magic, ARCH_CONVERT, XFS_DIR2_FREE_MAGIC);
+									freehdr->magic = cpu_to_be32(XFS_DIR2_FREE_MAGIC);
 								}
 
 								uint16_t *bestfree = (uint16_t*) bp;
 								bp = (void*) (bestfree+1);
 
 								ASSERT( ( (char*)bp - bbuf ) <= dirblocksize );
-								INT_SET(*bestfree, ARCH_CONVERT, bests[j]);
+								*bestfree = cpu_to_be16(bests[j]);
 
 								nused++;
 								nvalid++;
 							}
 
-							INT_SET(freehdr->firstdb, ARCH_CONVERT, firstdb);
-							INT_SET(freehdr->nvalid, ARCH_CONVERT, nvalid);
-							INT_SET(freehdr->nused, ARCH_CONVERT, nused);
+							freehdr->firstdb = cpu_to_be32(firstdb);
+							freehdr->nvalid = cpu_to_be32(nvalid);
+							freehdr->nused = cpu_to_be32(nused);
 
 							if (!noaction)
 								pwrite64(xfs_fd, bbuf, dirblocksize, b*blocksize);
@@ -3646,13 +3676,13 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 							void *bp = (void*) bbuf;
 
 							xfs_dir2_data_hdr_t *hdr = (xfs_dir2_data_hdr_t *)bp;
-							INT_SET(hdr->magic, ARCH_CONVERT, XFS_DIR2_DATA_MAGIC);
+							hdr->magic = cpu_to_be32(XFS_DIR2_DATA_MAGIC);
 
 							int j;
 							for (j=0; j<XFS_DIR2_DATA_FD_COUNT; j++)
 							{
-								INT_SET(hdr->bestfree[j].offset, ARCH_CONVERT, 0);
-								INT_SET(hdr->bestfree[j].length, ARCH_CONVERT, 0);
+								hdr->bestfree[j].offset = 0;
+								hdr->bestfree[j].length = 0;
 							}
 
 							bp = (void*) (hdr+1);
@@ -3678,8 +3708,8 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 
 										fill_unused(bbuf, &bp, unused_len);
 
-										INT_SET(hdr->bestfree[0].offset, ARCH_CONVERT, (char*)bbp - bbuf);
-										INT_SET(hdr->bestfree[0].length, ARCH_CONVERT, unused_len*8);
+										hdr->bestfree[0].offset = cpu_to_be16((char*)bbp - bbuf);
+										hdr->bestfree[0].length = cpu_to_be16(unused_len*8);
 
 										//stale++;
 									}
@@ -3708,12 +3738,12 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 									bp = (void*) bbuf;
 
 									hdr = (xfs_dir2_data_hdr_t *)bp;
-									INT_SET(hdr->magic, ARCH_CONVERT, XFS_DIR2_DATA_MAGIC);
+									hdr->magic = cpu_to_be32(XFS_DIR2_DATA_MAGIC);
 
 									for (j=0; j<XFS_DIR2_DATA_FD_COUNT; j++)
 									{
-										INT_SET(hdr->bestfree[j].offset, ARCH_CONVERT, 0);
-										INT_SET(hdr->bestfree[j].length, ARCH_CONVERT, 0);
+										hdr->bestfree[j].offset = 0;
+										hdr->bestfree[j].length = 0;
 									}
 
 									bp = (void*) (hdr+1);
@@ -3739,8 +3769,8 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 
 								fill_unused(bbuf, &bp, unused_len);
 
-								INT_SET(hdr->bestfree[0].offset, ARCH_CONVERT, (char*)bbp - bbuf);
-								INT_SET(hdr->bestfree[0].length, ARCH_CONVERT, unused_len*8);
+								hdr->bestfree[0].offset = cpu_to_be16((char*)bbp - bbuf);
+								hdr->bestfree[0].length = cpu_to_be16(unused_len*8);
 
 								//stale++;
 							}
@@ -3771,13 +3801,13 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 							xfs_dir2_leaf_hdr_t *leafhdr = (xfs_dir2_leaf_hdr_t*) bp;
 							bp = (void*) (leafhdr+1);
 
-							INT_SET(leafhdr->info.forw, ARCH_CONVERT, 0);
-							INT_SET(leafhdr->info.back, ARCH_CONVERT, 0);
-							INT_SET(leafhdr->info.magic, ARCH_CONVERT, XFS_DIR2_LEAF1_MAGIC);
-							INT_SET(leafhdr->info.pad, ARCH_CONVERT, 0);
+							leafhdr->info.forw = cpu_to_be32(0);
+							leafhdr->info.back = cpu_to_be32(0);
+							leafhdr->info.magic = cpu_to_be16(XFS_DIR2_LEAF1_MAGIC);
+							leafhdr->info.pad = cpu_to_be16(0);
 
-							INT_SET(leafhdr->count, ARCH_CONVERT, count);
-							INT_SET(leafhdr->stale, ARCH_CONVERT, stale);
+							leafhdr->count = cpu_to_be16(count);
+							leafhdr->stale = cpu_to_be16(stale);
 
 							while (*p_hashlist)
 							{
@@ -3790,8 +3820,8 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 								ASSERT( ( (char*)bp - bbuf ) <= dirblocksize );
 								ASSERT( (( (char*)bp - bbuf )%8) == 0 );
 
-								INT_SET(*hashval, ARCH_CONVERT, (*p_hashlist)->hashval);
-								INT_SET(*address, ARCH_CONVERT, (*p_hashlist)->address);
+								*hashval = cpu_to_be32((*p_hashlist)->hashval);
+								*address = cpu_to_be32((*p_hashlist)->address);
 
 								p_hashlist = &(*p_hashlist)->next;
 							}
@@ -3816,13 +3846,13 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 								uint16_t *bestfree = (uint16_t*) bp;
 								bp = (void*) (bestfree+1);
 
-								INT_SET(*bestfree, ARCH_CONVERT, bests[j]);
+								*bestfree = cpu_to_be16(bests[j]);
 							}
 
 							uint32_t *bestcount = (uint32_t*) bp;
 							bp = (void*) (bestcount+1);
 
-							INT_SET(*bestcount, ARCH_CONVERT, blockcount);
+							*bestcount = cpu_to_be32(blockcount);
 
 							ASSERT( ( (char*)bp - bbuf ) == dirblocksize );
 
@@ -3857,13 +3887,13 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 
 						void *bp = (void*) bbuf;
 						xfs_dir2_data_hdr_t *hdr = (xfs_dir2_data_hdr_t *)bp;
-						INT_SET(hdr->magic, ARCH_CONVERT, XFS_DIR2_BLOCK_MAGIC);
+						hdr->magic = cpu_to_be32(XFS_DIR2_BLOCK_MAGIC);
 
 						int j;
 						for (j=0; j<XFS_DIR2_DATA_FD_COUNT; j++)
 						{
-							INT_SET(hdr->bestfree[j].offset, ARCH_CONVERT, 0);
-							INT_SET(hdr->bestfree[j].length, ARCH_CONVERT, 0);
+							hdr->bestfree[j].offset = cpu_to_be16(0);
+							hdr->bestfree[j].length = cpu_to_be16(0);
 						}
 
 						bp = (void*) (hdr+1);
@@ -3892,8 +3922,8 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 
 							fill_unused(bbuf, &bp, unused_len);
 
-							INT_SET(hdr->bestfree[0].offset, ARCH_CONVERT, (char*)bbp - bbuf);
-							INT_SET(hdr->bestfree[0].length, ARCH_CONVERT, unused_len*8);
+							hdr->bestfree[0].offset = cpu_to_be16((char*)bbp - bbuf);
+							hdr->bestfree[0].length = cpu_to_be16(unused_len*8);
 
 							//stale++;
 						}
@@ -3909,8 +3939,8 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 							ASSERT( ( (char*)bp - bbuf ) <= dirblocksize );
 							ASSERT( (( (char*)bp - bbuf )%8) == 0 );
 
-							INT_SET(*hashval, ARCH_CONVERT, (*p_hashlist)->hashval);
-							INT_SET(*address, ARCH_CONVERT, (*p_hashlist)->address);
+							*hashval = cpu_to_be32((*p_hashlist)->hashval);
+							*address = cpu_to_be32((*p_hashlist)->address);
 
 							p_hashlist = &(*p_hashlist)->next;
 						}
@@ -3932,8 +3962,8 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 
 						ASSERT( ( (char*)bp - bbuf ) == dirblocksize );
 
-						INT_SET(*p_count, ARCH_CONVERT, count);
-						INT_SET(*p_stale, ARCH_CONVERT, stale);
+						*p_count = cpu_to_be32(count);
+						*p_stale = cpu_to_be32(stale);
 
 						if (!noaction)
 							pwrite64(xfs_fd, bbuf, dirblocksize, b*blocksize);
@@ -3949,7 +3979,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 							countleaf );
 					free (dir_frags.fr_frags);
 
-					INT_SET(inode->di_size, ARCH_CONVERT, nblocks*blocksize);
+					inode->di_size = cpu_to_be64(nblocks*blocksize);
 				}
 				else
 				{
@@ -3959,21 +3989,21 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 
 					uint16_t offset = 0x30;
 					
-					INT_SET(inode->di_format, ARCH_CONVERT, XFS_DINODE_FMT_LOCAL);
-					INT_SET(inode->di_size, ARCH_CONVERT, size);
+					inode->di_format = XFS_DINODE_FMT_LOCAL; // 8-bit nothing to swab
+					inode->di_size = cpu_to_be64(size);
 
-					INT_SET(inode->di_nblocks, ARCH_CONVERT, 0);
-					INT_SET(inode->di_nextents, ARCH_CONVERT, 0);
+					inode->di_nblocks = cpu_to_be64(0);
+					inode->di_nextents = cpu_to_be32(0);
 					
 				        xfs_dir2_sf_hdr_t *hdr = p_inode;
 					void *entr = (char*) p_inode + 6 + (i8count?4:0);
 					
-					INT_SET(hdr->count, ARCH_CONVERT, info->si_inode_table[i].i_info.dir->d_ndirents-2);
-					INT_SET(hdr->i8count, ARCH_CONVERT, i8count);
+					hdr->count = info->si_inode_table[i].i_info.dir->d_ndirents-2; // 8-bit nothing to swab
+					hdr->i8count = i8count; // 8-bit nothing to swab
 					if (!i8count)
-						INT_SET(*(uint32_t*)&hdr->parent, ARCH_CONVERT, inode_map[parent]);
+						*(uint32_t*)&hdr->parent = cpu_to_be32(inode_map[parent]);
 					else
-						INT_SET(*(uint64_t*)&hdr->parent, ARCH_CONVERT, inode_map[parent]);
+						*(uint64_t*)&hdr->parent = cpu_to_be64(inode_map[parent]);
 
 					for (dirent = info->si_inode_table[i].i_info.dir->d_dirent; dirent; dirent = dirent->d_next)
 					{
@@ -3983,11 +4013,11 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 							continue;
 
 						uint8_t *namelen = (uint8_t*) entr;
-						INT_SET( *namelen, ARCH_CONVERT, strlen(dirent->d_name) );
+						 *namelen = strlen(dirent->d_name); // 8-bit nothing to swab
 						entr = (void*) (namelen+1);
 						
 						uint16_t *p_offset = (uint16_t*) entr;
-						INT_SET( *p_offset, ARCH_CONVERT, offset);
+						 *p_offset = cpu_to_be16(offset);
 						entr = (void*) (p_offset+1);
 						
 						memcpy(entr, dirent->d_name, strlen(dirent->d_name));
@@ -3996,13 +4026,13 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 						if (!i8count)
 						{
 							uint32_t *inumber = (uint32_t*) entr;
-							INT_SET( *inumber, ARCH_CONVERT, inode_map[dirent->d_inode]);
+							 *inumber = cpu_to_be32(inode_map[dirent->d_inode]);
 							entr = (void*) (inumber+1);
 						}
 						else
 						{
 							uint64_t *inumber = (uint64_t*) entr;
-							INT_SET( *inumber, ARCH_CONVERT, inode_map[dirent->d_inode]);
+							 *inumber = cpu_to_be64(inode_map[dirent->d_inode]);
 							entr = (void*) (inumber+1);
 						}
 
@@ -4017,7 +4047,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 				/*Device*/
 				if (verbose>=2)
 					fprintf(stderr, _("Device\n"));
-				INT_SET(inode->di_format, ARCH_CONVERT, XFS_DINODE_FMT_DEV);
+				inode->di_format = XFS_DINODE_FMT_DEV; // 8-bit nothing to swab
 				unsigned long minor;
 				unsigned long major;
 				minor = info->si_inode_table[i].
@@ -4027,11 +4057,16 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 				uint32_t dev = IRIX_MKDEV(major, minor);
 				
 				uint32_t *p_dev = p_inode;
-				INT_SET(*p_dev, ARCH_CONVERT, dev);
+				*p_dev = cpu_to_be32(dev);
 			}
 
 			if (!noaction)
-				pwrite64(xfs_fd, ibuf, isize, ANYFS_INO(inode_map[i])*isize);
+			{
+				printf ("isize=%d,", isize);
+				printf ("offset=%llx\n", ANYFS_INO(inode_map[i])*isize);
+				ssize_t res =  pwrite64(xfs_fd, ibuf, isize, ANYFS_INO(inode_map[i])*isize);
+				printf ("res=%ld\n", res);
+			}
 		}
 
 		free(ibuf);
@@ -4056,13 +4091,13 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 
 		inode = (xfs_dinode_core_t *)ibuf;
 
-		INT_SET(inode->di_magic, ARCH_CONVERT, XFS_DINODE_MAGIC);
-		INT_SET(inode->di_version, ARCH_CONVERT, 1);
-		INT_SET(inode->di_format, ARCH_CONVERT, XFS_DINODE_FMT_EXTENTS);
-		INT_SET(inode->di_aformat, ARCH_CONVERT, XFS_DINODE_FMT_EXTENTS);
+		inode->di_magic = cpu_to_be16(XFS_DINODE_MAGIC);
+		inode->di_version = 1; // 8-bit nothing to swab
+		inode->di_format = XFS_DINODE_FMT_EXTENTS; // 8-bit nothing to swab
+		inode->di_aformat = XFS_DINODE_FMT_EXTENTS;
 			
 		uint32_t *p_next_unlinked = (uint32_t*) (inode+1);
-		INT_SET(*p_next_unlinked, ARCH_CONVERT, 0xFFFFFFFF);
+		*p_next_unlinked = cpu_to_be32(0xFFFFFFFF);
 
 		for (agno = 0; agno < agcount; agno++) {
 
@@ -4137,7 +4172,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 		(__uint8_t)(rtextents ?
 			libxfs_highbit32((unsigned int)rtextents) : 0);
 	sbp->sb_inprogress = 1;	/* mkfs is in progress */
-	sbp->sb_imax_pct = imflag ? imaxpct : XFS_DFL_IMAXIMUM_PCT;
+	sbp->sb_imax_pct = imaxpct;
 	sbp->sb_icount = 0;
 	sbp->sb_ifree = 0;
 
@@ -4161,8 +4196,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 	sbp->sb_qflags = 0;
 	sbp->sb_unit = dsunit;
 	sbp->sb_width = dswidth;
-	if (dirversion == 2)
-		sbp->sb_dirblklog = dirblocklog - blocklog;
+	sbp->sb_dirblklog = dirblocklog - blocklog;
 	if (logversion == 2) {	/* This is stored in bytes */
 		lsunit = (lsunit == 0) ? 1 : XFS_FSB_TO_B(mp, lsunit);
 		sbp->sb_logsunit = lsunit;
@@ -4180,12 +4214,20 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 		sbp->sb_logsectlog = 0;
 		sbp->sb_logsectsize = 0;
 	}
-	sbp->sb_features2 = XFS_SB_VERSION2_MKFS(0, attrversion == 2, 0);
-	sbp->sb_versionnum = XFS_SB_VERSION_MKFS(
-			iaflag, dsunit != 0, extent_flagging,
-			dirversion == 2, logversion == 2, attrversion == 1,
-			(sectorsize != BBSIZE || lsectorsize != BBSIZE),
-			sbp->sb_features2 != 0);
+	sbp->sb_features2 = XFS_SB_VERSION2_MKFS(0, 
+					attrversion == 2, 0);
+	sbp->sb_versionnum = XFS_SB_VERSION_MKFS( iaflag, dsunit != 0, 
+			logversion == 2, attrversion == 1,
+			(sectorsize != BBSIZE || 
+			 		lsectorsize != BBSIZE),
+			nci, sbp->sb_features2 != 0);
+	/*
+         * Due to a structure alignment issue, sb_features2 ended up in one
+         * of two locations, the second "incorrect" location represented by
+         * the sb_bad_features2 field. To avoid older kernels mounting
+         * filesystems they shouldn't, set both field to the same value.
+         */
+        sbp->sb_bad_features2 = sbp->sb_features2;
 
 	/*
 	 * Zero out the beginning of the device, to obliterate any old
@@ -4198,7 +4240,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 		if ( !test_bit(i, xfs_block_bitmap) )
 		{
 			buf = libxfs_getbuf(xi.ddev, XFS_FSB_TO_DADDR( mp, XFS_BLKNO(i) ), bsize);
-			bzero(XFS_BUF_PTR(buf), bsize);
+			memset(XFS_BUF_PTR(buf), 0, bsize);
 			if (!noaction) 
 			{
 				libxfs_writebuf(buf, LIBXFS_EXIT_ON_FAILURE);
@@ -4230,8 +4272,12 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 			if ( !test_bit(dblocks - i, xfs_block_bitmap) )
 			{
 				buf = libxfs_getbuf(xi.ddev, XFS_FSB_TO_DADDR( mp, XFS_BLKNO(dblocks - i) ), bsize);
-				bzero(XFS_BUF_PTR(buf), bsize);
-				if (!noaction) libxfs_writebuf(buf, LIBXFS_EXIT_ON_FAILURE);
+				memset(XFS_BUF_PTR(buf), 0, bsize);
+				if (!noaction) 
+				{
+					libxfs_writebuf(buf, LIBXFS_EXIT_ON_FAILURE);
+					libxfs_purgebuf(buf);
+				}
 				else libxfs_putbuf(buf);
 			}
 		}
@@ -4257,6 +4303,8 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 	sbp->sb_rootino = inode_map[1];
 	sbp->sb_rbmino = inode_map[1]+1;
 	sbp->sb_rsumino = inode_map[1]+2;
+	printf ("%lld, %lld, %lld\n", sbp->sb_rootino,
+	       	sbp->sb_rbmino,	sbp->sb_rsumino);
 
 	if (verbose)
 		printf (_("Starting building XFS BTrees\n"));
@@ -4311,13 +4359,13 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 					buf = libxfs_getbuf(mp->m_dev,
 							XFS_AGB_TO_DADDR(mp, agno, XFS_IBT_BLOCK(mp)),
 							bsize);
-					block = XFS_BUF_TO_SBLOCK(buf);
-					bzero(block, blocksize);
-					INT_SET(block->bb_magic, ARCH_CONVERT, XFS_IBT_MAGIC);
-					INT_SET(block->bb_level, ARCH_CONVERT, 0);
-					INT_SET(block->bb_numrecs, ARCH_CONVERT, ino_numrecs);
-					INT_SET(block->bb_leftsib, ARCH_CONVERT, NULLAGBLOCK);
-					INT_SET(block->bb_rightsib, ARCH_CONVERT, NULLAGBLOCK);
+					block = XFS_BUF_TO_BLOCK(buf);
+					memset(block, 0, blocksize);
+					block->bb_magic = cpu_to_be32(XFS_IBT_MAGIC);
+					block->bb_level = 0;
+					block->bb_numrecs = cpu_to_be16(ino_numrecs);
+					block->bb_u.s.bb_leftsib = cpu_to_be32(NULLAGBLOCK);
+					block->bb_u.s.bb_rightsib = cpu_to_be32(NULLAGBLOCK);
 
 					bp = (void*) (block+1);
 
@@ -4345,9 +4393,9 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 							free_val = 0;
 						}
 
-						INT_SET(*start_ino, ARCH_CONVERT, inode_map[1] + b*64);
-						INT_SET(*freecount, ARCH_CONVERT, freecount_val);
-						INT_SET(*free, ARCH_CONVERT, free_val);
+						*start_ino = cpu_to_be32(inode_map[1] + b*64);
+						*freecount = cpu_to_be32(freecount_val);
+						*free = cpu_to_be64(free_val);
 					}
 
 					if (!noaction) libxfs_writebuf(buf, LIBXFS_EXIT_ON_FAILURE);
@@ -4390,13 +4438,13 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 					buf = libxfs_getbuf(mp->m_dev,
 							XFS_FSB_TO_DADDR( mp, XFS_BLKNO(bno) ),
 							bsize);
-					block = XFS_BUF_TO_SBLOCK(buf);
-					bzero(block, blocksize);
-					INT_SET(block->bb_magic, ARCH_CONVERT, XFS_IBT_MAGIC);
-					INT_SET(block->bb_level, ARCH_CONVERT, 0);
-					INT_SET(block->bb_numrecs, ARCH_CONVERT, recs);
-					INT_SET(block->bb_leftsib, ARCH_CONVERT, NULLAGBLOCK);
-					INT_SET(block->bb_rightsib, ARCH_CONVERT, NULLAGBLOCK);
+					block = XFS_BUF_TO_BLOCK(buf);
+					memset(block, 0, blocksize);
+					block->bb_magic = cpu_to_be32(XFS_IBT_MAGIC);
+					block->bb_level = 0;
+					block->bb_numrecs = cpu_to_be16(recs);
+					block->bb_u.s.bb_leftsib = cpu_to_be32(NULLAGBLOCK);
+					block->bb_u.s.bb_rightsib = cpu_to_be32(NULLAGBLOCK);
 
 					struct hashlist *hashlist = NULL;
 					struct hashlist **p_hashlist = &hashlist;
@@ -4423,7 +4471,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 							}
 							set_bit ( bno, xfs_block_bitmap );
 
-							INT_SET(block->bb_rightsib, ARCH_CONVERT, bno%agsize);
+							block->bb_u.s.bb_rightsib = cpu_to_be32(bno%agsize);
 							if (!noaction) libxfs_writebuf(buf, LIBXFS_EXIT_ON_FAILURE);
 							else libxfs_putbuf(buf);
 
@@ -4436,13 +4484,13 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 							buf = libxfs_getbuf(mp->m_dev,
 									XFS_FSB_TO_DADDR( mp, XFS_BLKNO(bno) ),
 									bsize);
-							block = XFS_BUF_TO_SBLOCK(buf);
-							bzero(block, blocksize);
-							INT_SET(block->bb_magic, ARCH_CONVERT, XFS_IBT_MAGIC);
-							INT_SET(block->bb_level, ARCH_CONVERT, 0);
-							INT_SET(block->bb_numrecs, ARCH_CONVERT, recs);
-							INT_SET(block->bb_leftsib, ARCH_CONVERT, leftsib_val);
-							INT_SET(block->bb_rightsib, ARCH_CONVERT, NULLAGBLOCK);
+							block = XFS_BUF_TO_BLOCK(buf);
+							memset(block, 0, blocksize);
+							block->bb_magic = cpu_to_be32(XFS_IBT_MAGIC);
+							block->bb_level = 0;
+							block->bb_numrecs = cpu_to_be16(recs);
+							block->bb_u.s.bb_leftsib = cpu_to_be32(leftsib_val);
+							block->bb_u.s.bb_rightsib = cpu_to_be32(NULLAGBLOCK);
 
 							norec = 0;
 
@@ -4481,9 +4529,9 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 							free_val = 0;
 						}
 
-						INT_SET(*start_ino, ARCH_CONVERT, inode_map[1] + recs_written*64);
-						INT_SET(*freecount, ARCH_CONVERT, freecount_val);
-						INT_SET(*free, ARCH_CONVERT, free_val);
+						*start_ino = cpu_to_be32(inode_map[1] + recs_written*64);
+						*freecount = cpu_to_be32(freecount_val);
+						*free = cpu_to_be64(free_val);
 
 						recs_written++;
 						norec++;
@@ -4515,13 +4563,13 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 					buf = libxfs_getbuf(mp->m_dev,
 							XFS_FSB_TO_DADDR( mp, XFS_BLKNO(bno) ),
 							bsize);
-					block = XFS_BUF_TO_SBLOCK(buf);
-					bzero(block, blocksize);
-					INT_SET(block->bb_magic, ARCH_CONVERT, XFS_IBT_MAGIC);
-					INT_SET(block->bb_level, ARCH_CONVERT, 1);
-					INT_SET(block->bb_numrecs, ARCH_CONVERT, nlinks[height][0]);
-					INT_SET(block->bb_leftsib, ARCH_CONVERT, NULLAGBLOCK);
-					INT_SET(block->bb_rightsib, ARCH_CONVERT, NULLAGBLOCK);
+					block = XFS_BUF_TO_BLOCK(buf);
+					memset(block, 0, blocksize);
+					block->bb_magic = cpu_to_be32(XFS_IBT_MAGIC);
+					block->bb_level = cpu_to_be16(1);
+					block->bb_numrecs = cpu_to_be16(nlinks[height][0]);
+					block->bb_u.s.bb_leftsib = cpu_to_be32(NULLAGBLOCK);
+					block->bb_u.s.bb_rightsib = cpu_to_be32(NULLAGBLOCK);
 
 					bp = (void*) (block+1);
 
@@ -4559,8 +4607,8 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 								//		(*p_hashlist)->hashval, (*p_hashlist)->address,
 								//		(*p_hashlist)->data);
 
-								INT_SET(*startino, ARCH_CONVERT, (*p_hashlist)->hashval);
-								INT_SET(*ptr, ARCH_CONVERT, (*p_hashlist)->address);
+								*startino = cpu_to_be32((*p_hashlist)->hashval);
+								*ptr = cpu_to_be32((*p_hashlist)->address);
 
 								if ((k+1)==nlinks[l][j])
 								{
@@ -4595,7 +4643,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 								else
 									bno = agno*agsize + XFS_IBT_BLOCK(mp);
 
-								INT_SET(block->bb_rightsib, ARCH_CONVERT, bno%agsize);
+								block->bb_u.s.bb_rightsib = cpu_to_be32(bno%agsize);
 							}
 
 							if (!noaction) libxfs_writebuf(buf, LIBXFS_EXIT_ON_FAILURE);
@@ -4607,8 +4655,8 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 								buf = libxfs_getbuf(mp->m_dev,
 										XFS_FSB_TO_DADDR( mp, XFS_BLKNO(bno) ),
 										bsize);
-								block = XFS_BUF_TO_SBLOCK(buf);
-								bzero(block, blocksize);
+								block = XFS_BUF_TO_BLOCK(buf);
+								memset(block, 0, blocksize);
 
 								bp = (void*) (block+1);
 
@@ -4619,13 +4667,13 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 								int bb_level = ( j<(links_at_level[l-1]-1) ) ? height+1-l :
 									height+1-l + 1;
 
-								assert( sizeof(block->bb_leftsib) == sizeof(backw) );
+								assert( sizeof(block->bb_u.s.bb_leftsib) == sizeof(backw) );
 
-								INT_SET(block->bb_magic, ARCH_CONVERT, XFS_IBT_MAGIC);
-								INT_SET(block->bb_level, ARCH_CONVERT, bb_level);
-								INT_SET(block->bb_numrecs, ARCH_CONVERT, bb_numrecs);
-								INT_SET(block->bb_leftsib, ARCH_CONVERT, backw);
-								INT_SET(block->bb_rightsib, ARCH_CONVERT, NULLAGBLOCK);
+								block->bb_magic = cpu_to_be32(XFS_IBT_MAGIC);
+								block->bb_level = cpu_to_be16(bb_level);
+								block->bb_numrecs = cpu_to_be16(bb_numrecs);
+								block->bb_u.s.bb_leftsib = cpu_to_be32(backw);
+								block->bb_u.s.bb_rightsib = cpu_to_be32(NULLAGBLOCK);
 							}
 						}
 
@@ -4776,25 +4824,23 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 					XFS_AG_DADDR(mp, agno, XFS_AGF_DADDR(mp)),
 					XFS_FSS_TO_BB(mp, 1));
 			agf = XFS_BUF_TO_AGF(buf);
-			bzero(agf, sectorsize);
+			memset(agf, 0, sectorsize);
 			if (agno == agcount - 1)
 				agsize = dblocks - (xfs_drfsbno_t)(agno * agsize);
-			INT_SET(agf->agf_magicnum, ARCH_CONVERT, XFS_AGF_MAGIC);
-			INT_SET(agf->agf_versionnum, ARCH_CONVERT, XFS_AGF_VERSION);
-			INT_SET(agf->agf_seqno, ARCH_CONVERT, agno);
-			INT_SET(agf->agf_length, ARCH_CONVERT, (xfs_agblock_t)agsize);
-			INT_SET(agf->agf_roots[XFS_BTNUM_BNOi], ARCH_CONVERT,
-					XFS_BNO_BLOCK(mp));
-			INT_SET(agf->agf_roots[XFS_BTNUM_CNTi], ARCH_CONVERT,
-					XFS_CNT_BLOCK(mp));
-			INT_SET(agf->agf_levels[XFS_BTNUM_BNOi], ARCH_CONVERT, height+1);
-			INT_SET(agf->agf_levels[XFS_BTNUM_CNTi], ARCH_CONVERT, height+1);
-			INT_SET(agf->agf_flfirst, ARCH_CONVERT, 0);
-			INT_SET(agf->agf_fllast, ARCH_CONVERT, XFS_AGFL_SIZE(mp) - 1);
-			INT_SET(agf->agf_flcount, ARCH_CONVERT, 0);
+			agf->agf_magicnum = cpu_to_be32(XFS_AGF_MAGIC);
+			agf->agf_versionnum = cpu_to_be32(XFS_AGF_VERSION);
+			agf->agf_seqno = cpu_to_be32(agno);
+			agf->agf_length = cpu_to_be32((xfs_agblock_t)agsize);
+			agf->agf_roots[XFS_BTNUM_BNOi] = cpu_to_be32( XFS_BNO_BLOCK(mp) );
+			agf->agf_roots[XFS_BTNUM_CNTi] = cpu_to_be32( XFS_CNT_BLOCK(mp) );
+			agf->agf_levels[XFS_BTNUM_BNOi] = cpu_to_be32(height+1);
+			agf->agf_levels[XFS_BTNUM_CNTi] = cpu_to_be32(height+1);
+			agf->agf_flfirst = cpu_to_be32(0);
+			agf->agf_fllast = cpu_to_be32(XFS_AGFL_SIZE(mp) - 1);
+			agf->agf_flcount = cpu_to_be32(0);
 			nbmblocks = (xfs_extlen_t)(agsize - XFS_PREALLOC_BLOCKS(mp));
-			INT_SET(agf->agf_freeblks, ARCH_CONVERT, freeblks);
-			INT_SET(agf->agf_longest, ARCH_CONVERT, longest);
+			agf->agf_freeblks = cpu_to_be32(freeblks);
+			agf->agf_longest = cpu_to_be32(longest);
 
 			if (XFS_MIN_FREELIST(agf, mp) > worst_freelist)
 				worst_freelist = XFS_MIN_FREELIST(agf, mp);
@@ -4808,19 +4854,19 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 					XFS_AG_DADDR(mp, agno, XFS_AGI_DADDR(mp)),
 					XFS_FSS_TO_BB(mp, 1));
 			agi = XFS_BUF_TO_AGI(buf);
-			bzero(agi, sectorsize);
-			INT_SET(agi->agi_magicnum, ARCH_CONVERT, XFS_AGI_MAGIC);
-			INT_SET(agi->agi_versionnum, ARCH_CONVERT, XFS_AGI_VERSION);
-			INT_SET(agi->agi_seqno, ARCH_CONVERT, agno);
-			INT_SET(agi->agi_length, ARCH_CONVERT, (xfs_agblock_t)agsize);
-			INT_SET(agi->agi_count, ARCH_CONVERT, agi_array[agno].agi_count);
-			INT_SET(agi->agi_root, ARCH_CONVERT, XFS_IBT_BLOCK(mp));
-			INT_SET(agi->agi_level, ARCH_CONVERT, inolevel);
-			INT_SET(agi->agi_freecount, ARCH_CONVERT, agi_array[agno].agi_freecount);
-			INT_SET(agi->agi_newino, ARCH_CONVERT, NULLAGINO);
-			INT_SET(agi->agi_dirino, ARCH_CONVERT, NULLAGINO);
+			memset(agi, 0, sectorsize);
+			agi->agi_magicnum = cpu_to_be32(XFS_AGI_MAGIC);
+			agi->agi_versionnum = cpu_to_be32(XFS_AGI_VERSION);
+			agi->agi_seqno = cpu_to_be32(agno);
+			agi->agi_length = cpu_to_be32((xfs_agblock_t)agsize);
+			agi->agi_count = cpu_to_be32(agi_array[agno].agi_count);
+			agi->agi_root = cpu_to_be32(XFS_IBT_BLOCK(mp));
+			agi->agi_level = cpu_to_be32(inolevel);
+			agi->agi_freecount = cpu_to_be32(agi_array[agno].agi_freecount);
+			agi->agi_newino = cpu_to_be32(NULLAGINO);
+			agi->agi_dirino = cpu_to_be32(NULLAGINO);
 			for (c = 0; c < XFS_AGI_UNLINKED_BUCKETS; c++)
-				INT_SET(agi->agi_unlinked[c], ARCH_CONVERT, NULLAGINO);
+				agi->agi_unlinked[c] = cpu_to_be32(NULLAGINO);
 			if (!noaction) libxfs_writebuf(buf, LIBXFS_EXIT_ON_FAILURE);
 			else libxfs_putbuf(buf);
 
@@ -4832,13 +4878,13 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 				buf = libxfs_getbuf(mp->m_dev,
 						XFS_AGB_TO_DADDR(mp, agno, XFS_BNO_BLOCK(mp)),
 						bsize);
-				block = XFS_BUF_TO_SBLOCK(buf);
-				bzero(block, blocksize);
-				INT_SET(block->bb_magic, ARCH_CONVERT, XFS_ABTB_MAGIC);
-				INT_SET(block->bb_level, ARCH_CONVERT, 0);
-				INT_SET(block->bb_numrecs, ARCH_CONVERT, num_blocks);
-				INT_SET(block->bb_leftsib, ARCH_CONVERT, NULLAGBLOCK);
-				INT_SET(block->bb_rightsib, ARCH_CONVERT, NULLAGBLOCK);
+				block = XFS_BUF_TO_BLOCK(buf);
+				memset(block, 0, blocksize);
+				block->bb_magic = cpu_to_be32(XFS_ABTB_MAGIC);
+				block->bb_level = 0;
+				block->bb_numrecs = cpu_to_be16(num_blocks);
+				block->bb_u.s.bb_leftsib = cpu_to_be32(NULLAGBLOCK);
+				block->bb_u.s.bb_rightsib = cpu_to_be32(NULLAGBLOCK);
 
 				void *bp = (void*) (block+1);
 
@@ -4852,8 +4898,8 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 
 					ASSERT( ( (char*)bp - (char*)block ) <= blocksize );
 
-					INT_SET(*startblock, ARCH_CONVERT, (*pbno_list)->hashval);
-					INT_SET(*blockcount, ARCH_CONVERT, (*pbno_list)->address);
+					*startblock = cpu_to_be32((*pbno_list)->hashval);
+					*blockcount = cpu_to_be32((*pbno_list)->address);
 
 					pbno_list = &(*pbno_list)->next;
 				}
@@ -4906,13 +4952,13 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 				buf = libxfs_getbuf(mp->m_dev,
 						XFS_FSB_TO_DADDR( mp, bno + (agno<<xfs_agblklog) ),
 						bsize);
-				block = XFS_BUF_TO_SBLOCK(buf);
-				bzero(block, blocksize);
-				INT_SET(block->bb_magic, ARCH_CONVERT, XFS_ABTB_MAGIC);
-				INT_SET(block->bb_level, ARCH_CONVERT, 0);
-				INT_SET(block->bb_numrecs, ARCH_CONVERT, recs);
-				INT_SET(block->bb_leftsib, ARCH_CONVERT, NULLAGBLOCK);
-				INT_SET(block->bb_rightsib, ARCH_CONVERT, NULLAGBLOCK);
+				block = XFS_BUF_TO_BLOCK(buf);
+				memset(block, 0, blocksize);
+				block->bb_magic = cpu_to_be32(XFS_ABTB_MAGIC);
+				block->bb_level = 0;
+				block->bb_numrecs = cpu_to_be16(recs);
+				block->bb_u.s.bb_leftsib = cpu_to_be32(NULLAGBLOCK);
+				block->bb_u.s.bb_rightsib = cpu_to_be32(NULLAGBLOCK);
 
 				struct hashlist *hashlist = NULL;
 				struct hashlist **p_hashlist = &hashlist;
@@ -4940,7 +4986,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 							(*preserv_for_tree)=h;
 						}
 
-						INT_SET(block->bb_rightsib, ARCH_CONVERT, bno);
+						block->bb_u.s.bb_rightsib = cpu_to_be32(bno);
 						if (!noaction) libxfs_writebuf(buf, LIBXFS_EXIT_ON_FAILURE);
 						else libxfs_putbuf(buf);
 
@@ -4950,13 +4996,13 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 						buf = libxfs_getbuf(mp->m_dev,
 								XFS_FSB_TO_DADDR( mp, bno + (agno<<xfs_agblklog) ),
 								bsize);
-						block = XFS_BUF_TO_SBLOCK(buf);
-						bzero(block, blocksize);
-						INT_SET(block->bb_magic, ARCH_CONVERT, XFS_ABTB_MAGIC);
-						INT_SET(block->bb_level, ARCH_CONVERT, 0);
-						INT_SET(block->bb_numrecs, ARCH_CONVERT, recs);
-						INT_SET(block->bb_leftsib, ARCH_CONVERT, leftsib_val);
-						INT_SET(block->bb_rightsib, ARCH_CONVERT, NULLAGBLOCK);
+						block = XFS_BUF_TO_BLOCK(buf);
+						memset(block, 0, blocksize);
+						block->bb_magic = cpu_to_be32(XFS_ABTB_MAGIC);
+						block->bb_level = 0;
+						block->bb_numrecs = cpu_to_be16(recs);
+						block->bb_u.s.bb_leftsib = cpu_to_be32(leftsib_val);
+						block->bb_u.s.bb_rightsib = cpu_to_be32(NULLAGBLOCK);
 
 						norec = 0;
 
@@ -4982,8 +5028,8 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 
 					//printf("BNO [%d] from %d, %d blocks\n", norec,
 					//	       	(*pbno_list)->hashval, (*pbno_list)->address);
-					INT_SET(*startblock, ARCH_CONVERT, (*pbno_list)->hashval);
-					INT_SET(*blockcount, ARCH_CONVERT, (*pbno_list)->address);
+					*startblock = cpu_to_be32((*pbno_list)->hashval);
+					*blockcount = cpu_to_be32((*pbno_list)->address);
 
 					pbno_list = &(*pbno_list)->next;
 
@@ -5019,13 +5065,13 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 				buf = libxfs_getbuf(mp->m_dev,
 						XFS_FSB_TO_DADDR( mp, bno + (agno<<xfs_agblklog) ),
 						bsize);
-				block = XFS_BUF_TO_SBLOCK(buf);
-				bzero(block, blocksize);
-				INT_SET(block->bb_magic, ARCH_CONVERT, XFS_ABTB_MAGIC);
-				INT_SET(block->bb_level, ARCH_CONVERT, 1);
-				INT_SET(block->bb_numrecs, ARCH_CONVERT, nlinks[height][0]);
-				INT_SET(block->bb_leftsib, ARCH_CONVERT, NULLAGBLOCK);
-				INT_SET(block->bb_rightsib, ARCH_CONVERT, NULLAGBLOCK);
+				block = XFS_BUF_TO_BLOCK(buf);
+				memset(block, 0, blocksize);
+				block->bb_magic = cpu_to_be32(XFS_ABTB_MAGIC);
+				block->bb_level = cpu_to_be16(1);
+				block->bb_numrecs = cpu_to_be16(nlinks[height][0]);
+				block->bb_u.s.bb_leftsib = cpu_to_be32(NULLAGBLOCK);
+				block->bb_u.s.bb_rightsib = cpu_to_be32(NULLAGBLOCK);
 
 				bp = (void*) (block+1);
 
@@ -5067,9 +5113,9 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 							//		(*p_hashlist)->hashval, (*p_hashlist)->address,
 							//		(*p_hashlist)->data);
 
-							INT_SET(*startblock, ARCH_CONVERT, (*p_hashlist)->hashval);
-							INT_SET(*blockcount, ARCH_CONVERT, (*p_hashlist)->address);
-							INT_SET(*ptr, ARCH_CONVERT, (*p_hashlist)->data);
+							*startblock = cpu_to_be32((*p_hashlist)->hashval);
+							*blockcount = cpu_to_be32((*p_hashlist)->address);
+							*ptr = cpu_to_be32((*p_hashlist)->data);
 
 							if ((k+1)==nlinks[l][j])
 							{
@@ -5107,7 +5153,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 							else
 								bno = XFS_BNO_BLOCK(mp);
 
-							INT_SET(block->bb_rightsib, ARCH_CONVERT, bno);
+							block->bb_u.s.bb_rightsib = cpu_to_be32(bno);
 						}
 
 						if (!noaction) libxfs_writebuf(buf, LIBXFS_EXIT_ON_FAILURE);
@@ -5119,8 +5165,8 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 							buf = libxfs_getbuf(mp->m_dev,
 									XFS_FSB_TO_DADDR( mp, bno + (agno<<xfs_agblklog) ),
 									bsize);
-							block = XFS_BUF_TO_SBLOCK(buf);
-							bzero(block, blocksize);
+							block = XFS_BUF_TO_BLOCK(buf);
+							memset(block, 0, blocksize);
 
 							bp = (void*) (block+1);
 
@@ -5131,13 +5177,13 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 							int bb_level = ( j<(links_at_level[l-1]-1) ) ? height+1-l :
 								height+1-l + 1;
 
-							assert( sizeof(block->bb_leftsib) == sizeof(backw) );
+							assert( sizeof(block->bb_u.s.bb_leftsib) == sizeof(backw) );
 
-							INT_SET(block->bb_magic, ARCH_CONVERT, XFS_ABTB_MAGIC);
-							INT_SET(block->bb_level, ARCH_CONVERT, bb_level);
-							INT_SET(block->bb_numrecs, ARCH_CONVERT, bb_numrecs);
-							INT_SET(block->bb_leftsib, ARCH_CONVERT, backw);
-							INT_SET(block->bb_rightsib, ARCH_CONVERT, NULLAGBLOCK);
+							block->bb_magic = cpu_to_be32(XFS_ABTB_MAGIC);
+							block->bb_level = cpu_to_be16(bb_level);
+							block->bb_numrecs = cpu_to_be16(bb_numrecs);
+							block->bb_u.s.bb_leftsib = cpu_to_be32(backw);
+							block->bb_u.s.bb_rightsib = cpu_to_be32(NULLAGBLOCK);
 						}
 					}
 
@@ -5174,13 +5220,13 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 				buf = libxfs_getbuf(mp->m_dev,
 						XFS_AGB_TO_DADDR(mp, agno, XFS_CNT_BLOCK(mp)),
 						bsize);
-				block = XFS_BUF_TO_SBLOCK(buf);
-				bzero(block, blocksize);
-				INT_SET(block->bb_magic, ARCH_CONVERT, XFS_ABTC_MAGIC);
-				INT_SET(block->bb_level, ARCH_CONVERT, 0);
-				INT_SET(block->bb_numrecs, ARCH_CONVERT, num_blocks);
-				INT_SET(block->bb_leftsib, ARCH_CONVERT, NULLAGBLOCK);
-				INT_SET(block->bb_rightsib, ARCH_CONVERT, NULLAGBLOCK);
+				block = XFS_BUF_TO_BLOCK(buf);
+				memset(block, 0, blocksize);
+				block->bb_magic = cpu_to_be32(XFS_ABTC_MAGIC);
+				block->bb_level = 0;
+				block->bb_numrecs = cpu_to_be16(num_blocks);
+				block->bb_u.s.bb_leftsib = cpu_to_be32(NULLAGBLOCK);
+				block->bb_u.s.bb_rightsib = cpu_to_be32(NULLAGBLOCK);
 
 				bp = (void*) (block+1);
 
@@ -5194,8 +5240,8 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 
 					ASSERT( ( (char*)bp - (char*)block ) <= blocksize );
 
-					INT_SET(*startblock, ARCH_CONVERT, (*pcnum_list)->address);
-					INT_SET(*blockcount, ARCH_CONVERT, (*pcnum_list)->hashval);
+					*startblock = cpu_to_be32((*pcnum_list)->address);
+					*blockcount = cpu_to_be32((*pcnum_list)->hashval);
 
 					pcnum_list = &(*pcnum_list)->next;
 				}
@@ -5248,13 +5294,13 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 				buf = libxfs_getbuf(mp->m_dev,
 						XFS_FSB_TO_DADDR( mp, bno + (agno<<xfs_agblklog) ),
 						bsize);
-				block = XFS_BUF_TO_SBLOCK(buf);
-				bzero(block, blocksize);
-				INT_SET(block->bb_magic, ARCH_CONVERT, XFS_ABTC_MAGIC);
-				INT_SET(block->bb_level, ARCH_CONVERT, 0);
-				INT_SET(block->bb_numrecs, ARCH_CONVERT, recs);
-				INT_SET(block->bb_leftsib, ARCH_CONVERT, NULLAGBLOCK);
-				INT_SET(block->bb_rightsib, ARCH_CONVERT, NULLAGBLOCK);
+				block = XFS_BUF_TO_BLOCK(buf);
+				memset(block, 0, blocksize);
+				block->bb_magic = cpu_to_be32(XFS_ABTC_MAGIC);
+				block->bb_level = 0;
+				block->bb_numrecs = cpu_to_be16(recs);
+				block->bb_u.s.bb_leftsib = cpu_to_be32(NULLAGBLOCK);
+				block->bb_u.s.bb_rightsib = cpu_to_be32(NULLAGBLOCK);
 
 				struct hashlist *hashlist = NULL;
 				struct hashlist **p_hashlist = &hashlist;
@@ -5282,7 +5328,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 							(*preserv_for_tree)=h;
 						}
 
-						INT_SET(block->bb_rightsib, ARCH_CONVERT, bno);
+						block->bb_u.s.bb_rightsib = cpu_to_be32(bno);
 						if (!noaction) libxfs_writebuf(buf, LIBXFS_EXIT_ON_FAILURE);
 						else libxfs_putbuf(buf);
 
@@ -5292,13 +5338,13 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 						buf = libxfs_getbuf(mp->m_dev,
 								XFS_FSB_TO_DADDR( mp, bno + (agno<<xfs_agblklog) ),
 								bsize);
-						block = XFS_BUF_TO_SBLOCK(buf);
-						bzero(block, blocksize);
-						INT_SET(block->bb_magic, ARCH_CONVERT, XFS_ABTC_MAGIC);
-						INT_SET(block->bb_level, ARCH_CONVERT, 0);
-						INT_SET(block->bb_numrecs, ARCH_CONVERT, recs);
-						INT_SET(block->bb_leftsib, ARCH_CONVERT, leftsib_val);
-						INT_SET(block->bb_rightsib, ARCH_CONVERT, NULLAGBLOCK);
+						block = XFS_BUF_TO_BLOCK(buf);
+						memset(block, 0, blocksize);
+						block->bb_magic = cpu_to_be32(XFS_ABTC_MAGIC);
+						block->bb_level = 0;
+						block->bb_numrecs = cpu_to_be16(recs);
+						block->bb_u.s.bb_leftsib = cpu_to_be32(leftsib_val);
+						block->bb_u.s.bb_rightsib = cpu_to_be32(NULLAGBLOCK);
 
 						norec = 0;
 
@@ -5324,8 +5370,8 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 
 					//printf("CNT [%d] from %d, %d blocks\n", norec,
 					//	       	(*pcnum_list)->address, (*pcnum_list)->hashval);
-					INT_SET(*startblock, ARCH_CONVERT, (*pcnum_list)->address);
-					INT_SET(*blockcount, ARCH_CONVERT, (*pcnum_list)->hashval);
+					*startblock = cpu_to_be32((*pcnum_list)->address);
+					*blockcount = cpu_to_be32((*pcnum_list)->hashval);
 
 					pcnum_list = &(*pcnum_list)->next;
 
@@ -5361,13 +5407,13 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 				buf = libxfs_getbuf(mp->m_dev,
 						XFS_FSB_TO_DADDR( mp, bno + (agno<<xfs_agblklog) ),
 						bsize);
-				block = XFS_BUF_TO_SBLOCK(buf);
-				bzero(block, blocksize);
-				INT_SET(block->bb_magic, ARCH_CONVERT, XFS_ABTC_MAGIC);
-				INT_SET(block->bb_level, ARCH_CONVERT, 1);
-				INT_SET(block->bb_numrecs, ARCH_CONVERT, nlinks[height][0]);
-				INT_SET(block->bb_leftsib, ARCH_CONVERT, NULLAGBLOCK);
-				INT_SET(block->bb_rightsib, ARCH_CONVERT, NULLAGBLOCK);
+				block = XFS_BUF_TO_BLOCK(buf);
+				memset(block, 0, blocksize);
+				block->bb_magic = cpu_to_be32(XFS_ABTC_MAGIC);
+				block->bb_level = cpu_to_be16(1);
+				block->bb_numrecs = cpu_to_be16(nlinks[height][0]);
+				block->bb_u.s.bb_leftsib = cpu_to_be32(NULLAGBLOCK);
+				block->bb_u.s.bb_rightsib = cpu_to_be32(NULLAGBLOCK);
 
 				bp = (void*) (block+1);
 
@@ -5405,9 +5451,9 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 
 							ASSERT( ( (char*)bp - (char*)block ) <= space_2_3+sizeof(*block) );
 
-							INT_SET(*blockcount, ARCH_CONVERT, (*p_hashlist)->hashval);
-							INT_SET(*startblock, ARCH_CONVERT, (*p_hashlist)->address);
-							INT_SET(*ptr, ARCH_CONVERT, (*p_hashlist)->data);
+							*blockcount = cpu_to_be32((*p_hashlist)->hashval);
+							*startblock = cpu_to_be32((*p_hashlist)->address);
+							*ptr = cpu_to_be32((*p_hashlist)->data);
 
 							if ((k+1)==nlinks[l][j])
 							{
@@ -5445,7 +5491,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 							else
 								bno = XFS_CNT_BLOCK(mp);
 
-							INT_SET(block->bb_rightsib, ARCH_CONVERT, bno);
+							block->bb_u.s.bb_rightsib = cpu_to_be32(bno);
 						}
 
 						if (!noaction) libxfs_writebuf(buf, LIBXFS_EXIT_ON_FAILURE);
@@ -5457,8 +5503,8 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 							buf = libxfs_getbuf(mp->m_dev,
 									XFS_FSB_TO_DADDR( mp, bno + (agno<<xfs_agblklog) ),
 									bsize);
-							block = XFS_BUF_TO_SBLOCK(buf);
-							bzero(block, blocksize);
+							block = XFS_BUF_TO_BLOCK(buf);
+							memset(block, 0, blocksize);
 
 							bp = (void*) (block+1);
 
@@ -5469,13 +5515,13 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 							int bb_level = ( j<(links_at_level[l-1]-1) ) ? height+1-l :
 								height+1-l + 1;
 
-							assert( sizeof(block->bb_leftsib) == sizeof(backw) );
+							assert( sizeof(block->bb_u.s.bb_leftsib) == sizeof(backw) );
 
-							INT_SET(block->bb_magic, ARCH_CONVERT, XFS_ABTC_MAGIC);
-							INT_SET(block->bb_level, ARCH_CONVERT, bb_level);
-							INT_SET(block->bb_numrecs, ARCH_CONVERT, bb_numrecs);
-							INT_SET(block->bb_leftsib, ARCH_CONVERT, backw);
-							INT_SET(block->bb_rightsib, ARCH_CONVERT, NULLAGBLOCK);
+							block->bb_magic = cpu_to_be32(XFS_ABTC_MAGIC);
+							block->bb_level = cpu_to_be16(bb_level);
+							block->bb_numrecs = cpu_to_be16(bb_numrecs);
+							block->bb_u.s.bb_leftsib = cpu_to_be32(backw);
+							block->bb_u.s.bb_rightsib = cpu_to_be32(NULLAGBLOCK);
 						}
 					}
 
@@ -5515,8 +5561,8 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 		buf = libxfs_getbuf(xi.ddev,
 				XFS_AG_DADDR(mp, agno, XFS_SB_DADDR),
 				XFS_FSS_TO_BB(mp, 1));
-		bzero(XFS_BUF_PTR(buf), sectorsize);
-		libxfs_xlate_sb(XFS_BUF_PTR(buf), sbp, -1, XFS_SB_ALL_BITS);
+		memset(XFS_BUF_PTR(buf), 0, sectorsize);
+		libxfs_sb_to_disk((void *)XFS_BUF_PTR(buf), sbp, XFS_SB_ALL_BITS);
 		if (!noaction) libxfs_writebuf(buf, LIBXFS_EXIT_ON_FAILURE);
 		else libxfs_putbuf(buf);
 	}
@@ -5526,7 +5572,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 	 */
 	buf = libxfs_getbuf(mp->m_dev,
 		(xfs_daddr_t)XFS_FSB_TO_BB(mp, dblocks - 1LL), bsize);
-	bzero(XFS_BUF_PTR(buf), blocksize);
+	memset(XFS_BUF_PTR(buf), 0, blocksize);
 	if (!noaction) libxfs_writebuf(buf, LIBXFS_EXIT_ON_FAILURE);
 	else libxfs_putbuf(buf);
 
@@ -5536,7 +5582,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 	if (mp->m_rtdev && rtblocks > 0) {
 		buf = libxfs_getbuf(mp->m_rtdev,
 				XFS_FSB_TO_BB(mp, rtblocks - 1LL), bsize);
-		bzero(XFS_BUF_PTR(buf), blocksize);
+		memset(XFS_BUF_PTR(buf), 0, blocksize);
 		if (!noaction) libxfs_writebuf(buf, LIBXFS_EXIT_ON_FAILURE);
 		else libxfs_putbuf(buf);
 	}
@@ -5549,7 +5595,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 		xfs_alloc_arg_t	args;
 		xfs_trans_t	*tp;
 
-		bzero(&args, sizeof(args));
+		memset(&args, 0, sizeof(args));
 		args.tp = tp = libxfs_trans_alloc(mp, 0);
 		args.mp = mp;
 		args.agno = agno;
@@ -5558,7 +5604,7 @@ an AG size that is one stripe unit smaller, for example %llu.\n"),
 		if ((c = libxfs_trans_reserve(tp, worst_freelist, 0, 0, 0, 0)))
 			res_failed(c);
 		libxfs_alloc_fix_freelist(&args, 0);
-		libxfs_trans_commit(tp, 0, NULL);
+		libxfs_trans_commit(tp, 0);
 	}
 
 	/*
@@ -5713,12 +5759,12 @@ usage( void )
 /* blocksize */		[-b log=n|size=num]\n\
 /* data subvol */	[-d agcount=n,agsize=n,file,name=xxx,size=num,\n\
 			    (sunit=value,swidth=value|su=num,sw=num),\n\
-			    sectlog=n|sectsize=num,unwritten=0|1]\n\
+			    sectlog=n|sectsize=num]\n\
 /* inode size */	[-i log=n|perblock=n|size=num,maxpct=n,attr=0|1|2]\n\
 /* log subvol */	[-l agnum=n,internal,size=num,logdev=xxx,version=n\n\
 			    sunit=value|su=num,sectlog=n|sectsize=num]\n\
 /* label */		[-L label (maximum 12 characters)]\n\
-/* naming */		[-n log=n|size=num,version=n]\n\
+/* naming */		[-n log=n|size=num,version=2|ci]\n\
 /* not create */	[-N]\n\
 /* quiet */		[-q]\n\
 /* realtime subvol */	[-r extsize=num,size=num,rtdev=xxx]\n\
