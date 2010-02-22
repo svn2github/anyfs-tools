@@ -35,7 +35,7 @@ ANYSURREQT=@ANYSURREQT@
 
 all: libanysurrect.a anysurrect $(ANYSURREQT)
 
-anysurrect: libanysurrect.a $(OBJS)
+anysurrect: libanysurrect.so $(OBJS)
 	$(CC) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDFLAGSANYSURRECT)
 
 anysurreqt_mod: libanysurrect.a
@@ -44,8 +44,8 @@ anysurreqt_mod: libanysurrect.a
 libanysurrect.a: gzip_o scan_pes_o $(OBJSLIBANYSURRECT)
 	$(AR) $(ARFLAGS) $@ $(OBJSLIBANYSURRECT)
 
-libanysurrect.so: gzip_o scan_pes_o $(OBJLIBANYSURRECT)
-	$(CC) -nostdlib -shared $(CCFLAGS) $(LDFLAGS) -o $@ $(OBJLIBANYSURRECT)
+libanysurrect.so: gzip_o scan_pes_o $(OBJSLIBANYSURRECT)
+	$(CC) -nostdlib -shared $(CCFLAGS) $(LDFLAGS) -o $@ $(OBJSLIBANYSURRECT)
 
 gzip_o:
 	$(MAKE) $(AM_MAKEFLAGS) -C gzip
@@ -64,16 +64,19 @@ install: anysurrect
 	$(INSTALL) -m 0644 anysurrect_io.h $(INSTALLPATH)/include/anyfs-tools
 	$(INSTALL) -m 0644 anysurrect_malloc.h $(INSTALLPATH)/include/anyfs-tools
 	$(INSTALL) -m 0644 direct_io.h $(INSTALLPATH)/include/anyfs-tools
+	$(INSTALL) -m 0755 libanysurrect.so $(INSTALLPATH)/lib
+	ldconfig
 uninstall:
 	rm -f $(INSTALLPATH)/sbin/anysurrect
 	rm -f $(INSTALLPATH)/include/anyfs-tools/anysurrect.h
 	rm -f $(INSTALLPATH)/include/anyfs-tools/anysurrect_io.h
 	rm -f $(INSTALLPATH)/include/anyfs-tools/anysurrect_malloc.h
 	rm -f $(INSTALLPATH)/include/anyfs-tools/direct_io.h
+	rm -f $(INSTALLPATH)/lib/libanysurrect.so
 	rmdir --ignore-fail-on-non-empty -p $(INSTALLPATH)/include/anyfs-tools
 
 clean:
-	rm -f *.o *~ anysurrect libanysurrect.a
+	rm -f *.o *~ anysurrect libanysurrect.so
 	$(MAKE) $(AM_MAKEFLAGS) -C scan_pes clean
 	$(MAKE) $(AM_MAKEFLAGS) -C gzip clean
 

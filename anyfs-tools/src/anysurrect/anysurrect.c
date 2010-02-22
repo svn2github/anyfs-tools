@@ -743,7 +743,7 @@ int main (int argc, const char *argv[])
 		pid_t child;
 		if ( !( child = fork() ) )
 		{
-			execl ("/bin/sh", "/bin/sh", "-c", buf, NULL);
+			execl ("/bin/bash", "/bin/bash", "-c", buf, NULL);
 			exit(1);
 		}
 
