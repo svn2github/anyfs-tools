@@ -1,4 +1,9 @@
 * 04.02.09      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	-  Remove anyfs kernel module from sources.
+	-  Temporarily disable build_xfs building.
+	- 0.85.1a Release
+
+* 04.02.09      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
 	-  Fix anyfs building with kernel version >=2.6.28
 	-  Fix anyfs-tools building with GCC version >=4.3
 	- 0.85.1a Release

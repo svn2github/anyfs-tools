@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(anyfs-tools, 0.85.1a, undefer@gmail.com)
-#AM_INIT_AUTOMAKE(anyfs-tools, 0.85.0a)
+AC_INIT(anyfs-tools, 0.85.1b, undefer@gmail.com)
+#AM_INIT_AUTOMAKE(anyfs-tools, 0.85.1b)
 AC_CONFIG_SRCDIR([src/reblock.c], [include/any.h])
 AC_CONFIG_HEADER([include/config.h])
 
@@ -24,23 +24,11 @@ PKG_CHECK_MODULES(FUSE, fuse >= 2.5, \
 
 ANYSURREQT=""
 
-echo -n "checking for kernel sources... "
-if test -f /lib/modules/`uname -r`/build/Makefile; then
-	echo "yes"
-	ANYFS_MODULE="anyfs_module"
-	ANYFS_KO="anyfs.ko"
-else
-	echo "no"
-	ANYFS_MODULE=""
-	ANYFS_KO=""
-fi
-
-if test -z "$ANYFS_MODULE" && test -z "$ANYFUSE_MODULE"; then
+if test -z "$ANYFUSE_MODULE"; then
 	echo
-	echo "ERROR! Cannot to build anyfs and anyfuse module."
+	echo "ERROR! Cannot to build anyfuse module."
 	echo
 	echo "You must have fuse library and module to build anyfuse FUSE module"
-	echo "Or kernel sources to build anyfs kernel module"
 	exit 1
 fi
 
@@ -65,16 +53,16 @@ AC_CHECK_LIB([bz2], [BZ2_bzRead],
 		BZ2LIB=""; BZ2MODULES=""; BZ2C="//")
 
 XFS_UTILS=""; BUILD_XFS="";
-AC_CHECK_LIB([rt], [aio_init],
-AC_CHECK_LIB([disk], [fstype], 
-AC_CHECK_LIB([xfs], [libxfs_purgebuf], 
-	     XFS_UTILS="build_xfs_util"; BUILD_XFS="build_xfs", , -lrt))) 
+#AC_CHECK_LIB([rt], [aio_init],
+#AC_CHECK_LIB([disk], [fstype], 
+#AC_CHECK_LIB([xfs], [libxfs_purgebuf], 
+#	     XFS_UTILS="build_xfs_util"; BUILD_XFS="build_xfs", , -lrt))) 
 	
-AC_SUBST(ANYFS_MODULE ANYFS_KO ANYFUSE_MODULE ANYFUSE)
-AC_SUBST(EXT2FS_CFLAGS EXT2FS_LIBS)
-AC_SUBST(BZ2LIB BZ2MODULES BZ2C)
-AC_SUBST(MPEG2_LIBS MPEG2_CFLAGS MPEG2_MODULES MPEG2C)
-AC_SUBST(XFS_UTILS BUILD_XFS)
+AC_SUBST(ANYFUSE_MODULE, ANYFUSE)
+AC_SUBST(EXT2FS_CFLAGS, EXT2FS_LIBS)
+AC_SUBST(BZ2LIB, BZ2MODULES, BZ2C)
+AC_SUBST(MPEG2_LIBS, MPEG2_CFLAGS, MPEG2_MODULES, MPEG2C)
+AC_SUBST(XFS_UTILS, BUILD_XFS)
 AC_SUBST(ANYSURREQT)
 
 DESTDIR=
@@ -116,7 +104,6 @@ AC_FUNC_STAT
 AC_CHECK_FUNCS([__fpending bzero dup2 fdatasync memmove memset putenv select setlocale strcasecmp strchr strcspn strdup strerror strrchr strspn strstr strtol strtoul strtoull uname])
 
 #AC_CONFIG_FILES([Makefile
-#                 anyfs/Makefile
 #                 doc/Makefile
 #                 doc/man/Makefile
 #                 doc/man/man5/Makefile
@@ -128,7 +115,6 @@ AC_CHECK_FUNCS([__fpending bzero dup2 fdatasync memmove memset putenv select set
 #                 src/anysurrect/Makefile])
 
 AC_OUTPUT(Makefile 
-	anyfs/Makefile 
 	src/anyfuse/Makefile 
 	doc/man/man3/Makefile
 	doc/man/man5/Makefile
@@ -154,16 +140,14 @@ if test -z "$MPEG2_LIBS" || test -z "$BZ2LIB" || test -z "$BUILD_XFS" || test -z
 	echo
 	echo "WARNING! The package configured successful, but the next features was disabled:"
 	echo
-	test -z "$ANYFS_MODULE" &&
-		echo "* Building anyfs kernel module (depends on kernel sources)"
 	test -z "$ANYFUSE_MODULE" &&
 		echo "* Building anyfuse FUSE module (depends on fuse library >= 2.5.0)"
 	test -z "$MPEG2_LIBS" &&
 		echo "* Mpeg2 recovering with anysurrect (depends on libmpeg2)"
 	test -z "$BZ2LIB" &&
 		echo "* BZIP2 recovering with anysurrect (depends on libbz2)"
-	test -z "$BUILD_XFS" &&
-		echo "* Building XFS filesystem (depends on xfsprogs>=2.8.10, librt)"
+#	test -z "$BUILD_XFS" &&
+#		echo "* Building XFS filesystem (depends on xfsprogs>=2.8.10, librt)"
 fi
 
 true

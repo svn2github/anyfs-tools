@@ -20,22 +20,21 @@ The package has the following library dependencies:
 		(optionally, for converting to XFS)
  * libbz2 (optionally, for recovering BZIP2 files)
  * libmpeg2 (optionally, for recovering MPEG2 stream)
+ * FUSE >= 2.5.0 for anyfuse module building.
 
 If you have an older e2fsprogs or xfsprogs version, it is preferable to update it.
 If you have a newer version, but the package does not compile, send me a note
 (see below).
 
+WARNING! In package 0.85.1b version building of build_fs 
+temporarily disabled while I cannot restore its
+correct work with xfsprogs 3.x.
+You can use anyfs-tools early versions to use
+build_xfs with xfsprogs 2.x.
+
 Before building you may want to change some settings in files:
 anyfs-tools/src/anysurrect/surrectlist.conf
 anyfs-tools/src/anysurrect/config.h
-
-You also need one or both of these:
-1) Kernel sources (kernel-source package) for anyfs kernel module building.
-2) FUSE >= 2.5.0 for anyfuse module building.
-
-anyfs kernel module building was tested on kernels 2.6.9-2.6.28.
-The module installs to file
-/lib/modules/<kernel-version>/kernel/fs/any/any.ko
 
 After installing the package, read the manual:
 $ man anyfs-tools
