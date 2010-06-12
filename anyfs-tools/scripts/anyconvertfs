@@ -31,7 +31,6 @@ PRINT()
 	STRING="${STRING//\{TMPDIR\}/${BOLD}\"$TMPDIR\"${CLEAR}}"
 	STRING="${STRING//\{BUILD_FS\}/${BOLD}\"$BUILD_FS\"${CLEAR}}"
 	STRING="${STRING//\{LABEL\}/${BOLD}\"$LABEL\"${CLEAR}}"
-	STRING="${STRING//\{USE_ANY_FS_OR_FUSE\}/${BOLD}\"$USE_ANY_FS_OR_FUSE\"${CLEAR}}"
 	
 	STRING="${STRING//\{LOOPDEVICE\}/${BOLD}\"$LOOPDEVICE\"${CLEAR}}"
 	STRING="${STRING//\{RESCUELIST\}/${BOLD}\"$RESCUELIST\"${CLEAR}}"
@@ -83,7 +82,7 @@ usage ()
     echo -e "${BOLD}${BROWN}`$GT"usage:"`${CLEAR}""\n$ ${BOLD}$SCRIPT [--tmpdir${CLEAR} ${UNDER}directory${CLEAR}${BOLD}] [--blocksize${CLEAR} ${UNDER}blocksize${CLEAR}${BOLD}] [-f] [--dry]"
     echo -e "\t[--inodetable${CLEAR} ${UNDER}inodetable${CLEAR}${BOLD}] [--color|--no-color] [--label${CLEAR} ${UNDER}label${CLEAR}${BOLD}]"
     echo -e "\t[--debug] [--dont-delete-it] [--success-delete-it]"
-    echo -e "\t[--dontstop] [--pause${CLEAR} ${UNDER}seconds${CLEAR}${BOLD}] [--use-anyfs|--use-anyfuse] [--] "
+    echo -e "\t[--dontstop] [--pause${CLEAR} ${UNDER}seconds${CLEAR}${BOLD}] [--] "
     echo -e "\t ${CLEAR}${UNDER}device${CLEAR} ${BOLD}[${CLEAR}${UNDER}source_fs${CLEAR}${BOLD}] ${CLEAR}${UNDER}destination_fs${CLEAR}"
 
     exit 1
@@ -101,7 +100,6 @@ DRYRUN="N"
 LABEL="AUTO"
 DONTSTOP="N"
 PAUSE=7
-USE_ANY_FS_OR_FUSE="AUTO"
 DEBUG="N"
 DELETE_IT="AUTO"
 
@@ -160,14 +158,6 @@ while [[ "$END" == '0' ]]; do
 			PAUSE="$2"
 			shift 2
 			;;
-		'--use-anyfs')
-			USE_ANY_FS_OR_FUSE="ANYFS"
-			shift 1
-			;;
-		'--use-anyfuse')
-			USE_ANY_FS_OR_FUSE="ANYFUSE"
-			shift 1
-			;;
 		'--')
 			END=1
 			shift 1
@@ -216,46 +206,18 @@ PAGESIZE=4096
 [ -z "$4" ] || usage
 [ -z "$2" ] && usage
 
-[[ $USE_ANY_FS_OR_FUSE == "ANYFS" ]] &&
+grep -q "fuse" /proc/filesystems || modprobe fuse ||
 {
-	modprobe any ||
-	{
-		PRINT "`$GT"Sorry, seems {BOLD}any{CLEAR} module hasn't installed"`"
-		echo -e "${BOLD}${RED}`$GT"Exit"`${CLEAR}"
-		exit 1
-	}
-}
+	PRINT "`$GT"Sorry, seems {BOLD}fuse{CLEAR} kernel module hasn't installed"`"
+	echo -e "${BOLD}${RED}`$GT"Exit"`${CLEAR}"
+	exit 1
+} 
 
-[[ $USE_ANY_FS_OR_FUSE == "ANYFUSE" ]] &&
+which "anyfuse" >/dev/null 2>&1 ||
 {
-	modprobe fuse ||
-	{
-		PRINT "`$GT"Sorry, seems {BOLD}fuse{CLEAR} kernel module hasn't installed"`"
-		echo -e "${BOLD}${RED}`$GT"Exit"`${CLEAR}"
-		exit 1
-	} 
-
-	which "anyfuse" >/dev/null 2>&1 ||
-	{
-		PRINT "`$GT"Sorry, seems {BOLD}anyfuse{CLEAR} FUSE module hasn't installed"`"
-		echo -e "${BOLD}${RED}`$GT"Exit"`${CLEAR}"
-		exit 1
-	}
-}
-
-[[ $USE_ANY_FS_OR_FUSE == "AUTO" ]] &&
-{
-	if modprobe any 2>/dev/null; then
-		USE_ANY_FS_OR_FUSE="ANYFS"
-	elif ( modprobe fuse && which "anyfuse" >/dev/null 2>&1 ); then
-		USE_ANY_FS_OR_FUSE="ANYFUSE"
-	else
-		PRINT "`$GT""\
-"Sorry, you must have {BOLD}anyfs{CLEAR} kernel module or
-  {BOLD}anyfuse{CLEAR} FUSE module with {BOLD}fuse{CLEAR} kernel module"`"
-		echo -e "${BOLD}${RED}`$GT"Exit"`${CLEAR}"
-		exit 1
-	fi
+	PRINT "`$GT"Sorry, seems {BOLD}anyfuse{CLEAR} FUSE module hasn't installed"`"
+	echo -e "${BOLD}${RED}`$GT"Exit"`${CLEAR}"
+	exit 1
 }
 
 fullpath()
@@ -654,10 +616,6 @@ HANDLER()
 
 	if [[ "$WASMOUNTED" == "Y" ]]; then
 		if [[ "$FROMFS" == "any" ]]; then
-			[[ $USE_ANY_FS_OR_FUSE == "ANYFS" ]] &&
-			mount -t any -o "$MOUNTOPTIONS" "$DEVICE" "$MOUNTPOINT"
-
-			[[ $USE_ANY_FS_OR_FUSE == "ANYFUSE" ]] &&
 			anyfuse "$INODETABLE" "$DEVICE" "$MOUNTPOINT"
 		else
 			mount -o remount,"$MOUNTOPTIONS" "$MOUNTPOINT"
@@ -712,8 +670,7 @@ Mount point: {MOUNTPOINT}
 Mount options: {MOUNTOPTIONS}
 Temporary directory: {TMPDIR}
 Inode table: {INODETABLE}
-First step which destroy old filesystem: {FIRSTDESTROYSTEP}
-Use anyfs kernel module or anyfuse FUSE module: {USE_ANY_FS_OR_FUSE}"`"
+First step which destroy old filesystem: {FIRSTDESTROYSTEP}"`"
 
 [ "$LOOPDEVICE" ] &&
 	PRINT "`$GT"Loop Device: {LOOPDEVICE}"`"
@@ -864,10 +821,6 @@ HANDLER()
 	fi
 
 	if [[ "$FROMFS" == "any" ]] && [[ "$WASMOUNTED" == "Y" ]]; then
-		[[ $USE_ANY_FS_OR_FUSE == "ANYFS" ]] &&
-		mount -t any -o "$MOUNTOPTIONS" "$DEVICE" "$MOUNTPOINT"
-
-		[[ $USE_ANY_FS_OR_FUSE == "ANYFUSE" ]] &&
 		anyfuse "$INODETABLE" "$DEVICE" "$MOUNTPOINT"
 	fi
 
@@ -904,22 +857,10 @@ O.K. I try to be helpful and now.."`"
 	MOUNTOPTIONS="rw"
 	[ -b "$DEVICE" ] || MOUNTOPTIONS="rw,loop"
 
-	[[ $USE_ANY_FS_OR_FUSE == "ANYFS" ]] &&
+	anyfuse "$INODETABLE" "$DEVICE" "$MOUNTPOINT" ||
 	{
-		mount -t any -o "$MOUNTOPTIONS",inodetable="$INODETABLE" "$DEVICE" "$MOUNTPOINT" ||
-		{
-			echo -e "`$GT"Error while mount anyfs filesystem"`"
-			HANDLER
-		}
-	}
-
-	[[ $USE_ANY_FS_OR_FUSE == "ANYFUSE" ]] &&
-	{
-		anyfuse "$INODETABLE" "$DEVICE" "$MOUNTPOINT" ||
-		{
-			echo -e "`$GT"Error while mount anyfs filesystem"`"
-			HANDLER
-		}
+		echo -e "`$GT"Error while mount anyfs filesystem"`"
+		HANDLER
 	}
 
 	echo
