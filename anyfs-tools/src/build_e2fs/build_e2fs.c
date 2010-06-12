@@ -91,6 +91,8 @@ int sync_kludge;	/* Set using the MKE2FS_SYNC env. option */
 int sys_page_size = 4096;
 int linux_version_code = 0;
 
+blk_t new_block_goal;
+
 static void usage(void)
 {
 	fprintf(stderr, _("Usage: %s [-c|-t|-l filename] [-b block-size] "
@@ -1371,8 +1373,8 @@ int set_buffer( ext2_filsys fs, struct ind_block *ind_block,
 						1, ind_block->buffer);
 				if (retval)
 					fprintf(stderr,
-							_("Warning: could not write block: %s\n"),
-							error_message(retval));
+							_("Warning: could not write block #%ld: %s\n"),
+							ind_block->block, error_message(retval));
 			}
 			ind_block->dirty = 0;
 		}
@@ -1384,9 +1386,21 @@ int set_buffer( ext2_filsys fs, struct ind_block *ind_block,
 			retval = io_channel_read_blk(fs->io, ind_block->block,
 					1, ind_block->buffer);
 			if (retval)
-				fprintf(stderr,
-						_("Warning: could not read block: %s\n"),
-						error_message(retval));
+			{
+				if (!noaction)
+				{
+					fprintf(stderr,
+							_("Warning: could not read block #%ld: %s\n"),
+							ind_block->block, error_message(retval));
+				}
+				else
+				{
+					fprintf(stderr,
+							_("Error: could not read block #%ld: %s\n"),
+							ind_block->block, error_message(retval));
+					exit(1);
+				}
+			}
 		}
 	}
 
@@ -1414,8 +1428,10 @@ int set_block (ext2_filsys fs,
 		clean = !inode->i_block[blocks[0]];
 		if (!inode->i_block[blocks[0]])
 		{
-			retval = ext2fs_new_block(fs, 0, 0, &inode->i_block[blocks[0]]);
+			retval = ext2fs_new_block(fs, new_block_goal, 0, &inode->i_block[blocks[0]]);
 			if (retval) return -ENOSPC;
+			new_block_goal = inode->i_block[blocks[0]];
+
 			ext2fs_mark_block_bitmap(fs->block_map, inode->i_block[blocks[0]]);
 			new_blocks++;
 		}
@@ -1435,8 +1451,10 @@ int set_block (ext2_filsys fs,
 			clean = !ind_block[0].buffer[blocks[1]];
 			if (!ind_block[0].buffer[blocks[1]])
 			{
-				retval = ext2fs_new_block(fs, 0, 0, (void*) &ind_block[0].buffer[blocks[1]]);
+				retval = ext2fs_new_block(fs, new_block_goal, 0, (void*) &ind_block[0].buffer[blocks[1]]);
 				if (retval) return -ENOSPC;
+				new_block_goal = ind_block[0].buffer[blocks[1]];
+
 				ext2fs_mark_block_bitmap(fs->block_map, ind_block[0].buffer[blocks[1]]);
 				new_blocks++;
 			}
@@ -1456,8 +1474,10 @@ int set_block (ext2_filsys fs,
 				clean = !ind_block[1].buffer[blocks[2]];
 				if (!ind_block[1].buffer[blocks[2]])
 				{
-					retval = ext2fs_new_block(fs, 0, 0, (void*) &ind_block[1].buffer[blocks[2]]);
+					retval = ext2fs_new_block(fs, new_block_goal, 0, (void*) &ind_block[1].buffer[blocks[2]]);
 					if (retval) return -ENOSPC;
+					new_block_goal = ind_block[1].buffer[blocks[2]];
+
 					ext2fs_mark_block_bitmap(fs->block_map, ind_block[1].buffer[blocks[2]]);
 					new_blocks++;
 				}
@@ -1475,6 +1495,26 @@ int set_block (ext2_filsys fs,
 	}	
 
 	return new_blocks;
+}
+
+errcode_t ext2fs_inode_number_to_block(ext2_filsys fs, ext2_ino_t ino, 
+		unsigned long *blk)
+{
+	unsigned long group, block, block_nr, offset;
+	errcode_t retval = 0;
+
+	group = (ino - 1) / EXT2_INODES_PER_GROUP(fs->super);
+	offset = ((ino - 1) % EXT2_INODES_PER_GROUP(fs->super)) *
+		EXT2_INODE_SIZE(fs->super);
+	block = offset >> EXT2_BLOCK_SIZE_BITS(fs->super);
+	if (!fs->group_desc[(unsigned) group].bg_inode_table) {
+		return -EXT2_ET_MISSING_INODE_TABLE;
+	}
+	block_nr = fs->group_desc[(unsigned) group].bg_inode_table + block;
+
+	*blk = block_nr;
+
+	return retval;
 }
 
 int main (int argc, char *argv[])
@@ -1661,8 +1701,8 @@ int main (int argc, char *argv[])
 						1, buffer);
 				if (retval)
 					fprintf(stderr,
-							_("Warning: could not write block: %s\n"),
-							error_message(retval));
+							_("Warning: could not write block #%ld: %s\n"),
+							i, error_message(retval));
 			}
 		}
 
@@ -1718,8 +1758,8 @@ int main (int argc, char *argv[])
 							1, buffer);
 					if (retval)
 						fprintf(stderr,
-								_("Warning: could not write block: %s\n"),
-								error_message(retval));
+								_("Warning: could not write block #%ld: %s\n"),
+								start+i, error_message(retval));
 				}
 			}
 
@@ -1760,7 +1800,7 @@ int main (int argc, char *argv[])
 
 		for (i=0; i<info->si_inodes; i++) {
 			progress_update(&progress, i);
-			
+
 			int num_allocated_ind_blocks = 0;
 			struct ext2_inode inode;
 			int ii;
@@ -1777,6 +1817,12 @@ int main (int argc, char *argv[])
 
 			if (verbose>=2)
 				printf (_("inode: %lu of %lu\n"), i, info->si_inodes);
+
+			unsigned long blk;
+			retval = ext2fs_inode_number_to_block(fs, e_ino, &blk);
+			if (retval) goto out;
+			if (blk > new_block_goal) 
+				new_block_goal = blk;
 
 			for (ii=0; ii<3; ii++) 
 			{
@@ -1811,8 +1857,9 @@ int main (int argc, char *argv[])
 			inode.i_blocks = 0;
 
 			if ( S_ISLNK(info->si_inode_table[i].i_mode) ) {
-				retval = ext2fs_new_block(fs, 0, 0, &block);
+				retval = ext2fs_new_block(fs, new_block_goal, 0, &block);
 				if (retval) { retval = -ENOSPC; goto out; }
+				new_block_goal = block;
 
 				ext2fs_mark_block_bitmap(fs->block_map, block);
 
@@ -1832,8 +1879,8 @@ int main (int argc, char *argv[])
 							1, buffer);
 					if (retval)
 						fprintf(stderr,
-								_("Warning: could not read block: %s\n"),
-								error_message(retval));
+								_("Warning: could not write block #%ld: %s\n"),
+								(unsigned long) block, error_message(retval));
 				}
 				
 				inode.i_size = strlen(buffer);
@@ -1886,8 +1933,9 @@ int main (int argc, char *argv[])
 
 				fs->group_desc[ e_ino/fs->super->s_inodes_per_group ].bg_used_dirs_count++;
 				
-				retval = ext2fs_new_block(fs, 0, 0, &block);
+				retval = ext2fs_new_block(fs, new_block_goal, 0, &block);
 				if (retval) { retval = -ENOSPC; goto out; }
+				new_block_goal = block;
 
 				ext2fs_mark_block_bitmap(fs->block_map, block);
 				
@@ -1923,12 +1971,13 @@ int main (int argc, char *argv[])
 									1, buffer);
 							if (retval)
 								fprintf(stderr,
-										_("Warning: could not read block: %s\n"),
-										error_message(retval));
+										_("Warning: could not write block #%ld: %s\n"),
+										(unsigned long) block, error_message(retval));
 						}
 						
-						retval = ext2fs_new_block(fs, 0, 0, &block);
+						retval = ext2fs_new_block(fs, new_block_goal, 0, &block);
 						if (retval) { retval = -ENOSPC; goto out; }
+						new_block_goal = block;
 
 						ext2fs_mark_block_bitmap(fs->block_map, block);
 
@@ -1969,8 +2018,8 @@ int main (int argc, char *argv[])
 							1, buffer);
 					if (retval)
 						fprintf(stderr,
-								_("Warning: could not read block: %s\n"),
-								error_message(retval));
+								_("Warning: could not write block #%ld: %s\n"),
+								(unsigned long) block, error_message(retval));
 				}
 				
 				set_buffer(fs, ind_blocks, 0);
