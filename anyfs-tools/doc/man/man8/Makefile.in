@@ -4,7 +4,7 @@ DESTDIR=@DESTDIR@
 INSTALLPATH=$(DESTDIR)$(prefix)
 INSTALLMANPATH=$(INSTALLPATH)/share/man/man8
 
-install: anyfs anyfuse anyfs-tools anysurrect build_e2fs build_xfs \
+install: anyfuse anyfs-tools anysurrect build_e2fs build_xfs \
 	build_it reblock anyconvertfs
 
 %: %.8	
@@ -12,7 +12,7 @@ install: anyfs anyfuse anyfs-tools anysurrect build_e2fs build_xfs \
 	$(INSTALL) -m 644 $< $(INSTALLMANPATH)
 
 uninstall:
-	rm -f $(INSTALLMANPATH)/anyfs.8 $(INSTALLMANPATH)/anyfuse.8\
+	rm -f $(INSTALLMANPATH)/anyfuse.8\
 	$(INSTALLMANPATH)/anyfs-tools.8 \
 	$(INSTALLMANPATH)/anysurrect.8 $(INSTALLMANPATH)/build_e2fs.8 \
 	$(INSTALLMANPATH)/build_xfs.8 $(INSTALLMANPATH)/anyconvertfs.8 \

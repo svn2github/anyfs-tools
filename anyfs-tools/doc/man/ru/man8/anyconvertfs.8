@@ -6,7 +6,7 @@ anyconvertfs \- конвертирует файловую систему.
 .BI "anyconvertfs [\-\-tmpdir " directory "] [\-\-blocksize " blocksize "] [\-f] [\-\-dry]" 
 .BI "   [\-\-inodetable " inodetable "] [\-\-color|\-\-no\-color] [\-\-label" " label" "] "
 .BI "   [\-\-debug] [\-\-dont\-delete\-it] [\-\-success\-delete\-it]"
-.BI "   [--dontstop] [--pause " seconds "] [--use-anyfs|--use-anyfuse] [\-\-] " 
+.BI "   [--dontstop] [--pause " seconds "] [\-\-] " 
 .IB "    device " "[" source_fs "]" " destination_fs"
 .fi
 
@@ -138,14 +138,6 @@ anyconvertfs не обязательно, чтобы файловая систе
 Пауза в секундах прежде чем разрушить старую файловую систему. \
 По умолчанию скрипт даёт вам шанс в течении семи секунд нажать Ctrl+C, \
 чтобы сохранить старую файловую систему.
-.TP
-.BI \-\-use-anyfs
-Использовать anyfs модуль ядра в качестве драйвера anyfs \
-(по умолчанию при его наличии)
-.TP
-.BI \-\-use-anyfuse
-Использовать anyfuse модуль FUSE в качестве драйвера anyfs \
-(по умолчанию при отсутствии модуля ядра anyfs)
 .TP
 .B \-\-
 Конец необязательных опций
@@ -286,5 +278,4 @@ http://anyfs-tools.sourceforge.net
 .BR reblock(8),
 .BR build_e2fs(8),
 .BR build_xfs(8),
-.BR anyfs(8),
 .BR anyfuse(8)
