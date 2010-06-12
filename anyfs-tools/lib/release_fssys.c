@@ -361,72 +361,136 @@ int any_whole_move(struct any_sb_info *info,
 	return 0;
 }
 
-/* 
- * try search free space block of size size1, size2 or size3.
- * size1 <= size2 <= size3.
- * The greater free space block is prefer.
+/*
+ * the function used in iteration any_find_frees() function
  */
-int any_find_frees(unsigned long *block_bitmap,
+inline int check_length_enough(
+		int r,
 		unsigned long size1, unsigned long size2, unsigned long size3,
-		unsigned long *start_blk, unsigned long *blocks)
+		unsigned long start, unsigned long length,
+		unsigned long *start_blk, unsigned long *blocks,
+		unsigned long *start_blk1, unsigned long *blocks1,
+		unsigned long *start_blk2, unsigned long *blocks2 )
 {
-	unsigned long start = 0;
-	unsigned long length = 0;
-	unsigned long i;
-
-	int r=0;
-	unsigned long start_blk1=0, blocks1=0;
-	unsigned long start_blk2=0, blocks2=0;
-
-	for (i=1; i<any_getblkcount(); i++) {
-		if ( ! ( test_bit ( i, block_bitmap ) || 
-				any_testblk(i) ) ) {
-			
-			if (!length) start = i;
-				
-			if (i!=(start+length)) {
-				if (length >= size3) {
-					*start_blk = start;
-					*blocks = length;
-					return 3;
-				} else if (length >= size2) {
-					if (r<2) {
-						start_blk2 = start;
-						blocks2 = length;
-						r = 2;
-					}
-				} else if (length >= size1) {
-					if (r<1) {
-						start_blk1 = start;
-						blocks1 = length;
-						r = 1;
-					}
-				}
-				
-				start = i;
-				length = 0;
-			}
-			length++;
-		}
-	}
-
 	if (length >= size3) {
 		*start_blk = start;
 		*blocks = length;
 		return 3;
 	} else if (length >= size2) {
 		if (r<2) {
-			start_blk2 = start;
-			blocks2 = length;
+			*start_blk2 = start;
+			*blocks2 = length;
 			r = 2;
 		}
 	} else if (length >= size1) {
 		if (r<1) {
-			start_blk1 = start;
-			blocks1 = length;
+			*start_blk1 = start;
+			*blocks1 = length;
 			r = 1;
 		}
 	}
+
+	return r;
+}
+
+/* 
+ * try search free space block of size size1, size2 or size3.
+ * size1 <= size2 <= size3.
+ * The greater free space block is prefer.
+ */
+int any_find_frees(unsigned long *block_bitmap,
+		unsigned long from_block,
+		unsigned long size1, unsigned long size2, unsigned long size3,
+		unsigned long *start_blk, unsigned long *blocks)
+{
+	unsigned long startA = 0;
+	unsigned long lengthA = 0;
+	unsigned long startB = 0;
+	unsigned long lengthB = 0;
+	unsigned long i, iA, iB;
+
+	int r=0;
+	unsigned long start_blk1=0, blocks1=0;
+	unsigned long start_blk2=0, blocks2=0;
+
+	for (i=1; i<any_getblkcount(); i++) {
+		iA = from_block + i;
+		iB = from_block - i;
+
+		/* usually we try find more long free space block
+		   but for large filesystems and big file fragments 
+		   it is better to find free space block enough close to from_block.
+		   This cause some more fragments but extremally up efficiency */
+		if (r > 0 && i > 0xA0000)
+			break;
+		if (r > 1 && i > 0xA000)
+			break;
+
+		if (iA >= any_getblkcount() && iB <= 0)
+			break;
+
+		if (iA < any_getblkcount())
+		{
+			if ( ! ( test_bit ( iA, block_bitmap ) || 
+					any_testblk(iA) ) ) {
+				
+				if (!lengthA) startA = iA;
+					
+				if (i!=(startA+lengthA)) {
+					r = check_length_enough( r,
+							size1, size2, size3,
+							startA, lengthA,
+							start_blk, blocks,
+							&start_blk1, &blocks1,
+							&start_blk2, &blocks2 );
+					if (r == 3) return 3;
+					
+					startA = i;
+					lengthA = 0;
+				}
+				lengthA++;
+			}
+		}
+
+		if (iB > 0)
+		{
+			if ( ! ( test_bit ( iB, block_bitmap ) || 
+					any_testblk(iB) ) ) {
+				
+				if (!lengthB) startB = iB;
+					
+				if (i!=(startB+lengthB)) {
+					r = check_length_enough( r,
+							size1, size2, size3,
+							startB, lengthB,
+							start_blk, blocks,
+							&start_blk1, &blocks1,
+							&start_blk2, &blocks2 );
+					if (r == 3) return 3;
+					
+					startB = i;
+					lengthB = 0;
+				}
+				lengthB++;
+			}
+		}
+	}
+
+	r = check_length_enough( r,
+			size1, size2, size3,
+			startA, lengthA,
+			start_blk, blocks,
+			&start_blk1, &blocks1,
+			&start_blk2, &blocks2 );
+	if (r == 3) return 3;
+
+	r = check_length_enough( r,
+			size1, size2, size3,
+			startB, lengthB,
+			start_blk, blocks,
+			&start_blk1, &blocks1,
+			&start_blk2, &blocks2 );
+	if (r == 3) return 3;
 
 	switch (r) {
 		case 1:
@@ -504,7 +568,7 @@ int any_release(struct any_sb_info *info,
 							size2 = (ht) ? body + head : body + tail;
 							size3 = head + body + tail;
 							
-							r = any_find_frees(block_bitmap,
+							r = any_find_frees(block_bitmap, start,
 									size1, size2, size3,
 									&start_blk, &blocks);
 
