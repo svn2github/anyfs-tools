@@ -8,7 +8,7 @@ INSTALLPATH=$(DESTDIR)$(prefix)
 SRCROOT=../..
 INCLUDE=$(SRCROOT)/include
 LIBANYPATH=$(SRCROOT)/lib
-CCFLAGS= -fPIC -O3 -Wall -Winline --param inline-unit-growth=1000 \
+CCFLAGS= -O3 -Wall -Winline --param inline-unit-growth=1000 \
 	 --param large-function-growth=10000 -std=gnu99 -I$(INCLUDE) \
 	 @MPEG2_CFLAGS@ @EXT2FS_CFLAGS@ @CFLAGS@
 LDFLAGS= -rdynamic -L$(LIBANYPATH) -lany @BZ2LIB@ -ldl @MPEG2_LIBS@ @EXT2FS_LIBS@
