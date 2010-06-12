@@ -9,7 +9,7 @@ OBJS = aux_pes.o scan_pes.o
 all: $(OBJS)
 
 %.o: %.c
-	$(CC) $(CCFLAGS) -c $<
+	$(CC) -nostdlib -fPIC $(CCFLAGS) -c $<
 
 clean:
 	rm -f *.o *~

@@ -47,7 +47,7 @@ typedef struct _seq_info_t {
 
 int anyfs_stats_sequence_silent(uint8_t * buffer, seq_info_t *seq_info);
 int anyfs_stats_sequence(uint8_t * buffer, seq_info_t *seq_info);
-int anyfs_get_pts_dts(char *buffer, unsigned long *pts, unsigned long *dts);
+int anyfs_get_pts_dts(unsigned char *buffer, unsigned long *pts, unsigned long *dts);
 /*
 int probe_sequence(uint8_t *buffer, probe_info_t *probe_info);
 int probe_extension(uint8_t *buffer, probe_info_t *probe_info);

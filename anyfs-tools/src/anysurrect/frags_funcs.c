@@ -88,7 +88,7 @@ struct frags_list *addblock_to_frags_list(struct frags_list **pfrags_list_begin,
 			fprintf(stderr, _("Not enough memory\n"));
 			exit(1);
 		}
-		(*offnext) = (void*)((char*)new - (char*)prev);
+		(*offnext) = (signed long)((char*)new - (char*)prev);
 		prev = new;
 
 		new->frag.fr_start  = block;

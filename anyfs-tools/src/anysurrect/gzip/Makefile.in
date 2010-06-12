@@ -9,7 +9,7 @@ OBJS = gzip.o unzip.o inflate.o util.o unlzw.o unpack.o unlzh.o
 all: $(OBJS)
 
 %.o: %.c
-	$(CC) $(CCFLAGS) -c $<
+	$(CC) -nostdlib -fPIC $(CCFLAGS) -c $<
 
 clean:
 	rm -f *.o *~

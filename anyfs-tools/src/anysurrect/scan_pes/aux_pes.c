@@ -160,7 +160,7 @@ int anyfs_stats_sequence(uint8_t * buffer, seq_info_t *seq_info)
   
 }
 
-int anyfs_get_pts_dts(char *buffer, unsigned long *pts, unsigned long *dts)
+int anyfs_get_pts_dts(unsigned char *buffer, unsigned long *pts, unsigned long *dts)
 {
   unsigned int pes_header_bytes = 0;
   unsigned int pts_dts_flags;

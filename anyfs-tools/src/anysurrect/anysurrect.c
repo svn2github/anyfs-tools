@@ -276,7 +276,7 @@ struct any_sb_info *info_for_anysurrect_frags_list;
 void anysurrect_frags_list(struct frags_list *l_file_frags_list,
 		any_size_t size, const char *dmes)
 {
-	const char *mes;
+	const char *mes = NULL;
 	int type;
 	struct frags_list *old_copy_file_template_frags_list =
 		copy_file_template_frags_list;
@@ -295,7 +295,7 @@ void anysurrect_frags_list(struct frags_list *l_file_frags_list,
 
 	io_buffer.size = 0;
 
-	char *old_pathprefix = pathprefix;
+	char *old_pathprefix = (char *) pathprefix;
 	pathprefix = concat_strings(3, pathprefix, dmes, "/");
 
 	for (type=0; type<num_types2; type++)
@@ -365,7 +365,7 @@ void anysurrect_frags_list(struct frags_list *l_file_frags_list,
 	file_template_frags_list = old_file_template_frags_list;
 	copy_file_template_frags_list = old_copy_file_template_frags_list;
 
-	free(pathprefix);
+	free((void *)pathprefix);
 	pathprefix = old_pathprefix;
 
 	io_buffer.size = 0;

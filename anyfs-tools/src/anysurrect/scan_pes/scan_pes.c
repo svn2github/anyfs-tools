@@ -54,7 +54,7 @@ static int ref_pts=0;
 
 static int show_seq_info=0;
 
-static int cmp_32_bits(char *buf, long x)
+static int cmp_32_bits(unsigned char *buf, long x)
 {
   
     if ((uint8_t)buf[0] != ((x >> 24) & 0xff))
@@ -136,7 +136,7 @@ any_size_t scan_pes(int verbose)
   
   any_ssize_t pack_header_last=0, pack_header_ctr=0, pack_header_pos=0, pack_header_inc=0;
   
-  char scan_buf[256];
+  unsigned char scan_buf[256];
   
   complain_loudly = 1;
   buf = buffer;
