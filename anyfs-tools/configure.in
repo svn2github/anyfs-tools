@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(anyfs-tools, 0.85.1b, undefer@gmail.com)
-#AM_INIT_AUTOMAKE(anyfs-tools, 0.85.1b)
+AC_INIT(anyfs-tools, 0.85.1c, undefer@gmail.com)
+#AM_INIT_AUTOMAKE(anyfs-tools, 0.85.1c)
 AC_CONFIG_SRCDIR([src/reblock.c], [include/any.h])
 AC_CONFIG_HEADER([include/config.h])
 
@@ -58,11 +58,24 @@ XFS_UTILS=""; BUILD_XFS="";
 #AC_CHECK_LIB([xfs], [libxfs_purgebuf], 
 #	     XFS_UTILS="build_xfs_util"; BUILD_XFS="build_xfs", , -lrt))) 
 	
-AC_SUBST(ANYFUSE_MODULE, ANYFUSE)
-AC_SUBST(EXT2FS_CFLAGS, EXT2FS_LIBS)
-AC_SUBST(BZ2LIB, BZ2MODULES, BZ2C)
-AC_SUBST(MPEG2_LIBS, MPEG2_CFLAGS, MPEG2_MODULES, MPEG2C)
-AC_SUBST(XFS_UTILS, BUILD_XFS)
+AC_SUBST(ANYFUSE_MODULE)
+AC_SUBST(ANYFUSE)
+
+AC_SUBST(EXT2FS_CFLAGS)
+AC_SUBST(EXT2FS_LIBS)
+
+AC_SUBST(BZ2LIB)
+AC_SUBST(BZ2MODULES)
+AC_SUBST(BZ2C)
+
+AC_SUBST(MPEG2_LIBS)
+AC_SUBST(MPEG2_CFLAGS)
+AC_SUBST(MPEG2_MODULES)
+AC_SUBST(MPEG2C)
+
+AC_SUBST(XFS_UTILS)
+AC_SUBST(BUILD_XFS)
+
 AC_SUBST(ANYSURREQT)
 
 DESTDIR=
@@ -124,6 +137,7 @@ AC_OUTPUT(Makefile
 	doc/man/ru/man8/Makefile
 	src/Makefile 
 	src/anysurrect/Makefile 
+	src/anysurrect/anysurrect.c 
 	src/anysurrect/surrectlist.conf
 	src/anysurrect/gzip/Makefile 
 	src/anysurrect/scan_pes/Makefile

@@ -1,3 +1,17 @@
+anyfs-tools (0.85.1c) lucid; urgency=low
+
+  * Fix speed regression on big filesystems in build_e2fs
+  * Clean anyfs(8) links from documentation
+
+ -- unDEFER <undefer@unDECOMP>  Sat, 12 Jun 2010 14:49:54 +0400
+
+anyfs-tools (0.85.1b) karmic; urgency=low
+
+  * Remove anyfs kernel module from sources.
+  * Temporarily disable build_xfs building.
+
+ -- unDEFER <undefer@unDECOMP>  Mon, 22 Feb 2010 08:52:43 +0300
+
 anyfs-tools (0.84.9-1) unstable; urgency=low
 
   * Initial release

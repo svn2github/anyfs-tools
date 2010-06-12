@@ -1,7 +1,12 @@
-* 04.02.09      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+* 12.06.10      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
+	- Fix speed regression on big filesystems in build_e2fs
+	- Clean anyfs(8) links from documentation
+	- 0.85.1c Release
+
+* 22.02.10      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
 	-  Remove anyfs kernel module from sources.
 	-  Temporarily disable build_xfs building.
-	- 0.85.1a Release
+	- 0.85.1b Release
 
 * 04.02.09      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
 	-  Fix anyfs building with kernel version >=2.6.28
