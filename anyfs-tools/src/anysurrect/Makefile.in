@@ -33,12 +33,12 @@ OBJSLIBANYSURRECT = \
 
 ANYSURREQT=@ANYSURREQT@
 
-all: libanysurrect.a anysurrect $(ANYSURREQT)
+all: libanysurrect.so anysurrect $(ANYSURREQT)
 
 anysurrect: libanysurrect.so $(OBJS)
 	$(CC) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDFLAGSANYSURRECT)
 
-anysurreqt_mod: libanysurrect.a
+anysurreqt_mod: libanysurrect.so
 	$(MAKE) $(AM_MAKEFLAGS) -C anysurreqt
 
 libanysurrect.a: gzip_o scan_pes_o $(OBJSLIBANYSURRECT)
@@ -76,7 +76,7 @@ uninstall:
 	rmdir --ignore-fail-on-non-empty -p $(INSTALLPATH)/include/anyfs-tools
 
 clean:
-	rm -f *.o *~ anysurrect libanysurrect.so
+	rm -f *.o *~ anysurrect libanysurrect.so libanysurrect.a
 	$(MAKE) $(AM_MAKEFLAGS) -C scan_pes clean
 	$(MAKE) $(AM_MAKEFLAGS) -C gzip clean
 

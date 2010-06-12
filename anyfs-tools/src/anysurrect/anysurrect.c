@@ -57,7 +57,7 @@ char* list_types2 = NULL;
 
 const char * program_name = "anysurrect";
 
-char * libs = "";
+char * libs = "/usr/local/lib/libanysurrect.so";
 int num_libs;
 void **libs_handles;
 
