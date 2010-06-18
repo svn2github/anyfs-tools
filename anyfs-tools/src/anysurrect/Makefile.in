@@ -54,7 +54,7 @@ scan_pes_o:
 	$(MAKE) $(AM_MAKEFLAGS) -C scan_pes
 
 %.o: %.c
-	$(CC) $(CCFLAGS) -c $<
+	$(CC) -nostdlib -fPIC $(CCFLAGS) -c $<
 
 install: anysurrect
 	$(INSTALL) -d $(INSTALLPATH)/sbin
