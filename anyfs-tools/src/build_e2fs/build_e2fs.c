@@ -844,6 +844,8 @@ static void PRS(int argc, char *argv[], struct any_sb_info **pinfo)
 			journal_size = -1;
 	}
 
+	verbose = 0;
+
 	while ((c = getopt (argc, argv,
 		    "b:cE:f:g:i:jl:m:no:qr:R:s:tvI:J:ST:FL:M:N:O:V")) != EOF) {
 		switch (c) {
@@ -1353,8 +1355,8 @@ static unsigned char ext2_filetype_table[EXT2_FT_MAX] = {
 
 /*structure -- buffer for indirect links*/
 struct ind_block {
-	unsigned long *buffer;
-	unsigned long block;
+	uint32_t *buffer;
+	uint32_t block;
 	int dirty;
 };
 
@@ -1374,7 +1376,7 @@ int set_buffer( ext2_filsys fs, struct ind_block *ind_block,
 				if (retval)
 					fprintf(stderr,
 							_("Warning: could not write block #%ld: %s\n"),
-							ind_block->block, error_message(retval));
+							(unsigned long) ind_block->block, error_message(retval));
 			}
 			ind_block->dirty = 0;
 		}
@@ -1391,13 +1393,13 @@ int set_buffer( ext2_filsys fs, struct ind_block *ind_block,
 				{
 					fprintf(stderr,
 							_("Warning: could not read block #%ld: %s\n"),
-							ind_block->block, error_message(retval));
+							(unsigned long) ind_block->block, error_message(retval));
 				}
 				else
 				{
 					fprintf(stderr,
 							_("Error: could not read block #%ld: %s\n"),
-							ind_block->block, error_message(retval));
+							(unsigned long) ind_block->block, error_message(retval));
 					exit(1);
 				}
 			}
@@ -1419,6 +1421,9 @@ int set_block (ext2_filsys fs,
 			blocks);
 
 	int new_blocks = 0;
+
+	if (verbose>=4)
+		printf ("map inode block #%lu => device block #%lu\n", i_block, block);
 
 	if ( blocks[1]<0 )
 	{
