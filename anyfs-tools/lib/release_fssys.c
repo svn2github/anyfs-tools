@@ -367,24 +367,24 @@ int any_whole_move(struct any_sb_info *info,
 inline int check_length_enough(
 		int r,
 		unsigned long size1, unsigned long size2, unsigned long size3,
-		unsigned long start, unsigned long length,
+		unsigned long start, unsigned long length, int revert,
 		unsigned long *start_blk, unsigned long *blocks,
 		unsigned long *start_blk1, unsigned long *blocks1,
 		unsigned long *start_blk2, unsigned long *blocks2 )
 {
 	if (length >= size3) {
-		*start_blk = start;
+		*start_blk = start - (revert ? length-1 : 0);
 		*blocks = length;
 		return 3;
 	} else if (length >= size2) {
 		if (r<2) {
-			*start_blk2 = start;
+			*start_blk2 = start - (revert ? length-1 : 0);
 			*blocks2 = length;
 			r = 2;
 		}
 	} else if (length >= size1) {
 		if (r<1) {
-			*start_blk1 = start;
+			*start_blk1 = start - (revert ? length-1 : 0);
 			*blocks1 = length;
 			r = 1;
 		}
@@ -436,39 +436,39 @@ int any_find_frees(unsigned long *block_bitmap,
 				
 				if (!lengthA) startA = iA;
 					
-				if (i!=(startA+lengthA)) {
+				if (iA!=(startA+lengthA)) {
 					r = check_length_enough( r,
 							size1, size2, size3,
-							startA, lengthA,
+							startA, lengthA, 0,
 							start_blk, blocks,
 							&start_blk1, &blocks1,
 							&start_blk2, &blocks2 );
 					if (r == 3) return 3;
 					
-					startA = i;
+					startA = iA;
 					lengthA = 0;
 				}
 				lengthA++;
 			}
 		}
 
-		if (iB > 0)
+		if (from_block > i) //iB > 0 not equal so as is unsigned
 		{
 			if ( ! ( test_bit ( iB, block_bitmap ) || 
 					any_testblk(iB) ) ) {
 				
 				if (!lengthB) startB = iB;
 					
-				if (i!=(startB+lengthB)) {
+				if (iB != (startB-lengthB)) {
 					r = check_length_enough( r,
 							size1, size2, size3,
-							startB, lengthB,
+							startB, lengthB, 1,
 							start_blk, blocks,
 							&start_blk1, &blocks1,
 							&start_blk2, &blocks2 );
 					if (r == 3) return 3;
 					
-					startB = i;
+					startB = iB;
 					lengthB = 0;
 				}
 				lengthB++;
@@ -478,7 +478,7 @@ int any_find_frees(unsigned long *block_bitmap,
 
 	r = check_length_enough( r,
 			size1, size2, size3,
-			startA, lengthA,
+			startA, lengthA, 0,
 			start_blk, blocks,
 			&start_blk1, &blocks1,
 			&start_blk2, &blocks2 );
@@ -486,7 +486,7 @@ int any_find_frees(unsigned long *block_bitmap,
 
 	r = check_length_enough( r,
 			size1, size2, size3,
-			startB, lengthB,
+			startB, lengthB, 1,
 			start_blk, blocks,
 			&start_blk1, &blocks1,
 			&start_blk2, &blocks2 );
