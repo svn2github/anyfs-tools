@@ -1,14 +1,14 @@
 # Russian translations for anyfs-tools package
 # Английские переводы для пакета anyfs-tools.
-# Copyright (C) 2006 THE anyfs-tools'S COPYRIGHT HOLDER
+# Copyright (C) 2010 THE anyfs-tools'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the anyfs-tools package.
-# unDEFER <undefer@gmail.com>, 2006.
+# unDEFER <undefer@gmail.com>, 2010.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: anyfs-tools 0.84.5\n"
+"Project-Id-Version: anyfs-tools 0.85.1c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-06-18 23:47+0400\n"
+"POT-Creation-Date: 2010-06-19 21:59+0400\n"
 "PO-Revision-Date: 2006-08-02 22:53+0400\n"
 "Last-Translator: unDEFER <undefer@gmail.com>\n"
 "Language-Team: Russian <ru@li.org>\n"
@@ -35,7 +35,7 @@ msgid "Sorry, seems {BOLD}fuse{CLEAR} kernel module hasn't installed"
 msgstr "Извините, похоже модуль ядра {BOLD}fuse{CLEAR} не установлен"
 
 #: ../scripts/anyconvertfs:212 ../scripts/anyconvertfs:219
-#: ../scripts/anyconvertfs:615 ../scripts/anyconvertfs:815
+#: ../scripts/anyconvertfs:651 ../scripts/anyconvertfs:851
 msgid "Exit"
 msgstr "Выход"
 
@@ -123,13 +123,13 @@ msgstr "Временная директория не может находиться на конвертируемом устройстве"
 msgid "It is neccessary for converting from"
 msgstr "Это необходимо для конвертирования из"
 
-#: ../scripts/anyconvertfs:394
+#: ../scripts/anyconvertfs:413
 msgid ""
 "{DEVICE} was mounted and I cannot umount it\n"
 "for convert it from ntfs-3g"
 msgstr ""
 
-#: ../scripts/anyconvertfs:409
+#: ../scripts/anyconvertfs:430
 msgid ""
 "{INODETABLE} inodetable was specified. But filesystem mounted \n"
 "as {MOUNTEDFS}, not {UNDER}anyfs{CLEAR}"
@@ -137,7 +137,7 @@ msgstr ""
 "Указана таблица инф. узлов {INODETABLE}. Но файловая система смонтирована \n"
 "как {MOUNTEDFS}, не {UNDER}anyfs{CLEAR}"
 
-#: ../scripts/anyconvertfs:423
+#: ../scripts/anyconvertfs:444
 msgid ""
 "anyfs mounted with specified relative path to inodetable: {MOUNTEDIT}\n"
 "Please use {UNDER}--inodetable{CLEAR} option to specify inodetable"
@@ -147,7 +147,7 @@ msgstr ""
 "Пожалуйста, используйте опцию {UNDER}--inodetable{CLEAR} для указания "
 "таблицы инф.узлов"
 
-#: ../scripts/anyconvertfs:433
+#: ../scripts/anyconvertfs:454
 msgid ""
 "In options of mounted anyfs specified {MOUNTEDITFILE} inodetable file\n"
 "And you specify {INODETABLEFILE}. I don't think that it is the same file."
@@ -156,7 +156,7 @@ msgstr ""
 "{MOUNTEDITFILE}\n"
 "А Вы указываете {INODETABLEFILE}. Я не думаю что это один и тот же файл."
 
-#: ../scripts/anyconvertfs:448
+#: ../scripts/anyconvertfs:469
 msgid ""
 "anyfs was mounted with {MOUNTEDIT} inode table\n"
 "But you specify {INODETABLE}"
@@ -164,7 +164,7 @@ msgstr ""
 "anyfs была смонтирована с таблицей инф. узлов {MOUNTEDIT}\n"
 "Но Вы указываете {INODETABLE}"
 
-#: ../scripts/anyconvertfs:467
+#: ../scripts/anyconvertfs:488
 msgid ""
 "{FROMFS} source filesystem was specified but {DEVICE}\n"
 "mounted as {MOUNTEDFS} filesystem"
@@ -172,26 +172,26 @@ msgstr ""
 "Указана исходная файловая система {FROMFS}, но {DEVICE}\n"
 "смонтировано как {MOUNTEDFS}"
 
-#: ../scripts/anyconvertfs:478
+#: ../scripts/anyconvertfs:499
 msgid "Error while unmount anyfs"
 msgstr "Ошибка при размонтировании anyfs"
 
-#: ../scripts/anyconvertfs:485
+#: ../scripts/anyconvertfs:506
 msgid "Error while remount device in read-only mode"
 msgstr "Ошибка при перемонтировании устройства в режиме только для чтения"
 
-#: ../scripts/anyconvertfs:494
+#: ../scripts/anyconvertfs:515
 msgid ""
 "Can't mount anyfs without inodetable. Use {BOLD}--inodetable{CLEAR} option"
 msgstr ""
 "Не могу монтировать anyfs без таблицы инф.узлов. Используйте опцию {BOLD}--"
 "inodetable{CLEAR}"
 
-#: ../scripts/anyconvertfs:502
+#: ../scripts/anyconvertfs:523
 msgid "{INODETABLE} is not regular file"
 msgstr "{INODETABLE} -- не простой файл"
 
-#: ../scripts/anyconvertfs:511
+#: ../scripts/anyconvertfs:532
 msgid ""
 "{INODETABLE} inodetable and {FROMFS} source filesystem was specified.\n"
 "But {UNDER}--inodetable{CLEAR} is option for converting from {UNDER}anyfs"
@@ -202,41 +202,40 @@ msgstr ""
 "Но опция {UNDER}--inodetable{CLEAR} предназначена для конвертирования из "
 "{UNDER}anyfs{CLEAR}"
 
-#: ../scripts/anyconvertfs:531
+#: ../scripts/anyconvertfs:552
 msgid "Error while search free loop device for mount ntfs-3g in blkdev mode"
-msgstr ""
+msgstr "Ошибка при установке loop устройства для монтирования ntfs-3g в режиме blkdev"
 
-#: ../scripts/anyconvertfs:538
+#: ../scripts/anyconvertfs:559
 msgid "Error while setup loop device for mount ntfs-3g in blkdev mode"
-msgstr ""
-"Ошибка при установке loop устройства для монтирования ntfs-3g в режиме blkdev"
+msgstr "Ошибка при установке loop устройства для монтирования ntfs-3g в режиме blkdev"
 
-#: ../scripts/anyconvertfs:555
+#: ../scripts/anyconvertfs:576
 msgid "Error while mount device in read-only mode"
 msgstr "Ошибка при монтировании устройства в режиме только для чтения"
 
-#: ../scripts/anyconvertfs:605
+#: ../scripts/anyconvertfs:641
 msgid "{LABEL} label would be truncated to {MAXLABELLEN} length."
 msgstr "Метка {LABEL} будет обрезана до длины {MAXLABELLEN}."
 
-#: ../scripts/anyconvertfs:634 ../scripts/anyconvertfs:836
-#: ../scripts/anyconvertfs:1070
+#: ../scripts/anyconvertfs:670 ../scripts/anyconvertfs:870
+#: ../scripts/anyconvertfs:1111
 msgid "Inode table was saved. See {INODETABLE}."
 msgstr "Таблица инф.узлов была сохранена. Смотрите {INODETABLE}."
 
-#: ../scripts/anyconvertfs:637
+#: ../scripts/anyconvertfs:673
 msgid "See {RESCUELIST} for list of files not aligned with block boundaries."
 msgstr ""
 
-#: ../scripts/anyconvertfs:648
+#: ../scripts/anyconvertfs:684
 msgid "Device is busy."
 msgstr "Устройство занято."
 
-#: ../scripts/anyconvertfs:660 ../scripts/anyconvertfs:662
+#: ../scripts/anyconvertfs:696 ../scripts/anyconvertfs:698
 msgid "Never"
 msgstr "Никогда"
 
-#: ../scripts/anyconvertfs:665
+#: ../scripts/anyconvertfs:701
 msgid ""
 "Converting of {DEVICE} from {FROMFS} to {TOFS}\n"
 "New filesystem label: {LABEL}\n"
@@ -258,11 +257,11 @@ msgstr ""
 "Таблица инф.узлов: {INODETABLE}\n"
 "Первый шаг, который уничтожит старую ФС: {FIRSTDESTROYSTEP}"
 
-#: ../scripts/anyconvertfs:676
+#: ../scripts/anyconvertfs:712
 msgid "Loop Device: {LOOPDEVICE}"
 msgstr "Петлевое устройство: {LOOPDEVICE}"
 
-#: ../scripts/anyconvertfs:680
+#: ../scripts/anyconvertfs:716
 msgid ""
 "Rescue List: {RESCUELIST}\n"
 "Rescue Directory: {RESCUEDIR}"
@@ -270,15 +269,15 @@ msgstr ""
 "Список спасения: {RESCUELIST}\n"
 "Директория спасения: {RESCUEDIR}"
 
-#: ../scripts/anyconvertfs:687
+#: ../scripts/anyconvertfs:723
 msgid "Dry run {BOLD}{GREEN}successful{CLEAR}"
 msgstr "Сухой запуск {BOLD}{GREEN}успешно{CLEAR} завершён"
 
-#: ../scripts/anyconvertfs:695
+#: ../scripts/anyconvertfs:731
 msgid "Sleep {SECS} seconds..."
 msgstr "Сплю {SECS} секунд..."
 
-#: ../scripts/anyconvertfs:704
+#: ../scripts/anyconvertfs:740
 msgid ""
 "Please, {BOLD}attentively{CLEAR} check information above,\n"
 "and then press {UNDER}Enter{CLEAR}"
@@ -286,7 +285,7 @@ msgstr ""
 "Пожалуйста, {BOLD}внимательно{CLEAR} проверьте информацию выше,\n"
 "и затем нажмите {UNDER}Enter{CLEAR}"
 
-#: ../scripts/anyconvertfs:710
+#: ../scripts/anyconvertfs:746
 msgid ""
 "{BOLD}Step{CLEAR} {UNDER}1{CLEAR}. {BOLD}{CYAN}Building inode table{CLEAR} "
 "(with {BOLD}build_it{CLEAR})."
@@ -294,29 +293,29 @@ msgstr ""
 "{BOLD}Шаг{CLEAR} {UNDER}1{CLEAR}. {BOLD}{CYAN}Построение таблицы инф.узлов"
 "{CLEAR} (при помощи {BOLD}build_it{CLEAR})."
 
-#: ../scripts/anyconvertfs:713
+#: ../scripts/anyconvertfs:749
 msgid "O.K. anyfs already has inode table"
 msgstr "Хорошо, anyfs уже имеет таблицу инф.узлов"
 
-#: ../scripts/anyconvertfs:714 ../scripts/anyconvertfs:800
-#: ../scripts/anyconvertfs:901 ../scripts/anyconvertfs:929
-#: ../scripts/anyconvertfs:958 ../scripts/anyconvertfs:992
-#: ../scripts/anyconvertfs:1016 ../scripts/anyconvertfs:1055
+#: ../scripts/anyconvertfs:750 ../scripts/anyconvertfs:836
+#: ../scripts/anyconvertfs:935 ../scripts/anyconvertfs:963
+#: ../scripts/anyconvertfs:992 ../scripts/anyconvertfs:1026
+#: ../scripts/anyconvertfs:1050 ../scripts/anyconvertfs:1089
 msgid "Skip"
 msgstr "Пропуск"
 
-#: ../scripts/anyconvertfs:729
+#: ../scripts/anyconvertfs:765
 msgid "Error while building inode table"
 msgstr "Ошибка при построении таблицы инф.узлов"
 
-#: ../scripts/anyconvertfs:732 ../scripts/anyconvertfs:797
-#: ../scripts/anyconvertfs:922 ../scripts/anyconvertfs:950
-#: ../scripts/anyconvertfs:978 ../scripts/anyconvertfs:1003
-#: ../scripts/anyconvertfs:1051
+#: ../scripts/anyconvertfs:768 ../scripts/anyconvertfs:833
+#: ../scripts/anyconvertfs:956 ../scripts/anyconvertfs:984
+#: ../scripts/anyconvertfs:1012 ../scripts/anyconvertfs:1037
+#: ../scripts/anyconvertfs:1085
 msgid "Done"
 msgstr "Выполнено"
 
-#: ../scripts/anyconvertfs:738
+#: ../scripts/anyconvertfs:774
 msgid ""
 "{BOLD}Step{CLEAR} {UNDER}1a{CLEAR}. {BOLD}{CYAN}Rescue (copy) files not "
 "aligned with block boundaries{CLEAR}."
@@ -324,7 +323,7 @@ msgstr ""
 "{BOLD}Шаг{CLEAR} {UNDER}1a{CLEAR}. {BOLD}{CYAN}Спасение (копирование) файлов "
 "невыровненных по границам блоков{CLEAR}."
 
-#: ../scripts/anyconvertfs:751
+#: ../scripts/anyconvertfs:787
 msgid ""
 "Seems more than 75% space on the filesystem is files not aligned \n"
 "with block boundaries. \n"
@@ -338,7 +337,7 @@ msgstr ""
 "{BOLD}Пожалуйста, проверьте не является ли файловая система зашифрованной "
 "или сжатой.{CLEAR}"
 
-#: ../scripts/anyconvertfs:761
+#: ../scripts/anyconvertfs:797
 msgid ""
 "Sorry, not enough space on filesystem with temporary directory to rescue \n"
 "all files not aligned with block boundaries. \n"
@@ -349,7 +348,7 @@ msgstr ""
 "Используй опцию {UNDER}'--tmpdir'{CLEAR} для указания другой временной "
 "директории."
 
-#: ../scripts/anyconvertfs:767
+#: ../scripts/anyconvertfs:803
 msgid ""
 "More than 50% space on the filesystem is files not aligned \n"
 "with block boundaries.\n"
@@ -361,7 +360,7 @@ msgstr ""
 "{BOLD}Пожалуйста, проверьте не является ли файловая система \n"
 "\t(или некоторые её файлы/директории) зашифрованной или сжатой.{CLEAR}"
 
-#: ../scripts/anyconvertfs:773
+#: ../scripts/anyconvertfs:809
 msgid ""
 "More than 25% space on the filesystem is files not aligned \n"
 "with block boundaries.\n"
@@ -373,19 +372,19 @@ msgstr ""
 "{BOLD}Пожалуйста, проверьте не являются ли некоторые файлы/директории\n"
 "этой файловой системе зашифрованными или сжатыми.{CLEAR}"
 
-#: ../scripts/anyconvertfs:792
+#: ../scripts/anyconvertfs:828
 msgid "Error while copy file"
 msgstr "Ошибка при копировании файла"
 
-#: ../scripts/anyconvertfs:799 ../scripts/anyconvertfs:1054
+#: ../scripts/anyconvertfs:835 ../scripts/anyconvertfs:1088
 msgid "O.K. Rescue list is empty"
 msgstr "Хорошо, Список спасения пуст"
 
-#: ../scripts/anyconvertfs:808
+#: ../scripts/anyconvertfs:844
 msgid "Error while unmount device"
 msgstr "Ошибка при размонтировании устройства"
 
-#: ../scripts/anyconvertfs:846
+#: ../scripts/anyconvertfs:880
 msgid ""
 "{BOLD}Step{CLEAR} {UNDER}2{CLEAR}. {BOLD}{CYAN}Noops (check if enough space) "
 "reblock anyfs{CLEAR} (with {BOLD}reblock{CLEAR})."
@@ -394,7 +393,7 @@ msgstr ""
 "свободного места) изменение \n"
 "размера блока anyfs{CLEAR} (при помощи {BOLD}reblock{CLEAR})."
 
-#: ../scripts/anyconvertfs:851
+#: ../scripts/anyconvertfs:885
 msgid ""
 "{UTIL} returned {BOLD}{RED}Not Enough Space{CLEAR}\n"
 "O.K. I try to be helpful and now.."
@@ -402,15 +401,15 @@ msgstr ""
 "{UTIL} сказал {BOLD}{RED}Не Достаточно Места{CLEAR}\n"
 "Хорошо, я постараюсь быть полезным и в этой ситуации.."
 
-#: ../scripts/anyconvertfs:855
+#: ../scripts/anyconvertfs:889
 msgid "Mounting anyfs..."
 msgstr "Монтирование anyfs.."
 
-#: ../scripts/anyconvertfs:862
+#: ../scripts/anyconvertfs:896
 msgid "Error while mount anyfs filesystem"
 msgstr "Ошибка при монтировании файловой системы anyfs"
 
-#: ../scripts/anyconvertfs:867
+#: ../scripts/anyconvertfs:901
 msgid ""
 "So, device was mounted as anyfs to {MOUNTPOINT}\n"
 "At anyfs you can remove and move files and directories,\n"
@@ -422,7 +421,7 @@ msgstr ""
 "создавать жёсткие и символические ссылки, специальные файлы и директории\n"
 "Вы НЕ можете создавать или копировать простые файлы с других ФС."
 
-#: ../scripts/anyconvertfs:873
+#: ../scripts/anyconvertfs:907
 msgid ""
 "{BOLD}Now I would run 'bash' at this filesystem.\n"
 "Please, remove not needed files, or move its to other filesystems.\n"
@@ -435,7 +434,7 @@ msgstr ""
 "Когда будете готовы, наберите 'exit'. И тогда я попробую запустить\n"
 "{UTIL}{BOLD} снова.{CLEAR}"
 
-#: ../scripts/anyconvertfs:878
+#: ../scripts/anyconvertfs:912
 msgid ""
 "{UNDER}Do NOT close the console.\n"
 "Do NOT unmount the anyfs filesystem.{CLEAR}"
@@ -443,27 +442,27 @@ msgstr ""
 "{UNDER}НЕ закрывайте эту консоль.\n"
 "НЕ размонтируйте эту файловую систему anyfs.{CLEAR}"
 
-#: ../scripts/anyconvertfs:887
+#: ../scripts/anyconvertfs:921
 msgid "Unmounting anyfs..."
 msgstr "Отмонтирование anyfs..."
 
-#: ../scripts/anyconvertfs:890
+#: ../scripts/anyconvertfs:924
 msgid "Error while unmount anyfs filesystem"
 msgstr "Ошибка при размонтировании файловой системы anyfs"
 
-#: ../scripts/anyconvertfs:893
+#: ../scripts/anyconvertfs:927
 msgid "Retry"
 msgstr "Ещё одна попытка"
 
-#: ../scripts/anyconvertfs:900
+#: ../scripts/anyconvertfs:934
 msgid "Good. Filesystem already has {BLOCKSIZE} blocksize"
 msgstr "Хорошо, файловая система уже имеет размер блока {BLOCKSIZE}"
 
-#: ../scripts/anyconvertfs:917
+#: ../scripts/anyconvertfs:951
 msgid "Error while reblock (no operation)"
 msgstr "Ошибка при изменении размера блока (нет операции)"
 
-#: ../scripts/anyconvertfs:926
+#: ../scripts/anyconvertfs:960
 msgid ""
 "{BOLD}Step{CLEAR} {UNDER}3{CLEAR}. {BOLD}{CYAN}Reblock anyfs{CLEAR} (with "
 "{BOLD}reblock{CLEAR})."
@@ -471,7 +470,7 @@ msgstr ""
 "{BOLD}Шаг{CLEAR} {UNDER}3{CLEAR}. {BOLD}{CYAN}Изменение размера блока anyfs"
 "{CLEAR} (при помощи {BOLD}reblock{CLEAR})."
 
-#: ../scripts/anyconvertfs:934 ../scripts/anyconvertfs:985
+#: ../scripts/anyconvertfs:968 ../scripts/anyconvertfs:1019
 msgid ""
 "It's your {BOLD}last chance{CLEAR} to save the old filesystem.\n"
 "Press {UNDER}Ctrl+C{CLEAR} to {BOLD}cancel{CLEAR} converting."
@@ -479,11 +478,11 @@ msgstr ""
 "Это Ваш {BOLD}последний шанс{CLEAR} сохранить старую файловую систему.\n"
 "Нажмите {UNDER}Ctrl+C{CLEAR} для {BOLD}отмены{CLEAR} конвертирования."
 
-#: ../scripts/anyconvertfs:947
+#: ../scripts/anyconvertfs:981
 msgid "Error while reblock"
 msgstr "Ошибка при изменении размера блока"
 
-#: ../scripts/anyconvertfs:954
+#: ../scripts/anyconvertfs:988
 msgid ""
 "{BOLD}Step{CLEAR} {UNDER}4{CLEAR}. {BOLD}{CYAN}Noops (check if enough space) "
 "build new filesystem{CLEAR} (with {BUILD_FS})."
@@ -492,15 +491,15 @@ msgstr ""
 "свободного места) построение\n"
 "новой файловой системы{CLEAR} (при помощи {BUILD_FS})."
 
-#: ../scripts/anyconvertfs:957
+#: ../scripts/anyconvertfs:991
 msgid "O.K. Inode table already built"
 msgstr "Хорошо, таблица инф.узлов уже построена"
 
-#: ../scripts/anyconvertfs:973
+#: ../scripts/anyconvertfs:1007
 msgid "Error while build new fs (no operation)"
 msgstr "Ошибка при построении новой файловой системы (нет операции)"
 
-#: ../scripts/anyconvertfs:982
+#: ../scripts/anyconvertfs:1016
 msgid ""
 "{BOLD}Step{CLEAR} {UNDER}5{CLEAR}. {BOLD}{CYAN}Build new filesystem{CLEAR} "
 "(with {BUILD_FS})."
@@ -508,11 +507,11 @@ msgstr ""
 "{BOLD}Шаг{CLEAR} {UNDER}5{CLEAR}. {BOLD}{CYAN}Построение новой файловой "
 "системы{CLEAR} (при помощи {BUILD_FS})."
 
-#: ../scripts/anyconvertfs:1000
+#: ../scripts/anyconvertfs:1034
 msgid "Error while build new fs"
 msgstr "Ошибка при построении новой файловой системы"
 
-#: ../scripts/anyconvertfs:1009
+#: ../scripts/anyconvertfs:1043
 msgid ""
 "{BOLD}Step{CLEAR} {UNDER}5a{CLEAR}. {BOLD}{CYAN}Move rescued files to new "
 "filesystem{CLEAR}."
@@ -520,7 +519,7 @@ msgstr ""
 "{BOLD}Шаг{CLEAR} {UNDER}5a{CLEAR}. {BOLD}{CYAN}Перемещение спасённых файлов "
 "на новую файловую систему{CLEAR}."
 
-#: ../scripts/anyconvertfs:1013
+#: ../scripts/anyconvertfs:1047
 msgid ""
 "Cannot move files to read-only anyfs filesystem.\n"
 "{UNDER}Please, see{CLEAR} {RESCUEDIR} {UNDER}directory for rescued files."
@@ -530,20 +529,20 @@ msgstr ""
 "{UNDER}Пожалуйста, ищите спасённые файлы в директории{CLEAR} {RESCUEDIR} "
 "{UNDER}.{CLEAR}"
 
-#: ../scripts/anyconvertfs:1025
+#: ../scripts/anyconvertfs:1059
 msgid "Error while mounting new fs"
 msgstr "Ошибка при монтировании новой файловой системы"
 
-#: ../scripts/anyconvertfs:1039
+#: ../scripts/anyconvertfs:1073
 msgid "Error while move file"
 msgstr "Ошибка при перемещении файла"
 
-#: ../scripts/anyconvertfs:1074
+#: ../scripts/anyconvertfs:1115
 msgid "Don't forget change filesystem of the device in {BOLD}/etc/fstab{CLEAR}"
 msgstr ""
 "Не забудьте изменить файловую систему устройства в {BOLD}/etc/fstab{CLEAR}"
 
-#: ../scripts/anyconvertfs:1080
+#: ../scripts/anyconvertfs:1121
 msgid "Successful"
 msgstr "Успешное завершение"
 
@@ -574,7 +573,7 @@ msgstr ""
 #: ../src/build_xfs/build_xfs.c:4084 ../src/build_e2fs/build_e2fs.c:2210
 #: ../src/anyfuse/anyfuse.c:190 ../src/anyfuse/anyfuse.c:223
 #: ../src/anyfuse/anyfuse.c:342 ../src/anyfuse/anyfuse.c:389
-#: ../src/reblock.c:579 ../lib/new_inode.c:52 ../lib/new_inode.c:68
+#: ../src/reblock.c:586 ../lib/new_inode.c:52 ../lib/new_inode.c:68
 #: ../lib/new_inode.c:177 ../src/anysurrect/anysurreqt/surrect.cpp:307
 #: ../src/anysurrect/anysurreqt/surrect.cpp:377
 #: ../src/anysurrect/anysurreqt/surrect.cpp:536
@@ -689,7 +688,7 @@ msgstr "Это вовсе не смешно! Я не могу ничего поделать с пустым файлом.\n"
 msgid "search through all blocks: "
 msgstr "поиск по всем блокам: "
 
-#: ../src/anysurrect/anysurrect.c:1172 ../src/reblock.c:600
+#: ../src/anysurrect/anysurrect.c:1172 ../src/reblock.c:607
 #: ../src/build_it.c:896 ../lib/release_fssys.c:689
 #: ../src/anysurrect/anysurreqt/surrect.cpp:1609
 #: ../src/anysurrect/anysurreqt/cut_surrect.cpp:442
@@ -697,7 +696,7 @@ msgstr "поиск по всем блокам: "
 msgid "Error while writing inode table: %s\n"
 msgstr "Ошибка при записи таблицы инф.узлов: %s\n"
 
-#: ../src/anysurrect/anysurrect.c:1173 ../src/reblock.c:601
+#: ../src/anysurrect/anysurrect.c:1173 ../src/reblock.c:608
 #: ../src/build_it.c:897 ../lib/release_fssys.c:690
 #: ../src/anysurrect/anysurreqt/surrect.cpp:1610
 #: ../src/anysurrect/anysurreqt/cut_surrect.cpp:443
@@ -1864,7 +1863,7 @@ msgstr ""
 "выполнено\n"
 "\n"
 
-#: ../src/build_e2fs/build_e2fs.c:2214 ../src/reblock.c:583
+#: ../src/build_e2fs/build_e2fs.c:2214 ../src/reblock.c:590
 #, c-format
 msgid "Not enough space\n"
 msgstr "Не достаточно места\n"
@@ -1998,7 +1997,12 @@ msgstr "изменение размеров блока каждого инф.узла: "
 msgid "inode #%lu: +%lu fragments\n"
 msgstr "инф.узел #%lu: +%lu фрагментов\n"
 
-#: ../src/reblock.c:587
+#: ../src/reblock.c:557
+#, c-format
+msgid "Zero device size. Nothing to do\n"
+msgstr ""
+
+#: ../src/reblock.c:594
 #, c-format
 msgid "Reblock return %d\n"
 msgstr "Reblock вернул %d\n"
