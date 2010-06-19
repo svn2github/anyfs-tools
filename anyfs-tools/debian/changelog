@@ -2,8 +2,9 @@ anyfs-tools (0.85.1c) lucid; urgency=low
 
   * Fix speed regression on big filesystems in build_e2fs
   * Clean anyfs(8) links from documentation
+  * Fix build_e2fs bug on x86_64
 
- -- unDEFER <undefer@unDECOMP>  Sat, 12 Jun 2010 14:49:54 +0400
+ -- unDEFER <undefer@unDECOMP>  Sat, 19 Jun 2010 23:49:54 +0400
 
 anyfs-tools (0.85.1b) karmic; urgency=low
 

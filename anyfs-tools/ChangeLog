@@ -1,6 +1,7 @@
 * 12.06.10      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
 	- Fix speed regression on big filesystems in build_e2fs
 	- Clean anyfs(8) links from documentation
+	- Fix build_e2fs bug on x86_64
 	- 0.85.1c Release
 
 * 22.02.10      Nikolaj (unDEFER) Krivchenkov <undefer@gmail.com>
