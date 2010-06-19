@@ -386,10 +386,29 @@ WASMOUNTED="N"
 	checkutilities "`$GT"It is neccessary for converting from"` $FROMFS" ntfs-3g || exit 1
 }
 
+MOUNTEDLOOPDEVICE=""
+
 mount | grep -q "$DEVICE" && WASMOUNTED="Y"
 
+[ "$WASMOUNTED" == "Y" ] || [ -b "$DEVICE" ] ||
+{
+	LOOPDEVICES=`mount | losetup -j "$DEVICE" | awk -- '{sub(/:$/, "", $1); print $1}'`
+	for dev in $LOOPDEVICES; do
+		mount | grep -q "$dev" && 
+		{
+			WASMOUNTED="Y"
+			MOUNTEDLOOPDEVICE="$dev"
+			break
+		}
+	done
+}
+
 if [[ "$FROMFS" == "ntfs-3g" && $WASMOUNTED == "Y" ]]; then
-	umount "$DEVICE" ||
+	MOUNTEDDEVICE="$DEVICE"
+	[ "$MOUNTEDLOOPDEVICE" ] && MOUNTEDDEVICE="$MOUNTEDLOOPDEVICE"
+	MOUNTPOINT="`mount | awk -- '($1 == "'"$MOUNTEDDEVICE"'") {print $3; exit}'`"
+
+	umount "$MOUNTEDDEVICE" ||
         {
 		PRINT "`$GT""\
 "{DEVICE} was mounted and I cannot umount it
@@ -400,9 +419,11 @@ fi
 
 if [[ "$WASMOUNTED" == "Y" && "$FROMFS" != "ntfs-3g" ]]; then
 
-	MOUNTPOINT="`mount | awk -- '($1 == "'"$DEVICE"'") {print $3; exit}'`"
-	MOUNTOPTIONS="`mount | awk -- '($1 == "'"$DEVICE"'") {sub (/^\(/, "", $6); sub (/\)$/, "", $6); print $6}'`"
-	MOUNTEDFS="`mount | awk -- '($1 == "'"$DEVICE"'") {print $5; exit}'`"
+	MOUNTEDDEVICE="$DEVICE"
+	[ "$MOUNTEDLOOPDEVICE" ] && MOUNTEDDEVICE="$MOUNTEDLOOPDEVICE"
+	MOUNTPOINT="`mount | awk -- '($1 == "'"$MOUNTEDDEVICE"'") {print $3; exit}'`"
+	MOUNTOPTIONS="`mount | awk -- '($1 == "'"$MOUNTEDDEVICE"'") {sub (/^\(/, "", $6); sub (/\)$/, "", $6); print $6}'`"
+	MOUNTEDFS="`mount | awk -- '($1 == "'"$MOUNTEDDEVICE"'") {print $5; exit}'`"
 
 	[[ "$MOUNTEDFS" != "any" ]] && [ "$INODETABLE" ] &&
         {
@@ -487,7 +508,7 @@ mounted as {MOUNTEDFS} filesystem"`"
 		}
 	}
 else
-	mkdir "$MOUNTPOINT"
+	mkdir -p "$MOUNTPOINT"
 
 	[[ "$FROMFS" == "any" ]] && [ -z "$INODETABLE" ] &&
 	{
@@ -556,8 +577,23 @@ But {UNDER}--inodetable{CLEAR} is option for converting from {UNDER}anyfs{CLEAR}
 			exit 1
 		}
 
+		[ -b "$DEVICE" ] || 
+		{
+			LOOPDEVICES=`mount | losetup -j "$DEVICE" | awk -- '{sub(/:$/, "", $1); print $1}'`
+			for dev in $LOOPDEVICES; do
+				mount | grep -q "$dev" && 
+				{
+					MOUNTEDLOOPDEVICE="$dev"
+					break
+				}
+			done
+		}
+
+		MOUNTDEVICE="$DEVICE"
+		[ "$MOUNTEDLOOPDEVICE" ] && MOUNTDEVICE="$MOUNTEDLOOPDEVICE"
+
 		[[ "$FROMFS" ==  "AUTO" ]] &&
-			FROMFS="`mount | awk -- '($1 == "'"$DEVICE"'") {print $5}'`"
+			FROMFS="`mount | awk -- '($1 == "'"$MOUNTDEVICE"'") {print $5}'`"
 	fi
 fi
 
@@ -580,7 +616,7 @@ fi
 			( which "xfs_db" >/dev/null 2>&1 ) &&
 			    LABEL="`xfs_db -fc "label" "$DEVICE" | awk -- '{sub(/^label = \"/, ""); sub(/\"$/, ""); print; }'`"
 			;;
-			'iso9660')
+			'iso9660'|'udf')
 			( which "isoinfo" >/dev/null 2>&1 ) &&
 			    LABEL="`isoinfo -d -i "$DEVICE" | awk -- '/^Volume id: / {sub(/^Volume id: /, ""); print; exit;}'`"
 			;;
@@ -633,10 +669,10 @@ HANDLER()
 		rm -f "$INODETABLE" ||
 		PRINT "`$GT"Inode table was saved. See {INODETABLE}."`"
 
-	[[ "$FROMFS" == "ntfs-3g" ]] && [ -f "$RESCUELIST" ] ||
+	[[ "$FROMFS" == "ntfs-3g" || "$FROMFS" == "fuseblk" ]] && [ -f "$RESCUELIST" ] ||
 		PRINT "`$GT"See {RESCUELIST} for list of files not aligned with block boundaries."`"
 
-	[ "$LOOPDEVICE" ] && losetup -d "$LOOPDEVICE"
+	[ "$LOOPDEVICE" ] && [[ "$WASMOUNTED" == "N" ]] && losetup -d "$LOOPDEVICE"
 
 	rmdir "$TMPDIR"
 
@@ -675,7 +711,7 @@ First step which destroy old filesystem: {FIRSTDESTROYSTEP}"`"
 [ "$LOOPDEVICE" ] &&
 	PRINT "`$GT"Loop Device: {LOOPDEVICE}"`"
 
-[[ "$FROMFS" == "ntfs-3g" ]] &&
+[[ "$FROMFS" == "ntfs-3g" || "$FROMFS" == "fuseblk" ]] &&
 {
 	PRINT "`$GT"Rescue List: {RESCUELIST}
 Rescue Directory: {RESCUEDIR}"`"
@@ -716,7 +752,7 @@ else
 	BUILD_IT_OPTIONS=""
 	BUILD_IT_OUTPUT="/dev/stdout"
 
-	[[ "$FROMFS" == "ntfs-3g" ]] && 
+	[[ "$FROMFS" == "ntfs-3g" || "$FROMFS" == "fuseblk" ]] && 
 	{
 		BUILD_IT_OPTIONS="-s"
 		BUILD_IT_OUTPUT="$RESCUELIST"
@@ -732,7 +768,7 @@ else
 	echo -e "${BOLD}${GREEN}`$GT"Done"`${CLEAR}"
 fi
 
-if [[ "$FROMFS" == "ntfs-3g" ]]; then
+if [[ "$FROMFS" == "ntfs-3g" || "$FROMFS" == "fuseblk" ]]; then
 
 	echo
 	PRINT "`$GT"{BOLD}Step{CLEAR} {UNDER}1a{CLEAR}. {BOLD}{CYAN}Rescue (copy) files not aligned with block boundaries{CLEAR}."`"
@@ -828,14 +864,12 @@ HANDLER()
 		rmdir "$MOUNTPOINT"
 	fi
 
-	[[ ("$DELETE_IT" == "AUTO" && "$RMINODETABLE" == "Y") || 
-		"$DELETE_IT" == "SUCCESS" || 
-		"$DELETE_IT" == "NEVER" ]] || RMINODETABLE="N"
+	[[ "$DELETE_IT" == "AUTO" && "$RMINODETABLE" == "Y" ]] || RMINODETABLE="N"
 
 	[[ "$RMINODETABLE" == "Y" ]] && rm -f "$INODETABLE" ||
 		PRINT "`$GT"Inode table was saved. See {INODETABLE}."`"
 
-	[ "$LOOPDEVICE" ] && losetup -d "$LOOPDEVICE"
+	[ "$LOOPDEVICE" ] && [[ "$WASMOUNTED" == "N" ]] && losetup -d "$LOOPDEVICE"
 
 	rmdir "$TMPDIR"
 
@@ -1003,7 +1037,7 @@ else
 	echo -e "${BOLD}${GREEN}`$GT"Done"`${CLEAR}"
 fi
 
-if [[ "$FROMFS" == "ntfs-3g" ]]; then
+if [[ "$FROMFS" == "ntfs-3g" || "$FROMFS" == "fuseblk" ]]; then
 
 	echo
 	PRINT "`$GT"{BOLD}Step{CLEAR} {UNDER}5a{CLEAR}. {BOLD}{CYAN}Move rescued files to new filesystem{CLEAR}."`"
@@ -1044,7 +1078,7 @@ if [[ "$FROMFS" == "ntfs-3g" ]]; then
 
 			rm -f "$RESCUELIST"
 
-			if [[ "$WASMOUNTED" != "Y" ]]; then
+			if [[ "$WASMOUNTED" == "N" ]]; then
 				umount "$MOUNTPOINT"
 			fi
 
@@ -1053,6 +1087,13 @@ if [[ "$FROMFS" == "ntfs-3g" ]]; then
 	else
 		echo -e "`$GT"O.K. Rescue list is empty"`"
 		echo -e "${BOLD}${BROWN}`$GT"Skip"`${CLEAR}"
+
+		if [[ "$WASMOUNTED" == "Y" ]]; then
+			MOUNTOPTIONS="rw"
+			[ -b "$DEVICE" ] || MOUNTOPTIONS="rw,loop"
+			[[ "$TOFS" == "any" ]] && MOUNTOPTIONS="$MOUNTOPTIONS,inodetable=$INODETABLE"
+			mount -t "$TOFS" -o "$MOUNTOPTIONS" "$DEVICE" "$MOUNTPOINT"
+		fi
 	fi
 
 elif [[ "$WASMOUNTED" == "Y" ]]; then
@@ -1073,7 +1114,7 @@ FSATTAB="`cat /etc/fstab | awk -- '( $1 == "'"$DEVICE"'" ) {print $3; exit;}'`"
 [ "$FSATTAB" ] && [[ "$FSATTAB" != "$TOFS" ]] &&
 	PRINT "`$GT"Don't forget change filesystem of the device in {BOLD}/etc/fstab{CLEAR}"`"
 
-[ "$LOOPDEVICE" ] && losetup -d "$LOOPDEVICE"
+[ "$LOOPDEVICE" ] && [[ "$WASMOUNTED" == "N" ]] && losetup -d "$LOOPDEVICE"
 
 [ -d "$TMPDIR" ] && rmdir "$TMPDIR"
 
