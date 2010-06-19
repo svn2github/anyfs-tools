@@ -549,6 +549,13 @@ int main(int argc, const char *argv[])
 			return -EIO;
 		}
 		stat_info.st_size*=512;
+
+	}
+
+	if (!stat_info.st_size)
+	{
+		fprintf (stderr, _("Zero device size. Nothing to do\n"));
+		return -EIO;
 	}
 
 	blocks_info.blocks_count = 
